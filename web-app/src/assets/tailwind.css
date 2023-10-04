@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+main {
+    height: calc(100vh - 8rem);
+}
+
+form:invalid input:required {
+    @apply w-full border-red-500 rounded shadow-sm focus:border-red-500 focus:ring-0
+}
+
+form:invalid select:required {
+    @apply w-full border-red-500 rounded shadow-sm focus:border-red-500 focus:ring-0
+}
+
+.main-content {
+    @apply overflow-y-auto px-12
+}
+
+.parameters-container {
+    @apply lg:max-w-3xl lg:mx-auto bg-white shadow px-8 py-6 space-y-3
+}
+
+.form-control {
+    @apply w-full border-gray-300 rounded shadow-sm focus:border-gray-300 focus:ring-0
+}
+
+.btn-success {
+    @apply h-10 px-9 rounded bg-green-600 text-white hover:bg-green-800
+}
+
+.btn-secondary {
+    @apply h-10 px-9 rounded bg-gray-600 text-white hover:bg-gray-800
+}
+
+.btn-light {
+    @apply h-10 px-9 rounded bg-gray-200 text-white
+}
+
+.btn-alert {
+   @apply w-full rounded text-white bg-gray-600 hover:bg-gray-800 p-3
+}
+
+.disabled {
+    @apply bg-gray-100 text-gray-500 cursor-default
+}
