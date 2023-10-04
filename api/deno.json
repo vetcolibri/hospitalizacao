@@ -1,0 +1,9 @@
+{
+  "fmt": {
+    "useTabs": true,
+    "indentWidth": 4,
+    "lineWidth": 100,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  }
+}
