@@ -1,7 +1,9 @@
+import { ID } from "../id.ts";
+
 export class User {
-	readonly userId: string;
+	readonly userId: ID;
 
 	constructor(id: string) {
-		this.userId = id;
+		this.userId = ID.New(id);
 	}
 }

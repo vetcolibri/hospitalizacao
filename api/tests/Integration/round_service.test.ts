@@ -3,6 +3,7 @@ import { PatientRepositoryStub } from "../../test_double/stubs/patient_repositor
 import { assertEquals, assertSpyCall, assertSpyCalls, spy } from "../../dev_deps.ts";
 import { UserRepositoryStub } from "../../test_double/stubs/user_repository_stub.ts";
 import { InmemRoundRepository } from "../../adaptors/inmem/inmem_round_repository.ts";
+import { ID } from "../../domain/id.ts";
 
 Deno.test("Round Service", async (t) => {
 	await t.step("Deve recuperar o paciente no repositório", async () => {
@@ -17,7 +18,7 @@ Deno.test("Round Service", async (t) => {
 		const service = new RoundService(roundRepository, patientRepository, userRepository);
 
 		await service.new(patientId, userId, date, parameter);
-		assertSpyCall(patientSpy, 0, { args: [patientId] });
+		assertSpyCall(patientSpy, 0, { args: [ID.New(patientId)] });
 		assertSpyCalls(patientSpy, 1);
 	});
 	await t.step("Deve recuperar o medVet no repositório", async () => {
@@ -56,7 +57,7 @@ Deno.test("Round Service", async (t) => {
 
 		const round = await roundRepository.last();
 		const patient = round.getPatient();
-		assertEquals(patient.patientId, patientId);
+		assertEquals(patient.patientId.toString(), patientId);
 	});
 	await t.step(
 		"Deve adicionar o parâmetro da Frequência cardiaca a ronda de exames",
