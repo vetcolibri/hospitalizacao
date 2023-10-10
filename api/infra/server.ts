@@ -6,8 +6,8 @@ const PORT = 8000;
 
 const app = new Application();
 const patientRouter = routers();
-app.use(patientRouter.routes());
 app.use(oakCors());
+app.use(patientRouter.routes());
 
 console.log(makeTodayFormat());
 console.log(`Starting server at http://localhost:${PORT}/`);
