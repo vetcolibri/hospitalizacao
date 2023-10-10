@@ -1,5 +1,5 @@
 import { ID } from "../../domain/id.ts";
-import { Patient } from "../../domain/patients/patient.ts";
+import { Hospitalization, Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 
 export class PatientRepositoryStub implements PatientRepository {
@@ -10,7 +10,9 @@ export class PatientRepositoryStub implements PatientRepository {
 	}
 
 	hospitalized(): Promise<Patient[]> {
-		const patients = this.records;
+		const patients = this.records.filter((patient) =>
+			patient.status === PatientStatus.HOSPITALIZED
+		);
 		return Promise.resolve(patients);
 	}
 
@@ -26,7 +28,9 @@ export class PatientRepositoryStub implements PatientRepository {
 	}
 
 	#populate() {
-		const patient1 = new Patient("some-id");
+		const hospitalization = new Hospitalization(new Date().toISOString());
+		const patient1 = new Patient("some-id", "Rex");
+		patient1.hospitalize(hospitalization);
 		this.save(patient1);
 	}
 

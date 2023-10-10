@@ -193,4 +193,4 @@ Deno.test("Rounds", async (t) => {
 
 const medVet = new User("123");
 const date = "2023-09-30T11:54:33.651Z";
-const patient = new Patient("some-id");
+const patient = new Patient("some-id", "Rex");

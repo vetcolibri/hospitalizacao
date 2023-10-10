@@ -1,5 +1,5 @@
 import { ID } from "../../domain/id.ts";
-import { Patient } from "../../domain/patients/patient.ts";
+import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 
 export class InmemPatientRepository implements PatientRepository {
@@ -11,7 +11,9 @@ export class InmemPatientRepository implements PatientRepository {
 	}
 
 	hospitalized(): Promise<Patient[]> {
-		const patients = this.records;
+		const patients = this.records.filter((patient) =>
+			patient.status === PatientStatus.HOSPITALIZED
+		);
 		return Promise.resolve(patients);
 	}
 

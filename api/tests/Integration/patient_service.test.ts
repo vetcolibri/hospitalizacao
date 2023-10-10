@@ -3,7 +3,7 @@ import { InmemPatientRepository } from "../../adaptors/inmem/inmem_patient_repos
 import { PatientService } from "../../application/patient_service.ts";
 import { assertEquals, assertSpyCall, assertSpyCalls, spy } from "../../dev_deps.ts";
 import { Alert } from "../../domain/alerts/alert.ts";
-import { Patient } from "../../domain/patients/patient.ts";
+import { Hospitalization, Patient } from "../../domain/patients/patient.ts";
 
 Deno.test("Patient Service", async (t) => {
 	await t.step("Deve listar os pacientes hospitalzados.", async () => {
@@ -35,7 +35,11 @@ Deno.test("Patient Service", async (t) => {
 
 		const pacientes = await service.hospitalizadPatients();
 
+		const patient = await patientRepository.get(patient1.patientId);
+
 		assertEquals(pacientes.length, 2);
+		assertEquals(patient.patientId.toString(), "PT - 1292/2023");
+		assertEquals(patient.getStatus(), "HOSPITALIZADO");
 	});
 
 	await t.step("Deve verificar no repositório se os pacientes tem alertas.", async () => {
@@ -71,6 +75,10 @@ Deno.test("Patient Service", async (t) => {
 	);
 });
 
-const patient1 = new Patient("PT - 1292/2023");
-const patient2 = new Patient("PT - 392/2022");
+const date = new Date().toISOString();
+const hospitalization = new Hospitalization(date);
+const patient1 = new Patient("PT - 1292/2023", "Rex");
+const patient2 = new Patient("PT - 392/2022", "Huston");
+patient1.hospitalize(hospitalization);
+patient2.hospitalize(hospitalization);
 const alert1 = new Alert(patient1);
