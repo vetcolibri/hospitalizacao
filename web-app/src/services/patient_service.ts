@@ -1,5 +1,5 @@
 import type { HttpClient } from '@/lib/http_client'
-import type { Patient } from '@/lib/models/patient'
+import type { Patient } from '@/models/patient'
 
 export interface PatientService {
     getAllHospitalized(): Promise<Patient[]>

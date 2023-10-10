@@ -3,4 +3,5 @@ export interface Patient {
     name: string
     specie: string
     hasAlert?: boolean
+    issuedAt: string
 }
