@@ -5,6 +5,7 @@ import { Round } from "../domain/rounds/round.ts";
 import { HeartRate } from "../domain/parameters/heart_rate.ts";
 import { Measurement } from "../domain/parameters/measurement.ts";
 import { ID } from "../domain/id.ts";
+import { Patient } from "../domain/patients/patient.ts";
 
 export class RoundService {
 	readonly roundRepository: RoundRepository;
@@ -22,9 +23,11 @@ export class RoundService {
 	}
 
 	async new(patientId: string, userId: string, date: string, parameter: InputParameter) {
-		const patient = await this.patientRepository.get(ID.New(patientId));
-		const user = await this.userRepository.get(userId);
-		const round = new Round(patient);
+		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
+
+		const user = await this.userRepository.get(ID.New(userId));
+
+		const round = new Round(patientOrErr.value as Patient);
 
 		const measurement = Measurement.new(parameter.value);
 		const heartRate = new HeartRate(measurement, date, user);

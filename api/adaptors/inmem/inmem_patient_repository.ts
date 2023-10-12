@@ -1,13 +1,18 @@
 import { ID } from "../../domain/id.ts";
 import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
+import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
+import { Either, left, right } from "../../shared/either.ts";
 
 export class InmemPatientRepository implements PatientRepository {
 	readonly #data: Record<string, Patient> = {};
 
-	get(patientId: ID): Promise<Patient> {
-		const id = patientId.toString();
-		return Promise.resolve(this.#data[id]);
+	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
+		const patient = this.records.find((patient) =>
+			patient.patientId.toString() === patientId.toString()
+		);
+		if (!patient) return Promise.resolve(left(new PatientNotFound()));
+		return Promise.resolve(right(patient));
 	}
 
 	hospitalized(): Promise<Patient[]> {
