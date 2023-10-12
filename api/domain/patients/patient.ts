@@ -13,11 +13,11 @@ export enum PatientSpecie {
 }
 
 export class Hospitalization {
-	readonly issuedAt: Date;
+	readonly entryDate: Date;
 	status: HospitalizationStatus;
 
-	constructor(date: string) {
-		this.issuedAt = new Date(date);
+	constructor(entryDate: string) {
+		this.entryDate = new Date(entryDate);
 		this.status = HospitalizationStatus.ACTIVE;
 	}
 }

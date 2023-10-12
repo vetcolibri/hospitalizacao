@@ -1,11 +1,26 @@
 import { InmemAlertRepository } from "../../adaptors/inmem/inmem_alert_repository.ts";
 import { InmemPatientRepository } from "../../adaptors/inmem/inmem_patient_repository.ts";
 import { PatientService } from "../../application/patient_service.ts";
-import { assertEquals, assertSpyCall, assertSpyCalls, spy } from "../../dev_deps.ts";
+import {
+	assertEquals,
+	assertInstanceOf,
+	assertSpyCall,
+	assertSpyCalls,
+	spy,
+} from "../../dev_deps.ts";
 import { Alert } from "../../domain/alerts/alert.ts";
-import { Hospitalization, Patient } from "../../domain/patients/patient.ts";
+import { ID } from "../../domain/id.ts";
+import {
+	Hospitalization,
+	HospitalizationStatus,
+	Patient,
+	PatientStatus,
+} from "../../domain/patients/patient.ts";
+import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
+import { PatientRepository } from "../../domain/patients/patient_repository.ts";
+import { PatientRepositoryStub } from "../../test_double/stubs/patient_repository_stub.ts";
 
-Deno.test("Patient Service", async (t) => {
+Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 	await t.step("Deve listar os pacientes hospitalzados.", async () => {
 		const patientRepository = new InmemPatientRepository();
 		const alertRepository = new InmemAlertRepository();
@@ -78,10 +93,79 @@ Deno.test("Patient Service", async (t) => {
 	);
 });
 
-const date = new Date().toISOString();
-const hospitalization = new Hospitalization(date);
+Deno.test("Patient Service - New Hospitalization", async (t) => {
+	await t.step("Deve chamar o repositório para buscar o paciente", async () => {
+		const { service, patientRepository } = makeService();
+
+		const repoSpy = spy(patientRepository, "getById");
+		await service.newHospitalization("some-patient-id", entryDate);
+		assertSpyCall(repoSpy, 0, { args: [ID.New("some-patient-id")] });
+		assertSpyCalls(repoSpy, 1);
+	});
+	await t.step(
+		"Deve retornar @PatientNotFound se o paciente não foi encontrado.",
+		async () => {
+			const { service } = makeService();
+			const error = await service.newHospitalization("some-patient-id", entryDate);
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PatientNotFound);
+			assertEquals(error.value.message, "Patient not found");
+		},
+	);
+	await t.step("Deve abrir uma nova hospitalização", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await service.newHospitalization("some-patient-id", entryDate);
+
+		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+		assertEquals(patientOrErr.isRight(), true);
+
+		const patient = patientOrErr.value as Patient;
+		assertEquals(patient.hospitalizations.length, 1);
+		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
+		assertEquals(patient.getActiveHospitalization()!.status, HospitalizationStatus.ACTIVE);
+	});
+	await t.step("Deve autalizar o paciente no repositório", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		const repoSpy = spy(patientRepository, "update");
+		await service.newHospitalization("some-patient-id", entryDate);
+
+		assertSpyCall(repoSpy, 0);
+		assertSpyCalls(repoSpy, 1);
+	});
+	await t.step("A hospitalização deve receber a data de entrada", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		await service.newHospitalization("some-patient-id", entryDate);
+
+		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+		const patient = patientOrErr.value as Patient;
+		const hospitalization = patient.getActiveHospitalization()!;
+		assertEquals(hospitalization.entryDate, new Date(entryDate));
+	});
+});
+
+const entryDate = new Date().toISOString();
+const hospitalization = new Hospitalization(entryDate);
 const patient1 = new Patient("PT - 1292/2023", "Rex");
 const patient2 = new Patient("PT - 392/2022", "Huston");
 patient1.hospitalize(hospitalization);
 patient2.hospitalize(hospitalization);
 const alert1 = new Alert(patient1);
+
+interface Options {
+	patientRepository?: PatientRepository;
+}
+
+function makeService(options?: Options) {
+	const patientRepository = options?.patientRepository ?? new InmemPatientRepository();
+	const alertRepository = new InmemAlertRepository();
+	const service = new PatientService(patientRepository, alertRepository);
+	return { service, patientRepository };
+}

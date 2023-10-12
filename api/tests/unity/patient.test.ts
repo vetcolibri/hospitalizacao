@@ -21,7 +21,7 @@ Deno.test("Patient", async (t) => {
 		const hosp = new Hospitalization(date);
 		patient.hospitalize(hosp);
 		const activeHosp = patient.getActiveHospitalization();
-		assertEquals(activeHosp?.issuedAt.toISOString(), date);
+		assertEquals(activeHosp?.entryDate.toISOString(), date);
 	});
 });
 

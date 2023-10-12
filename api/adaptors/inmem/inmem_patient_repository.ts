@@ -28,6 +28,12 @@ export class InmemPatientRepository implements PatientRepository {
 		return Promise.resolve(undefined);
 	}
 
+	update(patient: Patient): Promise<void> {
+		const id = patient.patientId.toString();
+		this.#data[id] = patient;
+		return Promise.resolve(undefined);
+	}
+
 	get records(): Patient[] {
 		return Object.values(this.#data);
 	}

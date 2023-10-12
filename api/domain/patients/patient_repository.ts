@@ -7,4 +7,5 @@ export interface PatientRepository {
 	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>>;
 	hospitalized(): Promise<Patient[]>;
 	save(patient: Patient): Promise<void>;
+	update(patient: Patient): Promise<void>;
 }

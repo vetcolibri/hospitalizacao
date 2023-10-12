@@ -32,11 +32,19 @@ export class PatientRepositoryStub implements PatientRepository {
 		return Promise.resolve(undefined);
 	}
 
+	update(patient: Patient): Promise<void> {
+		const id = patient.patientId.toString();
+		this.#data[id] = patient;
+		return Promise.resolve(undefined);
+	}
+
 	#populate() {
 		const hospitalization = new Hospitalization(new Date().toISOString());
 		const patient1 = new Patient("some-id", "Rex");
 		patient1.hospitalize(hospitalization);
+		const patient2 = new Patient("some-patient-id", "Rex 2");
 		this.save(patient1);
+		this.save(patient2);
 	}
 
 	get records(): Patient[] {
