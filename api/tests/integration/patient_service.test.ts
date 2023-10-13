@@ -10,12 +10,7 @@ import {
 } from "../../dev_deps.ts";
 import { Alert } from "../../domain/alerts/alert.ts";
 import { ID } from "../../domain/id.ts";
-import {
-	Hospitalization,
-	HospitalizationStatus,
-	Patient,
-	PatientStatus,
-} from "../../domain/patients/patient.ts";
+import { HospitalizationStatus, Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 import { PatientRepositoryStub } from "../../test_double/stubs/patient_repository_stub.ts";
@@ -149,14 +144,24 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const hospitalization = patient.getActiveHospitalization()!;
 		assertEquals(hospitalization.entryDate, new Date(entryDate));
 	});
+	await t.step(
+		"Deve retornar @EntryDateInvalid se a data for inferior a data actual",
+		async () => {
+			const { service } = makeService();
+			const error = await service.newHospitalization(
+				"some-patient-id",
+				"2020-01-01:00:00:00",
+			);
+			assertInstanceOf(error, EntryDateInvalid);
+		},
+	);
 });
 
 const entryDate = new Date().toISOString();
-const hospitalization = new Hospitalization(entryDate);
 const patient1 = new Patient("PT - 1292/2023", "Rex");
 const patient2 = new Patient("PT - 392/2022", "Huston");
-patient1.hospitalize(hospitalization);
-patient2.hospitalize(hospitalization);
+patient1.hospitalize(entryDate);
+patient2.hospitalize(entryDate);
 const alert1 = new Alert(patient1);
 
 interface Options {

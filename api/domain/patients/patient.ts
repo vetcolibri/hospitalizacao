@@ -41,9 +41,10 @@ export class Patient {
 		return this.status;
 	}
 
-	hospitalize(newHospitalization: Hospitalization): void {
-		this.status = PatientStatus.HOSPITALIZED;
+	hospitalize(entryDate: string): void {
+		const newHospitalization = new Hospitalization(entryDate);
 		this.hospitalizations.push(newHospitalization);
+		this.status = PatientStatus.HOSPITALIZED;
 	}
 
 	getActiveHospitalization(): Hospitalization | undefined {

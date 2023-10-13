@@ -1,5 +1,5 @@
 import { ID } from "../../domain/id.ts";
-import { Hospitalization, Patient, PatientStatus } from "../../domain/patients/patient.ts";
+import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../../shared/either.ts";
@@ -39,9 +39,8 @@ export class PatientRepositoryStub implements PatientRepository {
 	}
 
 	#populate() {
-		const hospitalization = new Hospitalization(new Date().toISOString());
 		const patient1 = new Patient("some-id", "Rex");
-		patient1.hospitalize(hospitalization);
+		patient1.hospitalize(new Date().toISOString());
 		const patient2 = new Patient("some-patient-id", "Rex 2");
 		this.save(patient1);
 		this.save(patient2);
