@@ -40,7 +40,10 @@ export class PatientRepositoryStub implements PatientRepository {
 
 	#populate() {
 		const patient1 = new Patient("some-id", "Rex");
-		patient1.hospitalize(new Date().toISOString());
+		const entryDate = "2023-10-16";
+		const dischargeDate = "2023-10-16";
+		const estimatedBudgetDate = "2023-10-16";
+		patient1.hospitalize(entryDate, dischargeDate, estimatedBudgetDate);
 		const patient2 = new Patient("some-patient-id", "Rex 2");
 		this.save(patient1);
 		this.save(patient2);

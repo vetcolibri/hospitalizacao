@@ -10,7 +10,10 @@ import {
 } from "../../dev_deps.ts";
 import { Alert } from "../../domain/alerts/alert.ts";
 import { ID } from "../../domain/id.ts";
-import { HospitalizationStatus, Patient, PatientStatus } from "../../domain/patients/patient.ts";
+import { DateInvalid } from "../../domain/patients/date_invalid_error.ts";
+import { HospitalizationStatus } from "../../domain/patients/hospitalization.ts";
+import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
+import { PatientAlreadyHospitalized } from "../../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 import { PatientRepositoryStub } from "../../test_double/stubs/patient_repository_stub.ts";
@@ -91,9 +94,15 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 Deno.test("Patient Service - New Hospitalization", async (t) => {
 	await t.step("Deve chamar o repositório para buscar o paciente", async () => {
 		const { service, patientRepository } = makeService();
-
 		const repoSpy = spy(patientRepository, "getById");
-		await service.newHospitalization("some-patient-id", entryDate);
+
+		await service.newHospitalization(
+			"some-patient-id",
+			entryDate,
+			dischargeDate,
+			estimatedBudgetDate,
+		);
+
 		assertSpyCall(repoSpy, 0, { args: [ID.New("some-patient-id")] });
 		assertSpyCalls(repoSpy, 1);
 	});
@@ -101,7 +110,14 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		"Deve retornar @PatientNotFound se o paciente não foi encontrado.",
 		async () => {
 			const { service } = makeService();
-			const error = await service.newHospitalization("some-patient-id", entryDate);
+
+			const error = await service.newHospitalization(
+				"some-patient-id",
+				entryDate,
+				dischargeDate,
+				estimatedBudgetDate,
+			);
+
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, PatientNotFound);
 			assertEquals(error.value.message, "Patient not found");
@@ -112,7 +128,12 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			patientRepository: new PatientRepositoryStub(),
 		});
 
-		await service.newHospitalization("some-patient-id", entryDate);
+		await service.newHospitalization(
+			"some-patient-id",
+			entryDate,
+			dischargeDate,
+			estimatedBudgetDate,
+		);
 
 		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
 		assertEquals(patientOrErr.isRight(), true);
@@ -126,9 +147,14 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const { service, patientRepository } = makeService({
 			patientRepository: new PatientRepositoryStub(),
 		});
-
 		const repoSpy = spy(patientRepository, "update");
-		await service.newHospitalization("some-patient-id", entryDate);
+
+		await service.newHospitalization(
+			"some-patient-id",
+			entryDate,
+			dischargeDate,
+			estimatedBudgetDate,
+		);
 
 		assertSpyCall(repoSpy, 0);
 		assertSpyCalls(repoSpy, 1);
@@ -137,7 +163,12 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const { service, patientRepository } = makeService({
 			patientRepository: new PatientRepositoryStub(),
 		});
-		await service.newHospitalization("some-patient-id", entryDate);
+		await service.newHospitalization(
+			"some-patient-id",
+			entryDate,
+			dischargeDate,
+			estimatedBudgetDate,
+		);
 
 		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
 		const patient = patientOrErr.value as Patient;
@@ -145,23 +176,119 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		assertEquals(hospitalization.entryDate, new Date(entryDate));
 	});
 	await t.step(
-		"Deve retornar @EntryDateInvalid se a data for inferior a data actual",
+		"Deve retornar @DateInvalid se a data fornecia for inferior a data actual",
 		async () => {
-			const { service } = makeService();
+			const { service } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
 			const error = await service.newHospitalization(
 				"some-patient-id",
-				"2020-01-01:00:00:00",
+				"2020-01-01",
+				dischargeDate,
+				estimatedBudgetDate,
 			);
-			assertInstanceOf(error, EntryDateInvalid);
+			assertInstanceOf(error.value, DateInvalid);
+		},
+	);
+	await t.step(
+		"Ao hospitalizar um paciente deve receber a data prevista para alta.",
+		async () => {
+			const { service, patientRepository } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+
+			await service.newHospitalization(
+				"some-patient-id",
+				entryDate,
+				dischargeDate,
+				estimatedBudgetDate,
+			);
+
+			const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+			const patient = <Patient> patientOrErr.value;
+			const hospitalization = patient.getActiveHospitalization()!;
+			assertEquals(hospitalization.dischargeDate, new Date(dischargeDate));
+		},
+	);
+	await t.step(
+		"Deve retornar @DateInvalid se a data fornecia for inferior a data de entrada",
+		async () => {
+			const { service } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+
+			const error = await service.newHospitalization(
+				"some-patient-id",
+				entryDate,
+				"2020-01-01",
+				estimatedBudgetDate,
+			);
+			assertInstanceOf(error.value, DateInvalid);
+		},
+	);
+
+	await t.step(
+		"Ao hospitalizar um paciente deve receber a previsão do orçamento.",
+		async () => {
+			const { service, patientRepository } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+
+			await service.newHospitalization(
+				"some-patient-id",
+				entryDate,
+				dischargeDate,
+				estimatedBudgetDate,
+			);
+
+			const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+			const patient = patientOrErr.value as Patient;
+			const hospitalization = patient.getActiveHospitalization()!;
+			assertEquals(hospitalization.estimatedBudgetDate, new Date(estimatedBudgetDate));
+		},
+	);
+
+	await t.step(
+		"Deve retornar @DateInvalid se a data fornecia for inferior a data prevista do orçamento",
+		async () => {
+			const { service } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+			const error = await service.newHospitalization(
+				"some-patient-id",
+				entryDate,
+				dischargeDate,
+				"2020-01-01",
+			);
+			assertInstanceOf(error.value, DateInvalid);
+		},
+	);
+
+	await t.step(
+		"Deve retornar um erro @PatientAlreadyHospitalized se o paciente já estiver hospitalizado",
+		async () => {
+			const { service } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+
+			const error = await service.newHospitalization(
+				"some-id",
+				entryDate,
+				dischargeDate,
+				estimatedBudgetDate,
+			);
+			assertInstanceOf(error.value, PatientAlreadyHospitalized);
 		},
 	);
 });
 
-const entryDate = new Date().toISOString();
+const entryDate = new Date().toLocaleDateString();
+const dischargeDate = new Date().toLocaleDateString();
+const estimatedBudgetDate = new Date().toLocaleDateString();
 const patient1 = new Patient("PT - 1292/2023", "Rex");
 const patient2 = new Patient("PT - 392/2022", "Huston");
-patient1.hospitalize(entryDate);
-patient2.hospitalize(entryDate);
+patient1.hospitalize(entryDate, dischargeDate, estimatedBudgetDate);
+patient2.hospitalize(entryDate, dischargeDate, estimatedBudgetDate);
 const alert1 = new Alert(patient1);
 
 interface Options {

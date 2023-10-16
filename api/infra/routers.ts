@@ -2,15 +2,14 @@ import { InmemAlertRepository } from "../adaptors/inmem/inmem_alert_repository.t
 import { InmemPatientRepository } from "../adaptors/inmem/inmem_patient_repository.ts";
 import { PatientService } from "../application/patient_service.ts";
 import { Context, Router } from "../deps.ts";
-import { Hospitalization, Patient } from "../domain/patients/patient.ts";
-import { sendOk } from "./responses.ts";
+import { Patient } from "../domain/patients/patient.ts";
+import { sendBadRequest, sendOk } from "./responses.ts";
 
 const alertRepository = new InmemAlertRepository();
 const patientRepository = new InmemPatientRepository();
 
-const hospitalization = new Hospitalization(new Date().toISOString());
 const patient = new Patient("some-id", "Rex");
-patient.hospitalize(hospitalization);
+patient.hospitalize("2023-10-16", "2023-10-16", "2023-10-16");
 patientRepository.save(patient);
 const service = new PatientService(patientRepository, alertRepository);
 
@@ -36,7 +35,23 @@ export default function () {
 		));
 		sendOk(ctx, DTO);
 	};
+	const hospitalizePatientHandler = async (ctx: Context) => {
+		const { patientId, entryDate, dischargeDate, estimatedBudgetDate } = await ctx.request
+			.body().value;
+		const result = await service.newHospitalization(
+			patientId,
+			entryDate,
+			dischargeDate,
+			estimatedBudgetDate,
+		);
+		if (result.isLeft()) {
+			sendBadRequest(ctx, result.value.message);
+			return;
+		}
+		sendOk(ctx);
+	};
 	const router = new Router({ prefix: "/patients" });
 	router.get("/hospitalized", hospitalizedPatientsHandler);
+	router.post("/hospitalize", hospitalizePatientHandler);
 	return router;
 }

@@ -1,25 +1,12 @@
+import { Hospitalization, HospitalizationStatus } from "./hospitalization.ts";
 import { ID } from "../id.ts";
 
 export enum PatientStatus {
 	HOSPITALIZED = "HOSPITALIZADO",
 }
 
-export enum HospitalizationStatus {
-	ACTIVE = "ATIVA",
-}
-
 export enum PatientSpecie {
 	CANINE = "CANINO",
-}
-
-export class Hospitalization {
-	readonly entryDate: Date;
-	status: HospitalizationStatus;
-
-	constructor(entryDate: string) {
-		this.entryDate = new Date(entryDate);
-		this.status = HospitalizationStatus.ACTIVE;
-	}
 }
 
 export class Patient {
@@ -41,8 +28,12 @@ export class Patient {
 		return this.status;
 	}
 
-	hospitalize(entryDate: string): void {
-		const newHospitalization = new Hospitalization(entryDate);
+	hospitalize(entryDate: string, dischargeDate: string, estimatedBudgetDate: string): void {
+		const newHospitalization = new Hospitalization(
+			entryDate,
+			dischargeDate,
+			estimatedBudgetDate,
+		);
 		this.hospitalizations.push(newHospitalization);
 		this.status = PatientStatus.HOSPITALIZED;
 	}
