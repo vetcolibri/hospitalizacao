@@ -9,11 +9,15 @@ export function sendResponse(ctx: Context, status: Status, body?: ResponseBody) 
 }
 
 export function sendBadRequest(ctx: Context, body?: ResponseBody) {
-	sendResponse(ctx, Status.BadRequest, body);
+	sendResponse(ctx, Status.BadRequest, { error: body });
 }
 
 export function sendCreated(ctx: Context, body?: ResponseBody) {
 	sendResponse(ctx, Status.Created, body);
+}
+
+export function sendNotFound(ctx: Context, body?: ResponseBody) {
+	sendResponse(ctx, Status.NotFound, body);
 }
 
 export function sendOk(ctx: Context, body?: ResponseBody) {

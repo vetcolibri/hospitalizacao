@@ -1,5 +1,7 @@
 import { Hospitalization, HospitalizationStatus } from "./hospitalization.ts";
+import { HospitalizadBuilder } from "./hospitalization_builder.ts";
 import { ID } from "../id.ts";
+import { HospitalizationData } from "../../shared/types.ts";
 
 export enum PatientStatus {
 	HOSPITALIZED = "HOSPITALIZADO",
@@ -28,12 +30,16 @@ export class Patient {
 		return this.status;
 	}
 
-	hospitalize(entryDate: string, dischargeDate: string, estimatedBudgetDate: string): void {
-		const newHospitalization = new Hospitalization(
-			entryDate,
-			dischargeDate,
-			estimatedBudgetDate,
-		);
+	hospitalize(data: HospitalizationData): void {
+		const newHospitalization = new HospitalizadBuilder()
+			.setEntryDate(data.entryDate)
+			.setDischargeDate(data.dischargeDate)
+			.setEstimatedBudgetDate(data.estimatedBudgetDate)
+			.setWeight(data.weight)
+			.setAge(data.age)
+			.setComplaints(data.complaints)
+			.setDiagnostics(data.diagnostics)
+			.build();
 		this.hospitalizations.push(newHospitalization);
 		this.status = PatientStatus.HOSPITALIZED;
 	}

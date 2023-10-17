@@ -5,6 +5,8 @@ import { Patient, PatientStatus } from "../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../shared/either.ts";
+import { ERROR_MESSAGES } from "../shared/error_messages.ts";
+import { HospitalizationData } from "../shared/types.ts";
 
 export class PatientService {
 	readonly patientRepository: PatientRepository;
@@ -35,39 +37,39 @@ export class PatientService {
 	 */
 	async newHospitalization(
 		patientId: string,
-		entryDate: string,
-		dischargeDate: string,
-		estimatedBudgetDate: string,
+		hospitalizationData: HospitalizationData,
 	): Promise<Either<Error, void>> {
 		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
 		if (patientOrErr.isLeft()) {
 			return left(patientOrErr.value);
 		}
+
 		const patient = patientOrErr.value;
 		if (patient.getStatus() === PatientStatus.HOSPITALIZED) {
-			return left(new PatientAlreadyHospitalized());
+			return left(new PatientAlreadyHospitalized(patient.name));
 		}
 
-		const now = new Date();
+		const {
+			entryDate,
+			dischargeDate,
+			estimatedBudgetDate,
+		} = hospitalizationData;
+		const date = new Date();
+		const today = new Date(`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`);
 		const recivedDate = new Date(entryDate);
+		if (recivedDate < today) {
+			return left(new DateInvalid(ERROR_MESSAGES.ENTRY_DATE_INVALID));
+		}
 		const discharge = new Date(dischargeDate);
+		if (discharge.getDate() < today.getDate()) {
+			return left(new DateInvalid(ERROR_MESSAGES.DISCHARGE_DATE_INVALID));
+		}
 		const budgetDate = new Date(estimatedBudgetDate);
-
-		if (recivedDate < now) {
-			return left(new DateInvalid("Data de entrada não pode ser menor que a data atual."));
-		}
-		if (discharge < now) {
-			return left(new DateInvalid("Data de alta não pode ser menor que a data atual."));
-		}
-		if (budgetDate < now) {
-			return left(
-				new DateInvalid(
-					"Data de previsão do orçamento não pode ser menor que a data atual.",
-				),
-			);
+		if (budgetDate.getDate() < today.getDate()) {
+			return left(new DateInvalid(ERROR_MESSAGES.ESTIMATED_BUDGET_DATE_INVALID));
 		}
 
-		patient.hospitalize(entryDate, dischargeDate, estimatedBudgetDate);
+		patient.hospitalize(hospitalizationData);
 		await this.patientRepository.update(patient);
 		return right(undefined);
 	}

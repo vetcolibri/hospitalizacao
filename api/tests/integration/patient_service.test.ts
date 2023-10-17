@@ -96,12 +96,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const { service, patientRepository } = makeService();
 		const repoSpy = spy(patientRepository, "getById");
 
-		await service.newHospitalization(
-			"some-patient-id",
-			entryDate,
-			dischargeDate,
-			estimatedBudgetDate,
-		);
+		await service.newHospitalization("some-patient-id", hospitalizationData);
 
 		assertSpyCall(repoSpy, 0, { args: [ID.New("some-patient-id")] });
 		assertSpyCalls(repoSpy, 1);
@@ -111,12 +106,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		async () => {
 			const { service } = makeService();
 
-			const error = await service.newHospitalization(
-				"some-patient-id",
-				entryDate,
-				dischargeDate,
-				estimatedBudgetDate,
-			);
+			const error = await service.newHospitalization("some-patient-id", hospitalizationData);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, PatientNotFound);
@@ -128,12 +118,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			patientRepository: new PatientRepositoryStub(),
 		});
 
-		await service.newHospitalization(
-			"some-patient-id",
-			entryDate,
-			dischargeDate,
-			estimatedBudgetDate,
-		);
+		await service.newHospitalization("some-patient-id", hospitalizationData);
 
 		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
 		assertEquals(patientOrErr.isRight(), true);
@@ -149,12 +134,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		});
 		const repoSpy = spy(patientRepository, "update");
 
-		await service.newHospitalization(
-			"some-patient-id",
-			entryDate,
-			dischargeDate,
-			estimatedBudgetDate,
-		);
+		await service.newHospitalization("some-patient-id", hospitalizationData);
 
 		assertSpyCall(repoSpy, 0);
 		assertSpyCalls(repoSpy, 1);
@@ -163,17 +143,12 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const { service, patientRepository } = makeService({
 			patientRepository: new PatientRepositoryStub(),
 		});
-		await service.newHospitalization(
-			"some-patient-id",
-			entryDate,
-			dischargeDate,
-			estimatedBudgetDate,
-		);
+		await service.newHospitalization("some-patient-id", hospitalizationData);
 
 		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
 		const patient = patientOrErr.value as Patient;
 		const hospitalization = patient.getActiveHospitalization()!;
-		assertEquals(hospitalization.entryDate, new Date(entryDate));
+		assertEquals(hospitalization.entryDate, new Date(hospitalizationData.entryDate));
 	});
 	await t.step(
 		"Deve retornar @DateInvalid se a data fornecia for inferior a data actual",
@@ -181,12 +156,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const { service } = makeService({
 				patientRepository: new PatientRepositoryStub(),
 			});
-			const error = await service.newHospitalization(
-				"some-patient-id",
-				"2020-01-01",
-				dischargeDate,
-				estimatedBudgetDate,
-			);
+			const error = await service.newHospitalization("some-patient-id", invalidEntryDate);
 			assertInstanceOf(error.value, DateInvalid);
 		},
 	);
@@ -197,17 +167,15 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.newHospitalization(
-				"some-patient-id",
-				entryDate,
-				dischargeDate,
-				estimatedBudgetDate,
-			);
+			await service.newHospitalization("some-patient-id", hospitalizationData);
 
 			const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
 			const patient = <Patient> patientOrErr.value;
 			const hospitalization = patient.getActiveHospitalization()!;
-			assertEquals(hospitalization.dischargeDate, new Date(dischargeDate));
+			assertEquals(
+				hospitalization.dischargeDate,
+				new Date(hospitalizationData.dischargeDate),
+			);
 		},
 	);
 	await t.step(
@@ -217,12 +185,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			const error = await service.newHospitalization(
-				"some-patient-id",
-				entryDate,
-				"2020-01-01",
-				estimatedBudgetDate,
-			);
+			const error = await service.newHospitalization("some-patient-id", invalidDischargeDate);
 			assertInstanceOf(error.value, DateInvalid);
 		},
 	);
@@ -234,17 +197,15 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.newHospitalization(
-				"some-patient-id",
-				entryDate,
-				dischargeDate,
-				estimatedBudgetDate,
-			);
+			await service.newHospitalization("some-patient-id", hospitalizationData);
 
 			const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
 			const patient = patientOrErr.value as Patient;
 			const hospitalization = patient.getActiveHospitalization()!;
-			assertEquals(hospitalization.estimatedBudgetDate, new Date(estimatedBudgetDate));
+			assertEquals(
+				hospitalization.estimatedBudgetDate,
+				new Date(hospitalizationData.estimatedBudgetDate),
+			);
 		},
 	);
 
@@ -256,9 +217,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			});
 			const error = await service.newHospitalization(
 				"some-patient-id",
-				entryDate,
-				dischargeDate,
-				"2020-01-01",
+				invalidEstimatedBudgetDate,
 			);
 			assertInstanceOf(error.value, DateInvalid);
 		},
@@ -271,24 +230,104 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			const error = await service.newHospitalization(
-				"some-id",
-				entryDate,
-				dischargeDate,
-				estimatedBudgetDate,
-			);
+			const error = await service.newHospitalization("some-id", hospitalizationData);
 			assertInstanceOf(error.value, PatientAlreadyHospitalized);
 		},
 	);
+	await t.step("Deve registar o peso do paciente a hospitalização·", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await service.newHospitalization("some-patient-id", hospitalizationData);
+
+		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+		const patient = patientOrErr.value as Patient;
+		const hospitalization = patient.getActiveHospitalization()!;
+		assertEquals(hospitalization.weight, 16.5);
+	});
+
+	await t.step("Deve registar a idade do paciente·", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await service.newHospitalization("some-patient-id", hospitalizationData);
+
+		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+		const patient = patientOrErr.value as Patient;
+		const hospitalization = patient.getActiveHospitalization()!;
+		assertEquals(hospitalization.age, 10);
+	});
+	await t.step("Deve registar a queixa do paciente.", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		await service.newHospitalization(
+			"some-patient-id",
+			hospitalizationData,
+		);
+		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+		const patient = patientOrErr.value as Patient;
+		const hospitalization = patient.getActiveHospitalization()!;
+		assertEquals(hospitalization.complaints, "Queixa 1");
+	});
+	await t.step("Deve registar o diagnostico do paciente.", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		await service.newHospitalization("some-patient-id", hospitalizationData);
+		const patientOrErr = await patientRepository.getById(ID.New("some-patient-id"));
+		const patient = patientOrErr.value as Patient;
+		const hospitalization = patient.getActiveHospitalization()!;
+		assertEquals(hospitalization.diagnostics, "Diagnostico 1");
+	});
 });
 
-const entryDate = new Date().toLocaleDateString();
-const dischargeDate = new Date().toLocaleDateString();
-const estimatedBudgetDate = new Date().toLocaleDateString();
+const hospitalizationData = {
+	entryDate: new Date().toLocaleDateString(),
+	dischargeDate: new Date().toLocaleDateString(),
+	estimatedBudgetDate: new Date().toLocaleDateString(),
+	weight: 16.5,
+	age: 10,
+	complaints: "Queixa 1",
+	diagnostics: "Diagnostico 1",
+};
+
+const invalidEntryDate = {
+	entryDate: "01/01/2020",
+	dischargeDate: new Date().toLocaleDateString(),
+	estimatedBudgetDate: new Date().toLocaleDateString(),
+	weight: 16.5,
+	age: 10,
+	complaints: "Queixa 1",
+	diagnostics: "Diagnostico 1",
+};
+
+const invalidDischargeDate = {
+	entryDate: new Date().toLocaleDateString(),
+	dischargeDate: "01/01/2020",
+	estimatedBudgetDate: new Date().toLocaleDateString(),
+	weight: 16.5,
+	age: 10,
+	complaints: "Queixa 1",
+	diagnostics: "Diagnostico 1",
+};
+
+const invalidEstimatedBudgetDate = {
+	entryDate: new Date().toLocaleDateString(),
+	dischargeDate: new Date().toLocaleDateString(),
+	estimatedBudgetDate: "01/01/2020",
+	weight: 16.5,
+	age: 10,
+	complaints: "Queixa 1",
+	diagnostics: "Diagnostico 1",
+};
+
 const patient1 = new Patient("PT - 1292/2023", "Rex");
 const patient2 = new Patient("PT - 392/2022", "Huston");
-patient1.hospitalize(entryDate, dischargeDate, estimatedBudgetDate);
-patient2.hospitalize(entryDate, dischargeDate, estimatedBudgetDate);
+patient1.hospitalize(hospitalizationData);
+patient2.hospitalize(hospitalizationData);
 const alert1 = new Alert(patient1);
 
 interface Options {
