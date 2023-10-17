@@ -15,23 +15,23 @@ interface PatientDTO {
 	patientId: string;
 	name: string;
 	specie: string;
-	issuedAt?: string;
+	entryDate: string;
 	hasAlert?: boolean;
 }
 
 export default function () {
 	const hospitalizedPatientsHandler = async (ctx: Context) => {
 		const patients = await service.hospitalizadPatients();
-		const DTO: PatientDTO[] = patients.map((patient) => (
+		const patientDTO: PatientDTO[] = patients.map((patient) => (
 			{
 				patientId: patient.patientId.toString(),
 				name: patient.name,
 				specie: patient.specie.toString(),
+				entryDate: patient.getActiveHospitalization()!.entryDate.toISOString(),
 				hasAlert: patient.alertStatus,
-				dateOfAdmission: patient.getActiveHospitalization()?.entryDate.toISOString(),
 			}
 		));
-		sendOk(ctx, DTO);
+		sendOk(ctx, patientDTO);
 	};
 	const hospitalizePatientHandler = async (ctx: Context) => {
 		const { patientId, hospitalizationData } = ctx.state.validatedData;
