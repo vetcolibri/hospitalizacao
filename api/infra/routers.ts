@@ -28,7 +28,7 @@ export default function () {
 				name: patient.name,
 				specie: patient.specie.toString(),
 				hasAlert: patient.alertStatus,
-				issuedAt: patient.getActiveHospitalization()?.entryDate.toISOString(),
+				dateOfAdmission: patient.getActiveHospitalization()?.entryDate.toISOString(),
 			}
 		));
 		sendOk(ctx, DTO);
