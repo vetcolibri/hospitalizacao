@@ -73,4 +73,17 @@ export class PatientService {
 		await this.patientRepository.update(patient);
 		return right(undefined);
 	}
+
+	/**
+	 * Recupera um paciente pelo id
+	 * @param patientId
+	 * @returns {Promise<Either<Error, Patient>>}
+	 */
+	async findPatient(patientId: string): Promise<Either<Error, Patient>> {
+		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
+		if (patientOrErr.isLeft()) {
+			return left(patientOrErr.value);
+		}
+		return right(patientOrErr.value);
+	}
 }

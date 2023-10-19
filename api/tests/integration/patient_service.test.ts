@@ -284,6 +284,22 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	});
 });
 
+Deno.test("Patient Service - Get Patient", async (t) => {
+	await t.step("Deve retornar um erro @PatientNotFound se o paciente não existir.", async () => {
+		const { service } = makeService();
+		const error = await service.findPatient("some-id");
+		assertInstanceOf(error.value, PatientNotFound);
+	});
+	await t.step("Deve retornar o paciente.", async () => {
+		const { service } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		const result = await service.findPatient("some-id");
+		const patient = result.value as Patient;
+		assertEquals(patient.patientId.toString(), "some-id");
+	});
+});
+
 const hospitalizationData = {
 	entryDate: new Date().toLocaleDateString(),
 	dischargeDate: new Date().toLocaleDateString(),

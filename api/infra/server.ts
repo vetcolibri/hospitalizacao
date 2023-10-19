@@ -1,6 +1,6 @@
 import { Application, oakCors } from "../deps.ts";
 import { makeTodayFormat } from "../shared/tools.ts";
-import routers from "./routers.ts";
+import routers from "./patients_router.ts";
 
 const PORT = 8000;
 
