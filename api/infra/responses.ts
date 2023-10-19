@@ -9,7 +9,7 @@ export function sendResponse(ctx: Context, status: Status, body?: ResponseBody) 
 }
 
 export function sendBadRequest(ctx: Context, body?: ResponseBody) {
-	sendResponse(ctx, Status.BadRequest, { error: body });
+	sendResponse(ctx, Status.BadRequest, { message: body });
 }
 
 export function sendCreated(ctx: Context, body?: ResponseBody) {
