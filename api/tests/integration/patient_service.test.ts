@@ -128,7 +128,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
 		assertEquals(patient.getActiveHospitalization()!.status, HospitalizationStatus.ACTIVE);
 	});
-	await t.step("Deve autalizar o paciente no repositório", async () => {
+	await t.step("Deve actualizar o paciente no repositório", async () => {
 		const { service, patientRepository } = makeService({
 			patientRepository: new PatientRepositoryStub(),
 		});

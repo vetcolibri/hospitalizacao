@@ -54,10 +54,11 @@ export class PatientService {
 			dischargeDate,
 			estimatedBudgetDate,
 		} = hospitalizationData;
+
 		const date = new Date();
 		const today = new Date(`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`);
 		const recivedDate = new Date(entryDate);
-		if (recivedDate < today) {
+		if (recivedDate.getDate() < today.getDate()) {
 			return left(new DateInvalid(ERROR_MESSAGES.ENTRY_DATE_INVALID));
 		}
 		const discharge = new Date(dischargeDate);
