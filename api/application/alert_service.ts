@@ -1,4 +1,4 @@
-import { Alert } from "../domain/alerts/alert.ts";
+import { Alert, AlertStatus } from "../domain/alerts/alert.ts";
 import { AlertRepository } from "../domain/alerts/alert_repository.ts";
 import { ID } from "../domain/id.ts";
 import { PatientNotFound } from "../domain/patients/patient_not_found_error.ts";
@@ -7,7 +7,7 @@ import { Either, left, right } from "../shared/either.ts";
 
 export interface Manager {
 	registerCron(alert: Alert): void;
-	removeCron(alertId: ID): void;
+	removeCron(alert: Alert): void;
 }
 
 export class AlertService {
@@ -28,12 +28,15 @@ export class AlertService {
 	async schedule(
 		patientId: string,
 		parameters: string[],
+		rate: number,
+		comments: string,
+		time: string,
 	): Promise<Either<PatientNotFound, void>> {
 		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		const patient = patientOrErr.value;
-		const alert = Alert.create(patient, parameters);
+		const alert = Alert.create(patient, parameters, rate, comments, time);
 		await this.alertRepository.save(alert);
 
 		this.taskManager.registerCron(alert);
@@ -41,13 +44,21 @@ export class AlertService {
 		return right(undefined);
 	}
 
-	async cancel(alertId: string): Promise<void> {
-		const alert = await this.alertRepository.getById(ID.New(alertId));
+	async cancel(alertId: string): Promise<Either<Error, void>> {
+		const alertOrErr = await this.alertRepository.getById(ID.New(alertId));
+		if (alertOrErr.isLeft()) return left(alertOrErr.value);
+
+		const alert = alertOrErr.value;
+		if (alert.getStatus() === AlertStatus.DISABLED) {
+			return left(new Error("Alert is already disabled"));
+		}
 
 		alert.cancel();
 
 		await this.alertRepository.update(alert);
 
-		this.taskManager.removeCron(alert.alertId);
+		this.taskManager.removeCron(alert);
+
+		return Promise.resolve(right(undefined));
 	}
 }

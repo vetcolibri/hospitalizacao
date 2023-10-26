@@ -27,5 +27,7 @@ export class BackgroundTaskManagerMock implements Manager {
 		this.worker.postMessage({ alert, type: CronType.PUBLISH });
 	}
 
-	removeCron(alertId: ID): void {}
+	removeCron(alert: Alert): void {
+		this.worker.postMessage({ alert, type: CronType.REMOVE });
+	}
 }
