@@ -344,7 +344,7 @@ const patient1 = new Patient("PT - 1292/2023", "Rex");
 const patient2 = new Patient("PT - 392/2022", "Huston");
 patient1.hospitalize(hospitalizationData);
 patient2.hospitalize(hospitalizationData);
-const alert1 = new Alert(patient1);
+const alert1 = Alert.create(patient1, ["heartRate", "bloodPressure", "glicemia"]);
 
 interface Options {
 	patientRepository?: PatientRepository;

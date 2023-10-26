@@ -3,6 +3,7 @@ import { Patient } from "../patients/patient.ts";
 
 export enum AlertStatus {
 	ENABLE = "ENABLE",
+	DISABLE = "DISABLE",
 }
 
 export class Alert {
@@ -11,14 +12,20 @@ export class Alert {
 	readonly parameters: string[];
 	status: AlertStatus;
 
-	constructor(patient: Patient) {
+	private constructor(patient: Patient) {
 		this.alertId = ID.RandomID();
 		this.patient = patient;
 		this.parameters = [];
 		this.status = AlertStatus.ENABLE;
 	}
 
-	setParameters(parameters: string[]): void {
+	static create(patient: Patient, parameters: string[]): Alert {
+		const alert = new Alert(patient);
+		alert.addParameters(parameters);
+		return alert;
+	}
+
+	addParameters(parameters: string[]): void {
 		this.parameters.push(...parameters);
 	}
 
@@ -28,5 +35,9 @@ export class Alert {
 
 	getParameters(): string[] {
 		return this.parameters;
+	}
+
+	cancel(): void {
+		this.status = AlertStatus.DISABLE;
 	}
 }
