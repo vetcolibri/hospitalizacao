@@ -12,6 +12,7 @@ import { Hct } from "../../domain/parameters/hct.ts";
 import { BloodPressure } from "../../domain/parameters/blood_pressure.ts";
 import { Temperature } from "../../domain/parameters/temperature.ts";
 import { Measurement } from "../../domain/parameters/measurement.ts";
+import { owner } from "../fake_data.ts";
 
 Deno.test("Rounds", async (t) => {
 	await t.step("Deve criar uma ronda.", () => {
@@ -193,4 +194,4 @@ Deno.test("Rounds", async (t) => {
 
 const medVet = new User("123");
 const date = "2023-09-30T11:54:33.651Z";
-const patient = new Patient("some-id", "Rex");
+const patient = new Patient("some-id", "Rex", "Bulldog", owner);

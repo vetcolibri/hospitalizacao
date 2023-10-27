@@ -2,13 +2,15 @@ import { Hospitalization, HospitalizationStatus } from "./hospitalization.ts";
 import { HospitalizadBuilder } from "./hospitalization_builder.ts";
 import { ID } from "../id.ts";
 import { HospitalizationData } from "../../shared/types.ts";
+import { Owner } from "./owner.ts";
 
 export enum PatientStatus {
 	HOSPITALIZED = "HOSPITALIZADO",
 }
 
 export enum PatientSpecie {
-	CANINE = "CANINO",
+	CANINE = "canino",
+	FELINE = "felino",
 }
 
 export class Patient {
@@ -16,14 +18,21 @@ export class Patient {
 	readonly name: string;
 	readonly specie: PatientSpecie;
 	readonly hospitalizations: Hospitalization[];
+	readonly breed: string;
+	readonly owner: Owner;
 	status?: PatientStatus;
 	alertStatus?: boolean = false;
 
-	constructor(id: string, name: string) {
+	constructor(id: string, name: string, breed: string, owner: Owner, specie?: string) {
 		this.patientId = ID.New(id);
 		this.name = name;
+		this.breed = breed;
+		this.owner = owner;
 		this.specie = PatientSpecie.CANINE;
 		this.hospitalizations = [];
+		if (specie && specie !== PatientSpecie.CANINE) {
+			this.specie = PatientSpecie.FELINE;
+		}
 	}
 
 	getStatus(): PatientStatus | undefined {

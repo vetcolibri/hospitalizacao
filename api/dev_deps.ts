@@ -4,6 +4,7 @@ export {
 	assertExists,
 	assertInstanceOf,
 	assertNotInstanceOf,
+	assertObjectMatch,
 	assertRejects,
 	assertStrictEquals,
 	assertThrows,

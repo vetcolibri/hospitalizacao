@@ -3,6 +3,7 @@ import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../../shared/either.ts";
+import { patient1, patient2, patient3 } from "../../tests/fake_data.ts";
 
 export class PatientRepositoryStub implements PatientRepository {
 	readonly #data: Record<string, Patient> = {};
@@ -39,22 +40,9 @@ export class PatientRepositoryStub implements PatientRepository {
 	}
 
 	#populate() {
-		const patient1 = new Patient("some-id", "Rex");
-		const data = {
-			entryDate: "2023-10-16",
-			dischargeDate: "2023-10-16",
-			estimatedBudgetDate: "2023-10-16",
-			weight: 16.5,
-			age: 5,
-			complaints: "Queixa 1",
-			diagnostics: "Diagnostico 1",
-		};
-		patient1.hospitalize(
-			data,
-		);
-		const patient2 = new Patient("some-patient-id", "Rex 2");
 		this.save(patient1);
 		this.save(patient2);
+		this.save(patient3);
 	}
 
 	get records(): Patient[] {

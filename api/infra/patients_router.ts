@@ -1,4 +1,5 @@
 import { InmemAlertRepository } from "../adaptors/inmem/inmem_alert_repository.ts";
+import { InmemIdRepository } from "../adaptors/inmem/inmem_id_repository.ts";
 import { PatientService } from "../application/patient_service.ts";
 import { Context, Router } from "../deps.ts";
 import { PatientNotFound } from "../domain/patients/patient_not_found_error.ts";
@@ -9,8 +10,9 @@ import { sendBadRequest, sendNotFound, sendOk } from "./responses.ts";
 import { patientSchema } from "./schemas/patient_schema.ts";
 
 const alertRepository = new InmemAlertRepository();
+const idRepository = new InmemIdRepository();
 const patientRepository = new PatientRepositoryStub();
-const service = new PatientService(patientRepository, alertRepository);
+const service = new PatientService(patientRepository, alertRepository, idRepository);
 
 interface PatientDTO {
 	patientId: string;
