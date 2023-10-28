@@ -32,10 +32,10 @@ export class AlertService {
 		comments: string,
 		time: string,
 	): Promise<Either<PatientNotFound, void>> {
-		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+		const patientOrError = await this.patientRepository.getById(ID.New(patientId));
+		if (patientOrError.isLeft()) return left(patientOrError.value);
 
-		const patient = patientOrErr.value;
+		const patient = patientOrError.value;
 		const alert = Alert.create(patient, parameters, rate, comments, time);
 		await this.alertRepository.save(alert);
 
@@ -45,10 +45,10 @@ export class AlertService {
 	}
 
 	async cancel(alertId: string): Promise<Either<Error, void>> {
-		const alertOrErr = await this.alertRepository.getById(ID.New(alertId));
-		if (alertOrErr.isLeft()) return left(alertOrErr.value);
+		const alertOrError = await this.alertRepository.getById(ID.New(alertId));
+		if (alertOrError.isLeft()) return left(alertOrError.value);
 
-		const alert = alertOrErr.value;
+		const alert = alertOrError.value;
 		if (alert.getStatus() === AlertStatus.DISABLED) {
 			return left(new Error("Alert is already disabled"));
 		}

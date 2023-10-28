@@ -2,12 +2,13 @@ import { InmemAlertRepository } from "../adaptors/inmem/inmem_alert_repository.t
 import { InmemIdRepository } from "../adaptors/inmem/inmem_id_repository.ts";
 import { PatientService } from "../application/patient_service.ts";
 import { Context, Router } from "../deps.ts";
+import { Patient } from "../domain/patients/patient.ts";
 import { PatientNotFound } from "../domain/patients/patient_not_found_error.ts";
 import { validate } from "../shared/tools.ts";
 import { PatientRepositoryStub } from "../test_double/stubs/patient_repository_stub.ts";
 import { ContextWithParams } from "./context_with_params.ts";
 import { sendBadRequest, sendNotFound, sendOk } from "./responses.ts";
-import { patientSchema } from "./schemas/patient_schema.ts";
+import { newPatientSchema, recuringHospitalizationSchema } from "./schemas/patient_schema.ts";
 
 const alertRepository = new InmemAlertRepository();
 const idRepository = new InmemIdRepository();
@@ -36,6 +37,7 @@ export default function () {
 		));
 		sendOk(ctx, patientDTO);
 	};
+
 	const hospitalizePatientHandler = async (ctx: Context) => {
 		const { patientId, hospitalizationData } = ctx.state.validatedData;
 		const resultOrError = await service.newHospitalization(patientId, hospitalizationData);
@@ -49,23 +51,23 @@ export default function () {
 		}
 		sendOk(ctx);
 	};
-	const getPatientHander = async (ctx: ContextWithParams) => {
-		const patientOrError = await service.findPatient(ctx?.params?.patientId);
-		if (patientOrError.isLeft()) {
-			sendNotFound(ctx, patientOrError.value.message);
-			return;
-		}
-		const patient = patientOrError.value;
-		const patientDTO = {
-			patientId: patient.patientId.toString(),
-			name: patient.name,
-			specie: patient.specie.toString(),
-		};
-		sendOk(ctx, patientDTO);
+
+	const nonHospitalizedHandler = async (ctx: ContextWithParams) => {
+		const patientsOrError = await service.nonHospitalized();
+		const patients = patientsOrError.value as Patient[];
+		sendOk(ctx, patients);
 	};
+
+	const newPatientHandler = async (ctx: Context) => {
+		const { patientData, hospitalizationData } = ctx.state.validatedData;
+		await service.newPatient({ ...patientData, ...hospitalizationData });
+		sendOk(ctx);
+	};
+
 	const router = new Router({ prefix: "/patients" });
 	router.get("/hospitalized", hospitalizedPatientsHandler);
-	router.post("/hospitalize", validate(patientSchema), hospitalizePatientHandler);
-	router.get("/:patientId", getPatientHander);
+	router.post("/hospitalize", validate(recuringHospitalizationSchema), hospitalizePatientHandler);
+	router.post("/new-patient", validate(newPatientSchema), newPatientHandler);
+	router.get("/", nonHospitalizedHandler);
 	return router;
 }

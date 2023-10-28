@@ -23,11 +23,11 @@ export class RoundService {
 	}
 
 	async new(patientId: string, userId: string, date: string, parameter: InputParameter) {
-		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.patientRepository.getById(ID.New(patientId));
 
 		const user = await this.userRepository.get(ID.New(userId));
 
-		const round = new Round(patientOrErr.value as Patient);
+		const round = new Round(patientOrError.value as Patient);
 
 		const measurement = Measurement.new(parameter.value);
 		const heartRate = new HeartRate(measurement, date, user);

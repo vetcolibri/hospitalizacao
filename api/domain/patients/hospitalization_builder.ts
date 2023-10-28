@@ -1,6 +1,7 @@
+import { Either, left, right } from "../../shared/either.ts";
 import { Hospitalization } from "./hospitalization.ts";
 
-export class HospitalizadBuilder {
+export class HospitalizationBuilder {
 	entryDate!: Date;
 	dischargeDate!: Date;
 	estimatedBudgetDate!: Date;
@@ -11,42 +12,44 @@ export class HospitalizadBuilder {
 
 	constructor() {}
 
-	setEntryDate(entryDate: string): HospitalizadBuilder {
+	setEntryDate(entryDate: string): HospitalizationBuilder {
 		this.entryDate = new Date(entryDate);
 		return this;
 	}
 
-	setDischargeDate(dischargeDate: string): HospitalizadBuilder {
+	setDischargeDate(dischargeDate: string): HospitalizationBuilder {
 		this.dischargeDate = new Date(dischargeDate);
 		return this;
 	}
 
-	setEstimatedBudgetDate(estimatedBudgetDate: string): HospitalizadBuilder {
+	setEstimatedBudgetDate(estimatedBudgetDate: string): HospitalizationBuilder {
 		this.estimatedBudgetDate = new Date(estimatedBudgetDate);
 		return this;
 	}
 
-	setAge(age: number): HospitalizadBuilder {
+	setAge(age: number): HospitalizationBuilder {
 		this.age = age;
 		return this;
 	}
 
-	setWeight(weight: number): HospitalizadBuilder {
+	setWeight(weight: number): HospitalizationBuilder {
 		this.weight = weight;
 		return this;
 	}
 
-	setComplaints(complaints: string): HospitalizadBuilder {
+	setComplaints(complaints: string): HospitalizationBuilder {
 		this.complaints = complaints;
 		return this;
 	}
 
-	setDiagnostics(diagnostics: string): HospitalizadBuilder {
+	setDiagnostics(diagnostics: string): HospitalizationBuilder {
 		this.diagnostics = diagnostics;
 		return this;
 	}
 
-	build(): Hospitalization {
-		return new Hospitalization(this);
+	build(): Either<Error, Hospitalization> {
+		const hospitalizationOrError = Hospitalization.create(this);
+		if (hospitalizationOrError.isLeft()) return left(hospitalizationOrError.value);
+		return right(hospitalizationOrError.value);
 	}
 }

@@ -28,6 +28,13 @@ export class InmemPatientRepository implements PatientRepository {
 		return Promise.resolve(undefined);
 	}
 
+	nonHospitalized(): Promise<Either<Error, Patient[]>> {
+		const patients = this.records.filter((patient) =>
+			patient.status === PatientStatus.NONHOSPITALIZED
+		);
+		return Promise.resolve(right(patients));
+	}
+
 	update(patient: Patient): Promise<void> {
 		const id = patient.patientId.toString();
 		this.#data[id] = patient;

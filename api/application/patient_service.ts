@@ -1,13 +1,11 @@
 import { AlertRepository } from "../domain/alerts/alert_repository.ts";
 import { ID } from "../domain/id.ts";
 import { IdRepository } from "../domain/id_generator.ts";
-import { DateInvalid } from "../domain/patients/date_invalid_error.ts";
 import { Owner } from "../domain/patients/owner.ts";
 import { Patient, PatientStatus } from "../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../shared/either.ts";
-import { ERROR_MESSAGES } from "../shared/error_messages.ts";
 import { HospitalizationData, NewPatientData } from "../shared/types.ts";
 
 export class PatientService {
@@ -47,38 +45,17 @@ export class PatientService {
 		patientId: string,
 		hospitalizationData: HospitalizationData,
 	): Promise<Either<Error, void>> {
-		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
-		if (patientOrErr.isLeft()) {
-			return left(patientOrErr.value);
-		}
+		const patientOrError = await this.patientRepository.getById(ID.New(patientId));
+		if (patientOrError.isLeft()) return left(patientOrError.value);
 
-		const patient = patientOrErr.value;
+		const patient = patientOrError.value;
 		if (patient.getStatus() === PatientStatus.HOSPITALIZED) {
 			return left(new PatientAlreadyHospitalized(patient.name));
 		}
 
-		const {
-			entryDate,
-			dischargeDate,
-			estimatedBudgetDate,
-		} = hospitalizationData;
+		const voidOrError = patient.hospitalize(hospitalizationData);
+		if (voidOrError.isLeft()) return left(voidOrError.value);
 
-		const date = new Date();
-		const today = new Date(`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`);
-		const recivedDate = new Date(entryDate);
-		if (recivedDate.getDate() < today.getDate()) {
-			return left(new DateInvalid(ERROR_MESSAGES.ENTRY_DATE_INVALID));
-		}
-		const discharge = new Date(dischargeDate);
-		if (discharge.getDate() < today.getDate()) {
-			return left(new DateInvalid(ERROR_MESSAGES.DISCHARGE_DATE_INVALID));
-		}
-		const budgetDate = new Date(estimatedBudgetDate);
-		if (budgetDate.getDate() < today.getDate()) {
-			return left(new DateInvalid(ERROR_MESSAGES.ESTIMATED_BUDGET_DATE_INVALID));
-		}
-
-		patient.hospitalize(hospitalizationData);
 		await this.patientRepository.update(patient);
 		return right(undefined);
 	}
@@ -86,14 +63,12 @@ export class PatientService {
 	/**
 	 * Recupera um paciente pelo id
 	 * @param patientId
-	 * @returns {Promise<Either<Error, Patient>>}
+	 * @returns {Promise<Either<Error, Patient[]>>}
 	 */
-	async findPatient(patientId: string): Promise<Either<Error, Patient>> {
-		const patientOrErr = await this.patientRepository.getById(ID.New(patientId));
-		if (patientOrErr.isLeft()) {
-			return left(patientOrErr.value);
-		}
-		return right(patientOrErr.value);
+
+	async nonHospitalized(): Promise<Either<Error, Patient[]>> {
+		const patientsOrError = await this.patientRepository.nonHospitalized();
+		return right(patientsOrError.value as Patient[]);
 	}
 
 	/**
@@ -115,9 +90,12 @@ export class PatientService {
 		const newId = await this.idRepository.generate(name, ownerName);
 		const owner = new Owner(ownerId, ownerName, phoneNumber);
 		const patient = new Patient(newId, name, breed, owner, specie);
-		patient.hospitalize(hospitalizationData);
+
+		const voidOrError = patient.hospitalize(hospitalizationData);
+		if (voidOrError.isLeft()) return left(voidOrError.value);
+
 		await this.patientRepository.save(patient);
 
-		return Promise.resolve(right(undefined));
+		return right(undefined);
 	}
 }

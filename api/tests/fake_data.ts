@@ -3,7 +3,7 @@ import { Patient } from "../domain/patients/patient.ts";
 
 export const patientData = {
 	name: "Rex",
-	specie: "canino",
+	specie: "CANINO",
 	breed: "bulldog",
 	ownerId: "PR - 101002/2012",
 	ownerName: "Huston",
@@ -59,5 +59,8 @@ export const owner = new Owner("1001", "Jonh", "933001122");
 export const patient1 = new Patient("some-patient-id", "Rex", "Bulldog", owner);
 export const patient2 = new Patient("some-id", "Huston", "Pitbull", owner);
 export const patient3 = new Patient("some-other-id", "Huston", "Pitbull", owner);
+export const patient4 = new Patient("some-dummy-id", "Huston 1", "Pitbull", owner);
 patient1.hospitalize(hospitalizationData);
 patient2.hospitalize(hospitalizationData);
+patient4.hospitalize(hospitalizationData);
+patient4.nonHospitalized();
