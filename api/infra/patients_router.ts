@@ -55,7 +55,17 @@ export default function () {
 	const nonHospitalizedHandler = async (ctx: ContextWithParams) => {
 		const patientsOrError = await service.nonHospitalized();
 		const patients = patientsOrError.value as Patient[];
-		sendOk(ctx, patients);
+		const results = patients.map((patient) => (
+			{
+				patientId: patient.patientId.toString(),
+				name: patient.name,
+				specie: patient.specie.toString(),
+				breed: patient.breed,
+				ownerName: patient.owner.name,
+				ownerPhone: patient.owner.phoneNumber,
+			}
+		));
+		sendOk(ctx, results);
 	};
 
 	const newPatientHandler = async (ctx: Context) => {
