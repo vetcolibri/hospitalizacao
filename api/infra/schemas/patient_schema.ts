@@ -26,5 +26,5 @@ export const recuringHospitalizationSchema = z.object({
 
 export const newPatientSchema = z.object({
 	patientData: patientSchema,
-	hospitalizationSchema: hospitalizationSchema,
+	hospitalizationData: hospitalizationSchema,
 });

@@ -31,7 +31,7 @@ export default function () {
 				patientId: patient.patientId.toString(),
 				name: patient.name,
 				specie: patient.specie.toString(),
-				entryDate: patient.getActiveHospitalization()!.entryDate.toISOString(),
+				entryDate: patient.getActiveHospitalization()!.entryDate.toLocaleDateString(),
 				hasAlert: patient.alertStatus,
 			}
 		));
@@ -70,7 +70,7 @@ export default function () {
 
 	const newPatientHandler = async (ctx: Context) => {
 		const { patientData, hospitalizationData } = ctx.state.validatedData;
-		await service.newPatient({ ...patientData, ...hospitalizationData });
+		await service.newPatient({ patientData, hospitalizationData });
 		sendOk(ctx);
 	};
 

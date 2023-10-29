@@ -2,9 +2,9 @@ import { Either, left, right } from "../../shared/either.ts";
 import { Hospitalization } from "./hospitalization.ts";
 
 export class HospitalizationBuilder {
-	entryDate!: Date;
-	dischargeDate!: Date;
-	estimatedBudgetDate!: Date;
+	entryDate!: string;
+	dischargeDate!: string;
+	estimatedBudgetDate!: string;
 	weight!: number;
 	age!: number;
 	complaints!: string;
@@ -13,17 +13,17 @@ export class HospitalizationBuilder {
 	constructor() {}
 
 	setEntryDate(entryDate: string): HospitalizationBuilder {
-		this.entryDate = new Date(entryDate);
+		this.entryDate = entryDate;
 		return this;
 	}
 
 	setDischargeDate(dischargeDate: string): HospitalizationBuilder {
-		this.dischargeDate = new Date(dischargeDate);
+		this.dischargeDate = dischargeDate;
 		return this;
 	}
 
 	setEstimatedBudgetDate(estimatedBudgetDate: string): HospitalizationBuilder {
-		this.estimatedBudgetDate = new Date(estimatedBudgetDate);
+		this.estimatedBudgetDate = estimatedBudgetDate;
 		return this;
 	}
 

@@ -19,9 +19,9 @@ export class Hospitalization {
 	status: HospitalizationStatus;
 
 	private constructor(builder: HospitalizationBuilder) {
-		this.entryDate = builder.entryDate;
-		this.dischargeDate = builder.dischargeDate;
-		this.estimatedBudgetDate = builder.estimatedBudgetDate;
+		this.entryDate = new Date(builder.entryDate);
+		this.dischargeDate = new Date(builder.dischargeDate);
+		this.estimatedBudgetDate = new Date(builder.estimatedBudgetDate);
 		this.weight = builder.weight;
 		this.age = builder.age;
 		this.complaints = builder.complaints;
