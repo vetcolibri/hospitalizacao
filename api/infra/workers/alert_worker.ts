@@ -1,6 +1,5 @@
 import { CronType } from "../../adaptors/tasks/background_task_manager.ts";
 import { Cron } from "../../deps.ts";
-import { Alert } from "../../domain/alerts/alert.ts";
 
 const jobs = new Map<string, Cron>();
 
@@ -14,7 +13,18 @@ self.addEventListener("message", (event) => {
 			timezone: "Africa/Luanda",
 			startAt: alert.time.toISOString(),
 		});
-		job.schedule(() => self.postMessage(alert));
+		const payload = {
+			patient: {
+				patientId: alert.patient.patientId.value,
+				name: alert.patient.name,
+			},
+			alertId: alert.alertId.value,
+			parameters: alert.parameters,
+			comments: alert.comments,
+			repeatEvery: alert.repeatEvery,
+			time: alert.time,
+		};
+		job.schedule(() => self.postMessage(payload));
 		jobs.set(alert.alertId.toString(), job);
 	}
 
