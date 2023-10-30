@@ -1,10 +1,9 @@
 import { assertEquals } from "../../dev_deps.ts";
 import { Avdn } from "../../domain/parameters/avdn.ts";
 import { BloodPressure } from "../../domain/parameters/blood_pressure.ts";
-import { Glicemia } from "../../domain/parameters/glicemia.ts";
+import { BloodGlucose } from "../../domain/parameters/blood_glucose.ts";
 import { Hct } from "../../domain/parameters/hct.ts";
 import { HeartRate } from "../../domain/parameters/heart_rate.ts";
-import { Measurement } from "../../domain/parameters/measurement.ts";
 import { Mucosas } from "../../domain/parameters/mucosas.ts";
 import { RespiratoryRate } from "../../domain/parameters/respiratore_rate.ts";
 import { Temperature } from "../../domain/parameters/temperature.ts";
@@ -13,8 +12,7 @@ import { User } from "../../domain/users/user.ts";
 
 Deno.test("Parameters", async (t) => {
 	await t.step("Deve criar o parâmtero Frequência cardiaca válido.", () => {
-		const measurement = Measurement.new(78);
-		const heartRate = new HeartRate(measurement, date, medVet);
+		const heartRate = new HeartRate(78, date, medVet);
 		const valid = heartRate.isValid();
 		assertEquals(valid, true);
 		assertEquals(heartRate.getValue(), 78);
@@ -22,8 +20,7 @@ Deno.test("Parameters", async (t) => {
 		assertEquals(heartRate.user, medVet);
 	});
 	await t.step("Deve ser inválido a Frequência cardiaca acima de 300Bpm.", () => {
-		const measurement = Measurement.new(378);
-		const heartRate = new HeartRate(measurement, date, medVet);
+		const heartRate = new HeartRate(478, date, medVet);
 		const valid = heartRate.isValid();
 		assertEquals(valid, false);
 	});
@@ -102,7 +99,7 @@ Deno.test("Parameters", async (t) => {
 		},
 	);
 	await t.step("Deve criar o parâmtero Glicemia válido.", () => {
-		const glicemia = new Glicemia(68, date, medVet);
+		const glicemia = new BloodGlucose(68, date, medVet);
 		const valid = glicemia.isValid();
 		assertEquals(valid, true);
 		assertEquals(glicemia.getValue(), 68);
@@ -112,7 +109,7 @@ Deno.test("Parameters", async (t) => {
 	await t.step(
 		"Deve ser inválido o Glicemia acima de 300mg/dl.",
 		() => {
-			const glicemia = new Glicemia(450, date, medVet);
+			const glicemia = new BloodGlucose(450, date, medVet);
 			const valid = glicemia.isValid();
 			assertEquals(valid, false);
 		},

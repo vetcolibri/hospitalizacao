@@ -21,3 +21,12 @@ export type PatientData = {
 	readonly ownerName: string;
 	readonly phoneNumber: string;
 };
+
+export type MeasurementData = {
+	name: string;
+	value: unknown;
+};
+
+export type ParametersData = {
+	[key: string]: MeasurementData;
+};

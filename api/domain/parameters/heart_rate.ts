@@ -8,9 +8,9 @@ export class HeartRate implements Parameter {
 	readonly user: User;
 	readonly issuedAt: Date;
 
-	constructor(measurement: Measurement, date: string, user: User) {
+	constructor(value: number, date: string, user: User) {
 		this.name = PARAMETER.HEART_RATE;
-		this.measurement = measurement;
+		this.measurement = Measurement.new(value);
 		this.issuedAt = new Date(date);
 		this.user = user;
 	}

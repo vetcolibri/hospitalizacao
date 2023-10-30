@@ -1,15 +1,15 @@
-import { Measurement } from "../parameters/measurement.ts";
+import { Measurement } from "./measurement.ts";
 import { PARAMETER, Parameter } from "./parameter.ts";
 import { User } from "../users/user.ts";
 
-export class Glicemia implements Parameter {
+export class BloodGlucose implements Parameter {
 	readonly name: string;
 	readonly measurement: Measurement;
 	readonly user: User;
 	readonly issuedAt: Date;
 
 	constructor(value: number, date: string, user: User) {
-		this.name = PARAMETER.GLICEMIA;
+		this.name = PARAMETER.BLOOD_GLUCOSE;
 		this.measurement = Measurement.new(value);
 		this.issuedAt = new Date(date);
 		this.user = user;

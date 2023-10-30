@@ -18,7 +18,7 @@ export enum PARAMETER {
 	AVDN = "avdn",
 	TEMPERATURE = "temperature",
 	MUCOSAS = "mucosas",
-	GLICEMIA = "glicemia",
+	BLOOD_GLUCOSE = "bloodGlucose",
 	HCT = "hct",
 	BLOOD_PRESSURE = "bloodPressure",
 }
