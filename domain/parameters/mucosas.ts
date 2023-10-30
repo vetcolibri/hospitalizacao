@@ -8,10 +8,10 @@ export class Mucosas implements Parameter {
 	readonly user: User;
 	readonly issuedAt: Date;
 
-	constructor(value: string, issuedAt: string, user: User) {
+	constructor(value: string, user: User) {
 		this.name = PARAMETER.MUCOSAS;
 		this.measurement = Measurement.new(value);
-		this.issuedAt = new Date(issuedAt);
+		this.issuedAt = new Date();
 		this.user = user;
 	}
 

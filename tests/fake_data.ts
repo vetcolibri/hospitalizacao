@@ -11,9 +11,9 @@ export const patientData = {
 };
 
 export const hospitalizationData = {
-	entryDate: new Date().toISOString(),
-	dischargeDate: new Date().toISOString(),
-	estimatedBudgetDate: new Date().toISOString(),
+	entryDate: new Date().toLocaleDateString(),
+	dischargeDate: new Date().toLocaleDateString(),
+	estimatedBudgetDate: new Date().toLocaleDateString(),
 	weight: 16.5,
 	age: 10,
 	complaints: "Queixa 1",
@@ -22,8 +22,8 @@ export const hospitalizationData = {
 
 export const invalidEntryDate = {
 	entryDate: "2020-01-01",
-	dischargeDate: new Date().toISOString(),
-	estimatedBudgetDate: new Date().toISOString(),
+	dischargeDate: new Date().toLocaleDateString(),
+	estimatedBudgetDate: new Date().toLocaleDateString(),
 	weight: 16.5,
 	age: 10,
 	complaints: "Queixa 1",
@@ -31,9 +31,9 @@ export const invalidEntryDate = {
 };
 
 export const invalidDischargeDate = {
-	entryDate: new Date().toISOString(),
+	entryDate: new Date().toLocaleDateString(),
 	dischargeDate: "2020-01-01",
-	estimatedBudgetDate: new Date().toISOString(),
+	estimatedBudgetDate: new Date().toLocaleDateString(),
 	weight: 16.5,
 	age: 10,
 	complaints: "Queixa 1",
@@ -41,8 +41,8 @@ export const invalidDischargeDate = {
 };
 
 export const invalidEstimatedBudgetDate = {
-	entryDate: new Date().toISOString(),
-	dischargeDate: new Date().toISOString(),
+	entryDate: new Date().toLocaleDateString(),
+	dischargeDate: new Date().toLocaleDateString(),
 	estimatedBudgetDate: "2020-01-01",
 	weight: 16.5,
 	age: 10,

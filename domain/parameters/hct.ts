@@ -8,10 +8,10 @@ export class Hct implements Parameter {
 	readonly user: User;
 	readonly issuedAt: Date;
 
-	constructor(value: number, date: string, user: User) {
+	constructor(value: number, user: User) {
 		this.name = PARAMETER.HCT;
 		this.measurement = Measurement.new(value);
-		this.issuedAt = new Date(date);
+		this.issuedAt = new Date();
 		this.user = user;
 	}
 

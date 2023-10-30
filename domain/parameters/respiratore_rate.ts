@@ -8,10 +8,10 @@ export class RespiratoryRate implements Parameter {
 	readonly user: User;
 	readonly issuedAt: Date;
 
-	constructor(value: number, date: string, user: User) {
+	constructor(value: number, user: User) {
 		this.name = PARAMETER.RESPIRATORY_RATE;
 		this.measurement = Measurement.new(value);
-		this.issuedAt = new Date(date);
+		this.issuedAt = new Date();
 		this.user = user;
 	}
 

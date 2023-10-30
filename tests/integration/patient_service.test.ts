@@ -415,7 +415,7 @@ const alert1 = Alert.create(
 	["heartRate", "bloodPressure", "glicemia"],
 	120,
 	"dummy",
-	new Date().toISOString(),
+	new Date().toLocaleDateString(),
 );
 
 interface Options {

@@ -8,10 +8,10 @@ export class BloodPressure implements Parameter {
 	readonly user: User;
 	readonly issuedAt: Date;
 
-	constructor(value: string, issuedAt: string, user: User) {
+	constructor(value: string, user: User) {
 		this.name = PARAMETER.BLOOD_PRESSURE;
 		this.measurement = Measurement.new(value);
-		this.issuedAt = new Date(issuedAt);
+		this.issuedAt = new Date();
 		this.user = user;
 	}
 

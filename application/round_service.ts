@@ -34,7 +34,6 @@ export class RoundService {
 	async new(
 		patientId: string,
 		userId: string,
-		date: string,
 		parameters: ParametersData,
 	): Promise<Either<PatientNotFound, void>> {
 		const patientOrError = await this.patientRepository.getById(ID.New(patientId));
@@ -48,57 +47,54 @@ export class RoundService {
 		const round = new Round(patient);
 
 		if (parameters.heartRate) {
-			const heartRate = new HeartRate(Number(parameters.heartRate.value), date, user);
+			const heartRate = new HeartRate(Number(parameters.heartRate.value), user);
 			round.addParameter(heartRate);
 		}
 
 		if (parameters.respiratoryRate) {
 			const respiratoryRate = new RespiratoryRate(
 				Number(parameters.respiratoryRate.value),
-				date,
 				user,
 			);
 			round.addParameter(respiratoryRate);
 		}
 
 		if (parameters.trc) {
-			const trc = new Trc(Number(parameters.trc.value), date, user);
+			const trc = new Trc(Number(parameters.trc.value), user);
 			round.addParameter(trc);
 		}
 
 		if (parameters.avdn) {
-			const avdn = new Avdn(String(parameters.avdn.value), date, user);
+			const avdn = new Avdn(String(parameters.avdn.value), user);
 			round.addParameter(avdn);
 		}
 
 		if (parameters.mucosas) {
-			const mucosas = new Mucosas(String(parameters.mucosas.value), date, user);
+			const mucosas = new Mucosas(String(parameters.mucosas.value), user);
 			round.addParameter(mucosas);
 		}
 
 		if (parameters.temperature) {
-			const temperature = new Temperature(Number(parameters.temperature.value), date, user);
+			const temperature = new Temperature(Number(parameters.temperature.value), user);
 			round.addParameter(temperature);
 		}
 
 		if (parameters.bloodGlucose) {
 			const bloodGlucose = new BloodGlucose(
 				Number(parameters.bloodGlucose.value),
-				date,
 				user,
 			);
 			round.addParameter(bloodGlucose);
 		}
 
 		if (parameters.hct) {
-			const hct = new Hct(Number(parameters.hct.value), date, user);
+			const hct = new Hct(Number(parameters.hct.value), user);
 			round.addParameter(hct);
 		}
 
 		if (parameters.bloodPressure) {
 			const bloodPressure = new BloodPressure(
 				String(parameters.bloodPressure.value),
-				date,
 				user,
 			);
 			round.addParameter(bloodPressure);

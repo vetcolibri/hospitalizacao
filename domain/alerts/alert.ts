@@ -58,6 +58,6 @@ export class Alert {
 	}
 
 	getTime(): string {
-		return this.time.toISOString();
+		return this.time.toLocaleDateString();
 	}
 }
