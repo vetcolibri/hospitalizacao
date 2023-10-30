@@ -1,19 +1,14 @@
-import { InmemAlertRepository } from "../adaptors/inmem/inmem_alert_repository.ts";
-import { InmemIdRepository } from "../adaptors/inmem/inmem_id_repository.ts";
-import { PatientService } from "../application/patient_service.ts";
 import { Context, Router } from "../deps.ts";
 import { Patient } from "../domain/patients/patient.ts";
 import { PatientNotFound } from "../domain/patients/patient_not_found_error.ts";
 import { validate } from "../shared/tools.ts";
-import { PatientRepositoryStub } from "../test_double/stubs/patient_repository_stub.ts";
 import { ContextWithParams } from "./context_with_params.ts";
 import { sendBadRequest, sendNotFound, sendOk } from "./responses.ts";
 import { newPatientSchema, recuringHospitalizationSchema } from "./schemas/patient_schema.ts";
+import { InmemServicesFactory } from "./services.ts";
 
-const alertRepository = new InmemAlertRepository();
-const idRepository = new InmemIdRepository();
-const patientRepository = new PatientRepositoryStub();
-const service = new PatientService(patientRepository, alertRepository, idRepository);
+const factory = new InmemServicesFactory();
+const service = factory.createPatientService();
 
 interface PatientDTO {
 	patientId: string;
@@ -31,7 +26,7 @@ export default function () {
 				patientId: patient.patientId.toString(),
 				name: patient.name,
 				specie: patient.specie.toString(),
-				entryDate: patient.getActiveHospitalization()!.entryDate.toLocaleDateString(),
+				entryDate: patient.getActiveHospitalization()!.entryDate.toJSON(),
 				hasAlert: patient.alertStatus,
 			}
 		));
