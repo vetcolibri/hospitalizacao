@@ -22,9 +22,13 @@ export default function () {
 
 	const getLatestMeasurementsHandler = async (ctx: ContextWithParams) => {
 		const patientId = ctx.params.patientId;
-		console.log(patientId);
 		const parameters = await service.latestMeasurements(patientId);
-		sendOk(ctx, parameters);
+		const result = parameters.map((p) => ({
+			name: p.name,
+			value: p.getValue(),
+			issudeAt: p.issuedAt,
+		}));
+		sendOk(ctx, result);
 	};
 
 	const router = new Router({ prefix: "/rounds" });

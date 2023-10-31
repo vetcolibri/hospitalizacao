@@ -286,5 +286,5 @@ const parameters = [
 	"glicemia",
 ];
 const rateInSeconds = 120;
-const time = new Date().toLocaleDateString();
+const time = new Date().toISOString();
 const comments = "Some comment.";

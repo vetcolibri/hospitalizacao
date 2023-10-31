@@ -27,7 +27,6 @@ export class InmemRoundRepository implements RoundRepository {
 		}
 		const result = [];
 		for (const name of Object.values(PARAMETER_NAMES)) {
-			console.log(name);
 			const lastMeasurement = parameters.findLast((parameter) => parameter.name === name);
 			if (lastMeasurement) {
 				result.push(lastMeasurement);
