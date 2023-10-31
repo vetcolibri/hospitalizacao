@@ -7,6 +7,7 @@ import { ID } from "../../domain/id.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 import { InmemPatientRepository } from "../../adaptors/inmem/inmem_patient_repository.ts";
 import { RoundRepository } from "../../domain/rounds/round_repository.ts";
+import { RoundRepositoryStub } from "../../test_double/stubs/round_repository_stub.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step("Deve recuperar o paciente no repositório", async () => {
@@ -226,9 +227,11 @@ Deno.test("Round Service - New Round", async (t) => {
 
 Deno.test("Round Service - Latest Measurements", async (t) => {
 	await t.step("Deve retornar as ultimas medições do paciente", async () => {
-		const { service } = makeService();
-		const parameters = await service.latestMeasurements(patientId);
-		assertEquals(parameters.length, 0);
+		const { service } = makeService({
+			roundRepository: new RoundRepositoryStub(),
+		});
+		const parameters = await service.latestMeasurements("some-patient-id");
+		assertEquals(parameters.length, 2);
 	});
 });
 

@@ -106,7 +106,6 @@ export class RoundService {
 	}
 
 	async latestMeasurements(patientId: string): Promise<Parameter[]> {
-		const parameters = await this.roundRepository.latestMeasurements(ID.New(patientId));
-		return parameters;
+		return await this.roundRepository.latestMeasurements(ID.New(patientId));
 	}
 }
