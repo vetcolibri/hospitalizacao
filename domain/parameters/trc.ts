@@ -1,5 +1,5 @@
 import { Measurement } from "./measurement.ts";
-import { PARAMETER, Parameter } from "./parameter.ts";
+import { Parameter, PARAMETER_NAMES } from "./parameter.ts";
 import { User } from "../users/user.ts";
 
 export class Trc implements Parameter {
@@ -9,7 +9,7 @@ export class Trc implements Parameter {
 	readonly issuedAt: Date;
 
 	constructor(value: number, user: User) {
-		this.name = PARAMETER.TRC;
+		this.name = PARAMETER_NAMES.TRC;
 		this.measurement = Measurement.new(value);
 		this.issuedAt = new Date();
 		this.user = user;

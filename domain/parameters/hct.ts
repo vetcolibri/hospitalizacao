@@ -1,5 +1,5 @@
 import { Measurement } from "../parameters/measurement.ts";
-import { PARAMETER, Parameter } from "./parameter.ts";
+import { Parameter, PARAMETER_NAMES } from "./parameter.ts";
 import { User } from "../users/user.ts";
 
 export class Hct implements Parameter {
@@ -9,7 +9,7 @@ export class Hct implements Parameter {
 	readonly issuedAt: Date;
 
 	constructor(value: number, user: User) {
-		this.name = PARAMETER.HCT;
+		this.name = PARAMETER_NAMES.HCT;
 		this.measurement = Measurement.new(value);
 		this.issuedAt = new Date();
 		this.user = user;

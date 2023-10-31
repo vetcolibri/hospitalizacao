@@ -6,6 +6,7 @@ import { InmemRoundRepository } from "../../adaptors/inmem/inmem_round_repositor
 import { ID } from "../../domain/id.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
 import { InmemPatientRepository } from "../../adaptors/inmem/inmem_patient_repository.ts";
+import { RoundRepository } from "../../domain/rounds/round_repository.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step("Deve recuperar o paciente no repositório", async () => {
@@ -223,6 +224,14 @@ Deno.test("Round Service - New Round", async (t) => {
 	});
 });
 
+Deno.test("Round Service - Latest Measurements", async (t) => {
+	await t.step("Deve retornar as ultimas medições do paciente", async () => {
+		const { service } = makeService();
+		const parameters = await service.latestMeasurements(patientId);
+		assertEquals(parameters.length, 0);
+	});
+});
+
 Deno.test("Round Service - Errors", async (t) => {
 	await t.step("Deve retornar @PatientNofFoundError se o paciente não existir", async () => {
 		const parameters = {
@@ -242,13 +251,14 @@ const patientId = "some-id";
 const userId = "some-user-id";
 
 interface options {
+	roundRepository?: RoundRepository;
 	patientRepository?: PatientRepository;
 }
 
 function makeService(options?: options) {
+	const roundRepository = options?.roundRepository ?? new InmemRoundRepository();
 	const patientRepository = options?.patientRepository ?? new PatientRepositoryStub();
 	const userRepository = new UserRepositoryStub();
-	const roundRepository = new InmemRoundRepository();
 	const service = new RoundService(roundRepository, patientRepository, userRepository);
 	return { service, patientRepository, userRepository, roundRepository };
 }

@@ -1,15 +1,15 @@
 import { Measurement } from "./measurement.ts";
-import { PARAMETER, Parameter } from "./parameter.ts";
+import { Parameter, PARAMETER_NAMES } from "./parameter.ts";
 import { User } from "../users/user.ts";
 
 export class Avdn implements Parameter {
-	readonly name: PARAMETER;
+	readonly name: PARAMETER_NAMES;
 	readonly measurement: Measurement;
 	readonly user: User;
 	readonly issuedAt: Date;
 
 	constructor(value: string, user: User) {
-		this.name = PARAMETER.AVDN;
+		this.name = PARAMETER_NAMES.AVDN;
 		this.measurement = Measurement.new(value);
 		this.issuedAt = new Date();
 		this.user = user;

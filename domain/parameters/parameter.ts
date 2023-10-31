@@ -11,7 +11,7 @@ export interface Parameter {
 	isValid(): boolean;
 }
 
-export enum PARAMETER {
+export enum PARAMETER_NAMES {
 	HEART_RATE = "heartRate",
 	RESPIRATORY_RATE = "respiratoryRate",
 	TRC = "trc",

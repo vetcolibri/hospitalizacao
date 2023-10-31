@@ -23,7 +23,6 @@ export type PatientData = {
 };
 
 export type MeasurementData = {
-	name: string;
 	value: unknown;
 };
 

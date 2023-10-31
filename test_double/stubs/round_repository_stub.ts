@@ -1,10 +1,18 @@
 import { ID } from "../../domain/id.ts";
+import { HeartRate } from "../../domain/parameters/heart_rate.ts";
 import { Parameter, PARAMETER_NAMES } from "../../domain/parameters/parameter.ts";
+import { Trc } from "../../domain/parameters/trc.ts";
 import { Round } from "../../domain/rounds/round.ts";
 import { RoundRepository } from "../../domain/rounds/round_repository.ts";
+import { User } from "../../domain/users/user.ts";
+import { patient1 } from "../../tests/fake_data.ts";
 
-export class InmemRoundRepository implements RoundRepository {
+export class RoundRepositoryStub implements RoundRepository {
 	readonly #rounds: Round[] = [];
+
+	constructor() {
+		this.#populate();
+	}
 
 	save(round: Round): Promise<void> {
 		this.#rounds.push(round);
@@ -35,5 +43,20 @@ export class InmemRoundRepository implements RoundRepository {
 		}
 
 		return Promise.resolve(result);
+	}
+
+	#populate() {
+		const user = new User("some-user");
+		const heartRate = new HeartRate(78, user);
+		const trc = new Trc(1, user);
+		const round1 = new Round(patient1);
+		const round2 = new Round(patient1);
+		const round3 = new Round(patient1);
+		round1.addParameter(heartRate);
+		round2.addParameter(heartRate);
+		round3.addParameter(trc);
+		this.save(round1);
+		this.save(round2);
+		this.save(round3);
 	}
 }

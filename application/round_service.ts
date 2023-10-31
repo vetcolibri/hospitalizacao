@@ -15,6 +15,7 @@ import { BloodGlucose } from "../domain/parameters/blood_glucose.ts";
 import { Hct } from "../domain/parameters/hct.ts";
 import { BloodPressure } from "../domain/parameters/blood_pressure.ts";
 import { ParametersData } from "../shared/types.ts";
+import { Parameter } from "../domain/parameters/parameter.ts";
 
 export class RoundService {
 	readonly roundRepository: RoundRepository;
@@ -43,7 +44,6 @@ export class RoundService {
 
 		const user = await this.userRepository.get(ID.New(userId));
 		const patient = patientOrError.value;
-
 		const round = new Round(patient);
 
 		if (parameters.heartRate) {
@@ -103,5 +103,10 @@ export class RoundService {
 		await this.roundRepository.save(round);
 
 		return right(undefined);
+	}
+
+	async latestMeasurements(patientId: string): Promise<Parameter[]> {
+		const parameters = await this.roundRepository.latestMeasurements(ID.New(patientId));
+		return parameters;
 	}
 }
