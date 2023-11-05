@@ -10,19 +10,17 @@ export interface Manager {
 	removeCron(alert: Alert): void;
 }
 
-export class AlertService {
-	readonly alertRepository: AlertRepository;
-	readonly patientRepository: PatientRepository;
-	readonly taskManager: Manager;
+interface Dependencies {
+	alertRepository: AlertRepository
+	patientRepository: PatientRepository
+	taskManager: Manager
+}
 
-	constructor(
-		alertRepository: AlertRepository,
-		patientRepository: PatientRepository,
-		taskManager: Manager,
-	) {
-		this.alertRepository = alertRepository;
-		this.patientRepository = patientRepository;
-		this.taskManager = taskManager;
+export class AlertService {
+	private readonly deps: Dependencies
+	
+	constructor(deps: Dependencies) {
+		this.deps = deps
 	}
 
 	async schedule(
@@ -32,20 +30,20 @@ export class AlertService {
 		comments: string,
 		time: string,
 	): Promise<Either<PatientNotFound, void>> {
-		const patientOrError = await this.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) return left(patientOrError.value);
 
 		const patient = patientOrError.value;
 		const alert = Alert.create(patient, parameters, rate, comments, time);
-		await this.alertRepository.save(alert);
+		await this.deps.alertRepository.save(alert);
 
-		this.taskManager.registerCron(alert);
+		this.deps.taskManager.registerCron(alert);
 
 		return right(undefined);
 	}
 
 	async cancel(alertId: string): Promise<Either<Error, void>> {
-		const alertOrError = await this.alertRepository.getById(ID.New(alertId));
+		const alertOrError = await this.deps.alertRepository.getById(ID.New(alertId));
 		if (alertOrError.isLeft()) return left(alertOrError.value);
 
 		const alert = alertOrError.value;
@@ -55,10 +53,20 @@ export class AlertService {
 
 		alert.cancel();
 
-		await this.alertRepository.update(alert);
+		await this.deps.alertRepository.update(alert);
 
-		this.taskManager.removeCron(alert);
+		this.deps.taskManager.removeCron(alert);
 
 		return Promise.resolve(right(undefined));
 	}
+
+}
+
+
+export type AlertData = {
+	patientId: string
+	parameters: string[]
+	rate: number
+	comments: string
+	time: string
 }
