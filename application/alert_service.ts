@@ -23,20 +23,18 @@ export class AlertService {
 		this.deps = deps
 	}
 
-	async schedule(
-		patientId: string,
-		parameters: string[],
-		rate: number,
-		comments: string,
-		time: string,
-	): Promise<Either<PatientNotFound, void>> {
+	async schedule(patientId: string, alertData: AlertData): Promise<Either<PatientNotFound, void>> {
+		const { parameters, rate, comments, time } = alertData;
+
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) return left(patientOrError.value);
-
+		
 		const patient = patientOrError.value;
 		const alert = Alert.create(patient, parameters, rate, comments, time);
+		
 		await this.deps.alertRepository.save(alert);
-
+		
+		
 		this.deps.taskManager.registerCron(alert);
 
 		return right(undefined);
@@ -64,9 +62,8 @@ export class AlertService {
 
 
 export type AlertData = {
-	patientId: string
 	parameters: string[]
 	rate: number
-	comments: string
 	time: string
+	comments: string
 }
