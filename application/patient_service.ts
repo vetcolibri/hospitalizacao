@@ -8,19 +8,18 @@ import { PatientRepository } from "../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../shared/either.ts";
 import { HospitalizationData, NewPatientData } from "../shared/types.ts";
 
-export class PatientService {
-	readonly patientRepository: PatientRepository;
-	readonly alertRepository: AlertRepository;
-	readonly idRepository: IdRepository;
 
-	constructor(
-		patientRepository: PatientRepository,
-		alertRepository: AlertRepository,
-		idRepository: IdRepository,
-	) {
-		this.patientRepository = patientRepository;
-		this.alertRepository = alertRepository;
-		this.idRepository = idRepository;
+interface Dependencies {
+	alertRepository: AlertRepository;
+	patientRepository: PatientRepository;
+	idRepository: IdRepository;
+}
+
+export class PatientService {
+	private readonly deps: Dependencies;
+
+	constructor(deps: Dependencies) {
+		this.deps = deps;
 	}
 
 	/**
@@ -28,9 +27,9 @@ export class PatientService {
 	 * @returns {Promise<Patient[]>}
 	 */
 	async hospitalizadPatients(): Promise<Patient[]> {
-		const patients = await this.patientRepository.hospitalized();
+		const patients = await this.deps.patientRepository.hospitalized();
 		for (const patient of patients) {
-			const hasAlert = await this.alertRepository.verify(patient);
+			const hasAlert = await this.deps.alertRepository.verify(patient);
 			patient.changeAlertStatus(hasAlert);
 		}
 		return patients;
@@ -45,7 +44,7 @@ export class PatientService {
 		patientId: string,
 		hospitalizationData: HospitalizationData,
 	): Promise<Either<Error, void>> {
-		const patientOrError = await this.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) return left(patientOrError.value);
 
 		const patient = patientOrError.value;
@@ -56,7 +55,7 @@ export class PatientService {
 		const voidOrError = patient.hospitalize(hospitalizationData);
 		if (voidOrError.isLeft()) return left(voidOrError.value);
 
-		await this.patientRepository.update(patient);
+		await this.deps.patientRepository.update(patient);
 		return right(undefined);
 	}
 
@@ -67,8 +66,8 @@ export class PatientService {
 	 */
 
 	async nonHospitalized(): Promise<Either<Error, Patient[]>> {
-		const patientsOrError = await this.patientRepository.nonHospitalized();
-		return right(patientsOrError.value as Patient[]);
+		const patients = await this.deps.patientRepository.nonHospitalized();
+		return right(patients);
 	}
 
 	/**
@@ -87,14 +86,14 @@ export class PatientService {
 			phoneNumber,
 		} = patientData;
 
-		const newId = await this.idRepository.generate(name, ownerName);
+		const newId = await this.deps.idRepository.generate(name, ownerName);
 		const owner = new Owner(ownerId, ownerName, phoneNumber);
 		const patient = new Patient(newId, name, breed, owner, specie);
 
 		const voidOrError = patient.hospitalize(hospitalizationData);
 		if (voidOrError.isLeft()) return left(voidOrError.value);
 
-		await this.patientRepository.save(patient);
+		await this.deps.patientRepository.save(patient);
 
 		return right(undefined);
 	}

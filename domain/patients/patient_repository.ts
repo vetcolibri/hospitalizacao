@@ -5,7 +5,7 @@ import { Either } from "../../shared/either.ts";
 
 export interface PatientRepository {
 	hospitalized(): Promise<Patient[]>;
-	nonHospitalized(): Promise<Either<Error, Patient[]>>;
+	nonHospitalized(): Promise<Patient[]>;
 	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>>;
 	save(patient: Patient): Promise<void>;
 	update(patient: Patient): Promise<void>;
