@@ -14,8 +14,7 @@ let websocktClients: WebSocket[] = [];
 export default function () {
 	const scheduleAlertHandler = async (ctx: Context) => {
 		const { patientId, alertData } = ctx.state.validatedData;
-		const { parameters, rate, time, comments } = alertData;
-		const resultOrError = await service.schedule(patientId, parameters, rate, comments, time);
+		const resultOrError = await service.schedule(patientId, alertData);
 		if (resultOrError.isLeft()) {
 			sendBadRequest(ctx, resultOrError.value.message);
 			return;

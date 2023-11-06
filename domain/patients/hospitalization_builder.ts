@@ -6,9 +6,9 @@ export class HospitalizationBuilder {
 	dischargeDate!: string;
 	estimatedBudgetDate!: string;
 	weight!: number;
-	age!: number;
-	complaints!: string;
-	diagnostics!: string;
+	birthDate!: string;
+	complaints!: string[];
+	diagnostics!: string[];
 
 	constructor() {}
 
@@ -27,8 +27,8 @@ export class HospitalizationBuilder {
 		return this;
 	}
 
-	setAge(age: number): HospitalizationBuilder {
-		this.age = age;
+	setBirthDate(birthDate: string): HospitalizationBuilder {
+		this.birthDate = birthDate;
 		return this;
 	}
 
@@ -37,12 +37,12 @@ export class HospitalizationBuilder {
 		return this;
 	}
 
-	setComplaints(complaints: string): HospitalizationBuilder {
+	setComplaints(complaints: string[]): HospitalizationBuilder {
 		this.complaints = complaints;
 		return this;
 	}
 
-	setDiagnostics(diagnostics: string): HospitalizationBuilder {
+	setDiagnostics(diagnostics: string[]): HospitalizationBuilder {
 		this.diagnostics = diagnostics;
 		return this;
 	}

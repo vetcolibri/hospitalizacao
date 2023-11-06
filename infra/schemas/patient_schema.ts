@@ -15,8 +15,8 @@ const hospitalizationSchema = z.object({
 	estimatedBudgetDate: z.string(),
 	age: z.number().int().lte(20),
 	weight: z.number().int().lte(100),
-	complaints: z.string(),
-	diagnostics: z.string(),
+	complaints: z.string().array(),
+	diagnostics: z.string().array(),
 });
 
 export const recuringHospitalizationSchema = z.object({

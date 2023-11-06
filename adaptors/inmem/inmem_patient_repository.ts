@@ -9,7 +9,7 @@ export class InmemPatientRepository implements PatientRepository {
 
 	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
 		const patient = this.records.find((patient) =>
-			patient.patientId.toString() === patientId.toString()
+			patient.patientId.getValue() === patientId.getValue()
 		);
 		if (!patient) return Promise.resolve(left(new PatientNotFound()));
 		return Promise.resolve(right(patient));
@@ -23,8 +23,7 @@ export class InmemPatientRepository implements PatientRepository {
 	}
 
 	save(patient: Patient): Promise<void> {
-		const id = patient.patientId.toString();
-		this.#data[id] = patient;
+		this.#data[patient.patientId.getValue()] = patient;
 		return Promise.resolve(undefined);
 	}
 

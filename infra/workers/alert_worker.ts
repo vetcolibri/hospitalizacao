@@ -25,11 +25,11 @@ self.addEventListener("message", (event) => {
 			time: alert.time,
 		};
 		job.schedule(() => self.postMessage(payload));
-		jobs.set(alert.alertId.toString(), job);
+		jobs.set(alert.alertId.getValue(), job);
 	}
 
 	if (type === CronType.REMOVE) {
-		const job = jobs.get(alert.alertId.toString());
+		const job = jobs.get(alert.alertId.getValue());
 		if (job) {
 			job.stop();
 		}

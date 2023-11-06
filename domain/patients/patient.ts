@@ -47,13 +47,15 @@ export class Patient {
 			.setDischargeDate(data.dischargeDate)
 			.setEstimatedBudgetDate(data.estimatedBudgetDate)
 			.setWeight(data.weight)
-			.setAge(data.age)
+			.setBirthDate(data.birthDate)
 			.setComplaints(data.complaints)
 			.setDiagnostics(data.diagnostics)
 			.build();
 		if (newHospitalizationOrError.isLeft()) return left(newHospitalizationOrError.value);
+
 		this.hospitalizations.push(newHospitalizationOrError.value);
 		this.status = PatientStatus.HOSPITALIZED;
+
 		return right(undefined);
 	}
 

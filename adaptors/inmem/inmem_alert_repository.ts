@@ -9,27 +9,27 @@ export class InmemAlertRepository implements AlertRepository {
 	readonly #data: Record<string, Alert> = {};
 
 	getById(AlertId: ID): Promise<Either<AlertNotFound, Alert>> {
-		const alert = this.records.find((alert) => alert.alertId.toString() === AlertId.toString());
+		const alert = this.records.find((alert) => alert.alertId.getValue() === AlertId.getValue());
 		if (!alert) return Promise.resolve(left(new AlertNotFound()));
 		return Promise.resolve(right(alert));
 	}
 
 	verify(patient: Patient): Promise<boolean> {
 		const hasAlert = this.records.some((alert) =>
-			alert.patient.patientId.toString() === patient.patientId.toString() &&
+			alert.patient.patientId.getValue() === patient.patientId.getValue() &&
 			alert.status === AlertStatus.ACTIVE
 		);
 		return Promise.resolve(hasAlert);
 	}
 
 	save(alert: Alert): Promise<void> {
-		this.#data[alert.alertId.toString()] = alert;
+		this.#data[alert.alertId.getValue()] = alert;
 		return Promise.resolve(undefined);
 	}
 
 	findAll(patientId: ID): Promise<Alert[]> {
 		const alerts = this.records.filter((alert) =>
-			alert.patient.patientId.toString() === patientId.toString()
+			alert.patient.patientId.getValue() === patientId.getValue()
 		);
 		return Promise.resolve(alerts);
 	}
@@ -40,7 +40,7 @@ export class InmemAlertRepository implements AlertRepository {
 	}
 
 	update(alert: Alert): Promise<void> {
-		this.#data[alert.alertId.toString()] = alert;
+		this.#data[alert.alertId.getValue()] = alert;
 		return Promise.resolve(undefined);
 	}
 

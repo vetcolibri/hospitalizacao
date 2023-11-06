@@ -14,22 +14,27 @@ import { Mucosas } from "../domain/parameters/mucosas.ts";
 import { BloodGlucose } from "../domain/parameters/blood_glucose.ts";
 import { Hct } from "../domain/parameters/hct.ts";
 import { BloodPressure } from "../domain/parameters/blood_pressure.ts";
-import { ParametersData } from "../shared/types.ts";
 import { Parameter } from "../domain/parameters/parameter.ts";
 
-export class RoundService {
-	readonly roundRepository: RoundRepository;
-	readonly patientRepository: PatientRepository;
-	readonly userRepository: UserRepository;
+interface Dependencies {
+	roundRepository: RoundRepository;
+	patientRepository: PatientRepository;
+	userRepository: UserRepository;
+}
 
-	constructor(
-		roundRepository: RoundRepository,
-		patientRepository: PatientRepository,
-		userRepository: UserRepository,
-	) {
-		this.roundRepository = roundRepository;
-		this.patientRepository = patientRepository;
-		this.userRepository = userRepository;
+type MeasurementData = {
+	value: unknown;
+};
+
+type ParametersData = {
+	[key: string]: MeasurementData;
+};
+
+export class RoundService {
+	private readonly deps: Dependencies;
+
+	constructor(deps: Dependencies) {
+		this.deps = deps;
 	}
 
 	async new(
@@ -37,12 +42,12 @@ export class RoundService {
 		userId: string,
 		parameters: ParametersData,
 	): Promise<Either<PatientNotFound, void>> {
-		const patientOrError = await this.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) {
 			return left(patientOrError.value);
 		}
 
-		const user = await this.userRepository.get(ID.New(userId));
+		const user = await this.deps.userRepository.get(ID.New(userId));
 		const patient = patientOrError.value;
 		const round = new Round(patient);
 
@@ -100,12 +105,12 @@ export class RoundService {
 			round.addParameter(bloodPressure);
 		}
 
-		await this.roundRepository.save(round);
+		await this.deps.roundRepository.save(round);
 
 		return right(undefined);
 	}
 
 	async latestMeasurements(patientId: string): Promise<Parameter[]> {
-		return await this.roundRepository.latestMeasurements(ID.New(patientId));
+		return await this.deps.roundRepository.latestMeasurements(ID.New(patientId));
 	}
 }

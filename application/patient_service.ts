@@ -1,19 +1,31 @@
 import { AlertRepository } from "../domain/alerts/alert_repository.ts";
 import { ID } from "../domain/id.ts";
-import { IdRepository } from "../domain/id_generator.ts";
 import { Owner } from "../domain/patients/owner.ts";
 import { Patient, PatientStatus } from "../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../shared/either.ts";
-import { HospitalizationData, NewPatientData } from "../shared/types.ts";
-
+import { HospitalizationData } from "../shared/types.ts";
 
 interface Dependencies {
 	alertRepository: AlertRepository;
 	patientRepository: PatientRepository;
-	idRepository: IdRepository;
 }
+
+type PatientData = {
+	readonly patientId: string;
+	readonly name: string;
+	readonly specie: string;
+	readonly breed: string;
+	readonly ownerId: string;
+	readonly ownerName: string;
+	readonly phoneNumber: string;
+};
+
+type NewPatientData = {
+	readonly patientData: PatientData;
+	readonly hospitalizationData: HospitalizationData;
+};
 
 export class PatientService {
 	private readonly deps: Dependencies;
@@ -38,6 +50,7 @@ export class PatientService {
 	/**
 	 * Cria uma nova hospitalização
 	 * @param patientId
+	 * @param hospitalizationData
 	 * @returns {Promise<Either<Error, void>>}
 	 */
 	async newHospitalization(
@@ -60,8 +73,7 @@ export class PatientService {
 	}
 
 	/**
-	 * Recupera um paciente pelo id
-	 * @param patientId
+	 * Lista os pacientes não hospitalizados
 	 * @returns {Promise<Either<Error, Patient[]>>}
 	 */
 
@@ -71,13 +83,14 @@ export class PatientService {
 	}
 
 	/**
-	 * Recupera um paciente pelo id
+	 * Cria um novo paciente
 	 * @param newPatientData
 	 * @returns {Promise<Either<Error, void>>}
 	 */
 	async newPatient(newPatientData: NewPatientData): Promise<Either<Error, void>> {
 		const { patientData, hospitalizationData } = newPatientData;
 		const {
+			patientId,
 			name,
 			breed,
 			specie,
@@ -86,9 +99,8 @@ export class PatientService {
 			phoneNumber,
 		} = patientData;
 
-		const newId = await this.deps.idRepository.generate(name, ownerName);
 		const owner = new Owner(ownerId, ownerName, phoneNumber);
-		const patient = new Patient(newId, name, breed, owner, specie);
+		const patient = new Patient(patientId, name, breed, owner, specie);
 
 		const voidOrError = patient.hospitalize(hospitalizationData);
 		if (voidOrError.isLeft()) return left(voidOrError.value);

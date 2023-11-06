@@ -6,7 +6,7 @@ Deno.test("Patient", async (t) => {
 	await t.step("Deve hospitalizar um paciente", () => {
 		patient1.hospitalize(hospitalizationData);
 		assertEquals(patient1.name, "Rex");
-		assertEquals(patient1.patientId.toString(), "some-patient-id");
+		assertEquals(patient1.patientId.getValue(), "some-patient-id");
 		assertEquals(patient1.getStatus(), PatientStatus.HOSPITALIZED);
 		assertEquals(patient1.specie, PatientSpecie.CANINE);
 	});
@@ -36,7 +36,7 @@ Deno.test("Patient", async (t) => {
 	await t.step("Deve recuperar o **age** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
 		const hospitalization = patient1.getActiveHospitalization();
-		assertEquals(hospitalization?.age, hospitalizationData.age);
+		assertEquals(hospitalization?.birthDate.getYears(), 10);
 	});
 	await t.step("Deve recuperar o **complaints** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);

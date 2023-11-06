@@ -56,7 +56,7 @@ Deno.test("Round Service - New Round", async (t) => {
 
 		const round = await roundRepository.last();
 		const patient = round.getPatient();
-		assertEquals(patient.patientId.toString(), patientId);
+		assertEquals(patient.patientId.getValue(), patientId);
 	});
 	await t.step(
 		"Deve adicionar o parâmetro da Frequência cardiaca a ronda de exames",
@@ -262,6 +262,11 @@ function makeService(options?: options) {
 	const roundRepository = options?.roundRepository ?? new InmemRoundRepository();
 	const patientRepository = options?.patientRepository ?? new PatientRepositoryStub();
 	const userRepository = new UserRepositoryStub();
-	const service = new RoundService(roundRepository, patientRepository, userRepository);
+	const deps = {
+		roundRepository,
+		patientRepository,
+		userRepository,
+	};
+	const service = new RoundService(deps);
 	return { service, patientRepository, userRepository, roundRepository };
 }

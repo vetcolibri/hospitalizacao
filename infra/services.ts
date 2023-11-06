@@ -1,6 +1,5 @@
 import { InmemAlertRepository } from "../adaptors/inmem/inmem_alert_repository.ts";
 import { InmemIdRepository } from "../adaptors/inmem/inmem_id_repository.ts";
-import { InmemPatientRepository } from "../adaptors/inmem/inmem_patient_repository.ts";
 import { InmemRoundRepository } from "../adaptors/inmem/inmem_round_repository.ts";
 import { AlertService, Manager } from "../application/alert_service.ts";
 import { PatientService } from "../application/patient_service.ts";
@@ -22,14 +21,29 @@ interface ServicesFactory {
 
 export class InmemServicesFactory implements ServicesFactory {
 	createAlertService(tasks: Manager): AlertService {
-		return new AlertService(alertRepository, patientRepository, tasks);
+		const deps = {
+			alertRepository,
+			patientRepository,
+			taskManager: tasks,
+		};
+		return new AlertService(deps);
 	}
 
 	createPatientService(): PatientService {
-		return new PatientService(patientRepository, alertRepository, idRepository);
+		const deps = {
+			alertRepository,
+			idRepository,
+			patientRepository,
+		};
+		return new PatientService(deps);
 	}
 
 	createRoundService(): RoundService {
-		return new RoundService(roundRepository, patientRepository, userRepository);
+		const deps = {
+			patientRepository,
+			roundRepository,
+			userRepository,
+		};
+		return new RoundService(deps);
 	}
 }

@@ -1,5 +1,5 @@
 export class ID {
-	value: string;
+	private value: string;
 
 	private constructor(raw: string) {
 		this.value = raw;
@@ -14,7 +14,7 @@ export class ID {
 		return new ID(value);
 	}
 
-	toString(): string {
+	getValue(): string {
 		return this.value.toString();
 	}
 }

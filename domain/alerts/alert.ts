@@ -1,5 +1,8 @@
+import { Either, left, right } from "../../shared/either.ts";
 import { ID } from "../id.ts";
 import { Patient } from "../patients/patient.ts";
+import { RepeatEvery } from "./repeat_every.ts";
+import { InvalidRepeatEvery } from "./repeat_every_error.ts";
 
 export enum AlertStatus {
 	ACTIVE = "active",
@@ -10,12 +13,12 @@ export class Alert {
 	readonly alertId: ID;
 	readonly patient: Patient;
 	readonly parameters: string[];
-	readonly repeatEvery: number;
+	readonly repeatEvery: RepeatEvery;
 	readonly comments: string;
 	readonly time: Date;
 	status: AlertStatus;
 
-	private constructor(patient: Patient, rate: number, comments: string, time: string) {
+	private constructor(patient: Patient, rate: RepeatEvery, comments: string, time: string) {
 		this.alertId = ID.RandomID();
 		this.patient = patient;
 		this.parameters = [];
@@ -31,10 +34,16 @@ export class Alert {
 		rate: number,
 		comments: string,
 		time: string,
-	): Alert {
-		const alert = new Alert(patient, rate, comments, time);
+	): Either<InvalidRepeatEvery, Alert> {
+		const repeatEvery = new RepeatEvery(rate);
+		if (!repeatEvery.isValid()) {
+			return left(new InvalidRepeatEvery());
+		}
+
+		const alert = new Alert(patient, repeatEvery, comments, time);
 		alert.addParameters(parameters);
-		return alert;
+
+		return right(alert);
 	}
 
 	addParameters(parameters: string[]): void {
@@ -54,7 +63,7 @@ export class Alert {
 	}
 
 	getRate(): number {
-		return this.repeatEvery;
+		return this.repeatEvery.getValue();
 	}
 
 	getTime(): string {

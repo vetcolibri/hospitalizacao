@@ -1,6 +1,6 @@
 export enum ERROR_MESSAGES {
-	ENTRY_DATE_INVALID = "Data de entrada não pode ser menor que a data actual.",
-	DISCHARGE_DATE_INVALID = "Data prevista para alta médica não pode ser menor que a data actual.",
-	ESTIMATED_BUDGET_DATE_INVALID =
-		"Data de previsão do orçamento não pode ser menor que a data actual.",
+	INVALID_ENTRY_DATE = "Data de entrada não pode ser menor que a data actual.",
+	INVALID_DISCHARGE_DATE = "Data prevista para alta médica não pode ser menor que a data actual.",
+	INVALID_COMPLAINTS_NUMBER = "Número de queixas não pode ser maior que 10.",
+	INVALID_DIAGNOSTICS_NUMBER = "Número de diagnósticos não pode ser maior que 5.",
 }
