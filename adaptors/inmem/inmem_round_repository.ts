@@ -15,6 +15,19 @@ export class InmemRoundRepository implements RoundRepository {
 		return Promise.resolve(this.#rounds[this.#rounds.length - 1]);
 	}
 
+	measurements(patientId: ID): Promise<Parameter[]> {
+		const rounds = this.#rounds.filter((round) =>
+			round.patient.patientId.getValue() === patientId.getValue()
+		);
+		const parameters: Parameter[] = [];
+		for (const round of rounds) {
+			for (const parameter of round.parameters) {
+				parameters.push(parameter);
+			}
+		}
+		return Promise.resolve(parameters);
+	}
+
 	latestMeasurements(patientId: ID): Promise<Parameter[]> {
 		const rounds = this.#rounds.filter((round) =>
 			round.patient.patientId.toString() === patientId.toString()

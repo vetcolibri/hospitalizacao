@@ -113,4 +113,14 @@ export class RoundService {
 	async latestMeasurements(patientId: string): Promise<Parameter[]> {
 		return await this.deps.roundRepository.latestMeasurements(ID.New(patientId));
 	}
+
+	async measurements(patientId: string): Promise<Either<PatientNotFound, Parameter[]>> {
+		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
+		if (patientOrError.isLeft()) {
+			return left(patientOrError.value)
+		}
+
+		const measurements = await this.deps.roundRepository.measurements(ID.New(patientId));
+		return right(measurements)
+	}
 }

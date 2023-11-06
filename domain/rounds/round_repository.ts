@@ -6,4 +6,5 @@ export interface RoundRepository {
 	save(round: Round): Promise<void>;
 	last(): Promise<Round>;
 	latestMeasurements(patientId: ID): Promise<Parameter[]>;
+	measurements(patientId: ID): Promise<Parameter[]>;
 }
