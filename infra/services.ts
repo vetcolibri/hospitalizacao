@@ -1,5 +1,4 @@
 import { InmemAlertRepository } from "../adaptors/inmem/inmem_alert_repository.ts";
-import { InmemIdRepository } from "../adaptors/inmem/inmem_id_repository.ts";
 import { InmemRoundRepository } from "../adaptors/inmem/inmem_round_repository.ts";
 import { AlertService, Manager } from "../application/alert_service.ts";
 import { PatientService } from "../application/patient_service.ts";
@@ -9,7 +8,6 @@ import { UserRepositoryStub } from "../test_double/stubs/user_repository_stub.ts
 
 const alertRepository = new InmemAlertRepository();
 const patientRepository = new PatientRepositoryStub();
-const idRepository = new InmemIdRepository();
 const userRepository = new UserRepositoryStub();
 const roundRepository = new InmemRoundRepository();
 
@@ -32,7 +30,6 @@ export class InmemServicesFactory implements ServicesFactory {
 	createPatientService(): PatientService {
 		const deps = {
 			alertRepository,
-			idRepository,
 			patientRepository,
 		};
 		return new PatientService(deps);
