@@ -1,6 +1,12 @@
 import { RoundService } from "../../application/round_service.ts";
 import { PatientRepositoryStub } from "../../test_double/stubs/patient_repository_stub.ts";
-import { assertEquals, assertInstanceOf, assertSpyCall, assertSpyCalls, spy } from "../../dev_deps.ts";
+import {
+	assertEquals,
+	assertInstanceOf,
+	assertSpyCall,
+	assertSpyCalls,
+	spy,
+} from "../../dev_deps.ts";
 import { UserRepositoryStub } from "../../test_double/stubs/user_repository_stub.ts";
 import { InmemRoundRepository } from "../../adaptors/inmem/inmem_round_repository.ts";
 import { ID } from "../../domain/id.ts";
@@ -232,62 +238,64 @@ Deno.test("Round Service - Latest Measurements", async (t) => {
 		const { service } = makeService({
 			roundRepository: new RoundRepositoryStub(),
 		});
+
 		const parametersOrError = await service.latestMeasurements("some-patient-id");
-		const parameters = <Parameter[]>parametersOrError.value;
+
+		const parameters = <Parameter[]> parametersOrError.value;
 
 		assertEquals(parameters.length, 2);
 	});
 
 	await t.step("Deve chamar o método latestMeasurements do repositório", async () => {
-		const { service, roundRepository } = makeService()
-		const roundSpy = spy(roundRepository, "latestMeasurements")
+		const { service, roundRepository } = makeService();
+		const roundSpy = spy(roundRepository, "latestMeasurements");
 
-		await service.latestMeasurements("some-patient-id")
+		await service.latestMeasurements("some-patient-id");
 
-		assertSpyCall(roundSpy, 0, { args: [ID.New("some-patient-id")]})
-		assertSpyCalls(roundSpy, 1)
+		assertSpyCall(roundSpy, 0, { args: [ID.New("some-patient-id")] });
+		assertSpyCalls(roundSpy, 1);
 	});
 
 	await t.step("Deve retornar @PatientNotFound se o paciente não existir.", async () => {
-		const  { service } = makeService({patientRepository: new InmemPatientRepository()})
+		const { service } = makeService({ patientRepository: new InmemPatientRepository() });
 
-		const error = await service.latestMeasurements("some-patient-id")
+		const error = await service.latestMeasurements("some-patient-id");
 
-		assertEquals(error.isLeft(), true)
-		assertInstanceOf(error.value, PatientNotFound)
+		assertEquals(error.isLeft(), true);
+		assertInstanceOf(error.value, PatientNotFound);
 	});
 });
 
 Deno.test("Round Service - List Measurements", async (t) => {
 	await t.step("Deve listar as medições", async () => {
-		const { service } =  makeService({ roundRepository: new RoundRepositoryStub() })
-		
-		const parametersOrError = await service.measurements("some-patient-id")
-		const parameters = <Parameter[]>parametersOrError.value 
+		const { service } = makeService({ roundRepository: new RoundRepositoryStub() });
 
-		assertEquals(parameters.length, 3)
-	})
+		const parametersOrError = await service.measurements("some-patient-id");
+
+		const parameters = <Parameter[]> parametersOrError.value;
+
+		assertEquals(parameters.length, 3);
+	});
 
 	await t.step("Deve chamar o método measurements do repositório", async () => {
-		const { service, roundRepository } = makeService()
-		const roundSpy = spy(roundRepository, "measurements")
+		const { service, roundRepository } = makeService();
+		const roundSpy = spy(roundRepository, "measurements");
 
-		await service.measurements("some-patient-id")
+		await service.measurements("some-patient-id");
 
-		assertSpyCall(roundSpy, 0, { args: [ID.New("some-patient-id")]})
-		assertSpyCalls(roundSpy, 1)
+		assertSpyCall(roundSpy, 0, { args: [ID.New("some-patient-id")] });
+		assertSpyCalls(roundSpy, 1);
 	});
 
 	await t.step("Deve retornar @PatientNotFound se o paciente não existir.", async () => {
-		const  { service } = makeService({patientRepository: new InmemPatientRepository()})
+		const { service } = makeService({ patientRepository: new InmemPatientRepository() });
 
-		const error = await service.measurements("some-patient-id")
+		const error = await service.measurements("some-patient-id");
 
-		assertEquals(error.isLeft(), true)
-		assertInstanceOf(error.value, PatientNotFound)
-	})
-
-})
+		assertEquals(error.isLeft(), true);
+		assertInstanceOf(error.value, PatientNotFound);
+	});
+});
 
 Deno.test("Round Service - Errors", async (t) => {
 	await t.step("Deve retornar @PatientNofFoundError se o paciente não existir", async () => {
@@ -303,7 +311,6 @@ Deno.test("Round Service - Errors", async (t) => {
 		assertEquals(error.isLeft(), true);
 	});
 });
-
 
 const patientId = "some-id";
 const userId = "some-user-id";

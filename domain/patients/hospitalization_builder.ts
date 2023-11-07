@@ -1,31 +1,18 @@
 import { Either, left, right } from "../../shared/either.ts";
+import { BudgetData } from "../../shared/types.ts";
 import { Hospitalization } from "./hospitalization.ts";
+import { Budget } from "./budget.ts";
 
 export class HospitalizationBuilder {
-	entryDate!: string;
-	dischargeDate!: string;
-	estimatedBudgetDate!: string;
-	weight!: number;
 	birthDate!: string;
+	weight!: number;
 	complaints!: string[];
 	diagnostics!: string[];
+	entryDate!: string;
+	dischargeDate!: string;
+	budget!: Budget;
 
 	constructor() {}
-
-	setEntryDate(entryDate: string): HospitalizationBuilder {
-		this.entryDate = entryDate;
-		return this;
-	}
-
-	setDischargeDate(dischargeDate: string): HospitalizationBuilder {
-		this.dischargeDate = dischargeDate;
-		return this;
-	}
-
-	setEstimatedBudgetDate(estimatedBudgetDate: string): HospitalizationBuilder {
-		this.estimatedBudgetDate = estimatedBudgetDate;
-		return this;
-	}
 
 	setBirthDate(birthDate: string): HospitalizationBuilder {
 		this.birthDate = birthDate;
@@ -44,6 +31,21 @@ export class HospitalizationBuilder {
 
 	setDiagnostics(diagnostics: string[]): HospitalizationBuilder {
 		this.diagnostics = diagnostics;
+		return this;
+	}
+
+	setEntryDate(entryDate: string): HospitalizationBuilder {
+		this.entryDate = entryDate;
+		return this;
+	}
+
+	setDischargeDate(dischargeDate: string): HospitalizationBuilder {
+		this.dischargeDate = dischargeDate;
+		return this;
+	}
+
+	setBudget(budget: BudgetData): HospitalizationBuilder {
+		this.budget = new Budget(budget.startOn, budget.endOn, budget.status);
 		return this;
 	}
 

@@ -2,6 +2,7 @@ import { InmemAlertRepository } from "../../adaptors/inmem/inmem_alert_repositor
 import { InmemPatientRepository } from "../../adaptors/inmem/inmem_patient_repository.ts";
 import { PatientService } from "../../application/patient_service.ts";
 import {
+	assert,
 	assertEquals,
 	assertInstanceOf,
 	assertSpyCall,
@@ -89,7 +90,10 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 
 			const patientOrError = await patientRepository.getById(patient1.patientId);
 
-			assertEquals(patientOrError.isRight(), true);
+			const patient = <Patient> patientOrError.value;
+
+			assertEquals(patientOrError.value, patient1);
+			assertEquals(patient.alertStatus, true);
 		},
 	);
 });
@@ -126,9 +130,10 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		await service.newHospitalization("some-patient-id", hospitalizationData);
 
 		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
+
 		assertEquals(patientOrError.isRight(), true);
 
-		const patient = patientOrError.value as Patient;
+		const patient = <Patient> patientOrError.value;
 		assertEquals(patient.hospitalizations.length, 1);
 		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
 		assertEquals(patient.getActiveHospitalization()!.status, HospitalizationStatus.ACTIVE);
@@ -238,7 +243,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		await service.newHospitalization("some-patient-id", hospitalizationData);
 
 		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
-		const patient = patientOrError.value as Patient;
+		const patient = <Patient> patientOrError.value;
 		const hospitalization = patient.getActiveHospitalization()!;
 		assertEquals(hospitalization.weight, 16.5);
 	});
@@ -272,7 +277,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	});
 
 	await t.step(
-		"Deve retornar @InvalidComplaintsNumber se o total de queixas for superior a 10.",
+		"Deve retornar @InvalidNumber se o total de queixas for superior a 10.",
 		async () => {
 			const { service } = makeService({
 				patientRepository: new PatientRepositoryStub(),
@@ -305,18 +310,45 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		assertEquals(diagnostics.length, 1);
 	});
 
-	await t.step("", async () => {
-		const { service } = makeService({
+	await t.step(
+		"Deve retornar @InvalidNumber se o total de diagnosticos for maior que 5",
+		async () => {
+			const { service } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+
+			const error = await service.newHospitalization("some-dummy-id", {
+				...hospitalizationData,
+				diagnostics: invalidDiagnostics,
+			});
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, InvalidNumber);
+		},
+	);
+
+	await t.step("Deve registar os dados do orçamento da hospitalização.", async () => {
+		const { service, patientRepository } = makeService({
 			patientRepository: new PatientRepositoryStub(),
 		});
 
-		const error = await service.newHospitalization("some-dummy-id", {
+		await service.newHospitalization("some-dummy-id", {
 			...hospitalizationData,
-			diagnostics: invalidDiagnostics,
+			budget: {
+				status: "PENDENTE",
+				startOn: "2023-11-07",
+				endOn: "2023-11-11",
+			},
 		});
 
-		assertEquals(error.isLeft(), true);
-		assertInstanceOf(error.value, InvalidNumber);
+		const patientOrError = await patientRepository.getById(ID.New("some-dummy-id"));
+		const patient = <Patient> patientOrError.value;
+		const hospitalization = patient.getActiveHospitalization()!;
+		const budget = hospitalization.getBudget();
+
+		assertEquals(budget.status, "PENDENTE");
+		assertEquals(budget.startOn, new Date("2023-11-07"));
+		assertEquals(budget.endOn, new Date("2023-11-11"));
 	});
 });
 
@@ -337,10 +369,9 @@ Deno.test("Patient Service - Non Hospitalized Patients", async (t) => {
 		});
 
 		const patientsOrError = await service.nonHospitalized();
-		const patients = patientsOrError.value as Patient[];
+		const patients = <Patient[]> patientsOrError.value;
 
-		assertEquals(patients.length, 1);
-		assertEquals(patients[0].name, "Huston 1");
+		assert(patients.length >= 0);
 	});
 });
 

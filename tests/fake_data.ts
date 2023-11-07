@@ -15,7 +15,11 @@ export const patientData = {
 export const hospitalizationData = {
 	entryDate: new Date().toLocaleDateString(),
 	dischargeDate: new Date().toLocaleDateString(),
-	estimatedBudgetDate: new Date().toLocaleDateString(),
+	budget: {
+		startOn: "2021-01-01",
+		endOn: "2021-01-10",
+		status: "NÃO PAGO",
+	},
 	weight: 16.5,
 	birthDate: "2013-07-01",
 	complaints: ["Queixa 1", "Queixa 2"],

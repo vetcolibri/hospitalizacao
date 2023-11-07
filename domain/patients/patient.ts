@@ -43,13 +43,13 @@ export class Patient {
 
 	hospitalize(data: HospitalizationData): Either<Error, void> {
 		const newHospitalizationOrError = new HospitalizationBuilder()
-			.setEntryDate(data.entryDate)
-			.setDischargeDate(data.dischargeDate)
-			.setEstimatedBudgetDate(data.estimatedBudgetDate)
-			.setWeight(data.weight)
 			.setBirthDate(data.birthDate)
+			.setWeight(data.weight)
 			.setComplaints(data.complaints)
 			.setDiagnostics(data.diagnostics)
+			.setEntryDate(data.entryDate)
+			.setDischargeDate(data.dischargeDate)
+			.setBudget(data.budget)
 			.build();
 		if (newHospitalizationOrError.isLeft()) return left(newHospitalizationOrError.value);
 

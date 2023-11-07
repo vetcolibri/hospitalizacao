@@ -20,13 +20,16 @@ Deno.test("Patient", async (t) => {
 		const hospitalization = patient1.getActiveHospitalization();
 		assertEquals(hospitalization?.dischargeDate, new Date(hospitalizationData.dischargeDate));
 	});
-	await t.step("Deve recuperar o **estimatedBudgetDate** do paciente", () => {
+	await t.step("Deve recuperar o **budget** da Hospitalização", () => {
 		patient1.hospitalize(hospitalizationData);
 		const hospitalization = patient1.getActiveHospitalization();
+		const budget = hospitalization!.budget;
 		assertEquals(
-			hospitalization?.estimatedBudgetDate,
-			new Date(hospitalizationData.estimatedBudgetDate),
+			budget.startOn,
+			new Date(hospitalizationData.budget.startOn),
 		);
+		assertEquals(budget.endOn, new Date(hospitalizationData.budget.endOn));
+		assertEquals(budget.status, hospitalizationData.budget.status);
 	});
 	await t.step("Deve recuperar o **weight** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
