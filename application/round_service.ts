@@ -15,6 +15,8 @@ import { BloodGlucose } from "../domain/parameters/blood_glucose.ts";
 import { Hct } from "../domain/parameters/hct.ts";
 import { BloodPressure } from "../domain/parameters/blood_pressure.ts";
 import { Parameter } from "../domain/parameters/parameter.ts";
+import { InvalidParameter } from "../domain/parameters/parameter_error.ts";
+import { ERROR_MESSAGES } from "../shared/error_messages.ts";
 
 interface Dependencies {
 	roundRepository: RoundRepository;
@@ -37,11 +39,18 @@ export class RoundService {
 		this.deps = deps;
 	}
 
+	/**
+	 * Registra medições de um paciente
+	 * @param patientId
+	 * @param userId
+	 * @param parameters
+	 * @returns {Promise<Either<Error, void>>}
+	 */
 	async new(
 		patientId: string,
 		userId: string,
 		parameters: ParametersData,
-	): Promise<Either<PatientNotFound, void>> {
+	): Promise<Either<Error, void>> {
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) {
 			return left(patientOrError.value);
@@ -53,6 +62,7 @@ export class RoundService {
 
 		if (parameters.heartRate) {
 			const heartRate = new HeartRate(Number(parameters.heartRate.value), user);
+			if (!heartRate.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HEART_RATE));
 			round.addParameter(heartRate);
 		}
 
@@ -61,26 +71,32 @@ export class RoundService {
 				Number(parameters.respiratoryRate.value),
 				user,
 			);
+			
+			if (!respiratoryRate.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_RESPIRATORY_RATE));
 			round.addParameter(respiratoryRate);
 		}
 
 		if (parameters.trc) {
 			const trc = new Trc(Number(parameters.trc.value), user);
+			if (!trc.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TRC));
 			round.addParameter(trc);
 		}
 
 		if (parameters.avdn) {
 			const avdn = new Avdn(String(parameters.avdn.value), user);
+			if (!avdn.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_AVDN));
 			round.addParameter(avdn);
 		}
 
 		if (parameters.mucosas) {
 			const mucosas = new Mucosas(String(parameters.mucosas.value), user);
+			if (!mucosas.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_MUCOSAS));
 			round.addParameter(mucosas);
 		}
 
 		if (parameters.temperature) {
 			const temperature = new Temperature(Number(parameters.temperature.value), user);
+			if (!temperature.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TEMPERATURE));
 			round.addParameter(temperature);
 		}
 
@@ -89,11 +105,13 @@ export class RoundService {
 				Number(parameters.bloodGlucose.value),
 				user,
 			);
+			if (!bloodGlucose.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_GLUCOSE));
 			round.addParameter(bloodGlucose);
 		}
 
 		if (parameters.hct) {
 			const hct = new Hct(Number(parameters.hct.value), user);
+			if (!hct.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HCT));
 			round.addParameter(hct);
 		}
 
@@ -102,6 +120,7 @@ export class RoundService {
 				String(parameters.bloodPressure.value),
 				user,
 			);
+			if (!bloodPressure.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_PRESSURE));
 			round.addParameter(bloodPressure);
 		}
 
@@ -110,6 +129,11 @@ export class RoundService {
 		return right(undefined);
 	}
 
+	/**
+	 * Recupera as últimas medições de um paciente
+	 * @param patientId
+	 * @returns {Promise<Either<PatientNotFound, Parameter[]>>}
+	 */
 	async latestMeasurements(patientId: string): Promise<Either<PatientNotFound, Parameter[]>> {
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) {
@@ -120,6 +144,11 @@ export class RoundService {
 		return right(measurements)
 	}
 
+	/**
+	 * Recupera todas as medições de um paciente
+	 * @param patientId
+	 * @returns {Promise<Either<PatientNotFound, Parameter[]>>}
+	 */
 	async measurements(patientId: string): Promise<Either<PatientNotFound, Parameter[]>> {
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) {

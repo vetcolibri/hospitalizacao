@@ -76,7 +76,6 @@ export class PatientService {
 	 * Lista os pacientes não hospitalizados
 	 * @returns {Promise<Either<Error, Patient[]>>}
 	 */
-
 	async nonHospitalized(): Promise<Either<Error, Patient[]>> {
 		const patients = await this.deps.patientRepository.nonHospitalized();
 		return right(patients);

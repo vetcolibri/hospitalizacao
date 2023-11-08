@@ -166,7 +166,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	});
 
 	await t.step(
-		"Deve retornar @DateInvalid se a data fornecia da entrada do paciente for inferior a data actual",
+		"Deve retornar @InvalidDate se a data fornecia da entrada do paciente for inferior a data actual",
 		async () => {
 			const { service, patientRepository } = makeService({
 				patientRepository: new PatientRepositoryStub(),
@@ -205,7 +205,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	);
 
 	await t.step(
-		"Deve retornar @DateInvalid se a data fornecia da alta médica for inferior a data actual",
+		"Deve retornar @InvalidDate se a data fornecia da alta médica for inferior a data actual",
 		async () => {
 			const { service, patientRepository } = makeService({
 				patientRepository: new PatientRepositoryStub(),
@@ -326,6 +326,9 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			assertInstanceOf(error.value, InvalidNumber);
 		},
 	);
+
+
+	//  Pensar melhor sobre os orçamentos.
 
 	await t.step("Deve registar os dados do orçamento da hospitalização.", async () => {
 		const { service, patientRepository } = makeService({

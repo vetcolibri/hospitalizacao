@@ -23,7 +23,7 @@ export default function () {
 		const patients = await service.hospitalizadPatients();
 		const patientDTO: PatientDTO[] = patients.map((patient) => (
 			{
-				patientId: patient.patientId.toString(),
+				patientId: patient.patientId.getValue(),
 				name: patient.name,
 				specie: patient.specie.toString(),
 				entryDate: patient.getActiveHospitalization()!.entryDate.toJSON(),
@@ -52,7 +52,7 @@ export default function () {
 		const patients = patientsOrError.value as Patient[];
 		const results = patients.map((patient) => (
 			{
-				patientId: patient.patientId.toString(),
+				patientId: patient.patientId.getValue(),
 				name: patient.name,
 				specie: patient.specie.toString(),
 				breed: patient.breed,

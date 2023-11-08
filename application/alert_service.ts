@@ -29,6 +29,12 @@ export class AlertService {
 		this.deps = deps;
 	}
 
+	/**
+	 * Cria um novo alerta
+	 * @param patientId
+	 * @param alertData
+	 * @returns {Promise<Either<Error, void>>}
+	 */
 	async schedule(
 		patientId: string,
 		alertData: AlertData,
@@ -51,6 +57,11 @@ export class AlertService {
 		return right(undefined);
 	}
 
+	/**
+	 * Cancela um alerta
+	 * @param alertId
+	 * @returns {Promise<Either<Error, void>>}
+	 */
 	async cancel(alertId: string): Promise<Either<Error, void>> {
 		const alertOrError = await this.deps.alertRepository.getById(ID.New(alertId));
 		if (alertOrError.isLeft()) return left(alertOrError.value);
