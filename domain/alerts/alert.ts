@@ -54,6 +54,10 @@ export class Alert {
 		this.status = AlertStatus.DISABLED;
 	}
 
+	isDisabled(): boolean {
+		return this.status === AlertStatus.DISABLED
+	}
+
 	getStatus(): string {
 		return this.status;
 	}

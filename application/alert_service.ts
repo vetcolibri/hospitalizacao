@@ -1,4 +1,4 @@
-import { Alert, AlertStatus } from "../domain/alerts/alert.ts";
+import { Alert } from "../domain/alerts/alert.ts";
 import { AlertRepository } from "../domain/alerts/alert_repository.ts";
 import { ID } from "../domain/id.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
@@ -67,7 +67,7 @@ export class AlertService {
 		if (alertOrError.isLeft()) return left(alertOrError.value);
 
 		const alert = alertOrError.value;
-		if (alert.getStatus() === AlertStatus.DISABLED) {
+		if (alert.isDisabled()) {
 			return left(new Error("Alert is already disabled"));
 		}
 
