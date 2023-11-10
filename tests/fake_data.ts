@@ -13,8 +13,8 @@ export const patientData = {
 };
 
 export const hospitalizationData = {
-	entryDate: new Date().toLocaleDateString(),
-	dischargeDate: new Date().toLocaleDateString(),
+	entryDate: new Date().toISOString(),
+	dischargeDate: new Date().toISOString(),
 	budget: {
 		startOn: "2021-01-01",
 		endOn: "2021-01-10",
@@ -57,4 +57,4 @@ export const alert1 = Alert.create(
 patient1.hospitalize(hospitalizationData);
 patient2.hospitalize(hospitalizationData);
 patient4.hospitalize(hospitalizationData);
-patient4.nonHospitalized();
+patient4.discharge();
