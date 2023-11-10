@@ -10,24 +10,54 @@ import { InmemServicesFactory } from "./services.ts";
 const factory = new InmemServicesFactory();
 const service = factory.createPatientService();
 
-interface PatientDTO {
+interface HospitalizationDTO {
+	birthDate: string;
+	weight: number;
+	complaints: string[];
+	diagnostics: string[];
+	entryDate: string;
+	dischargeDate: string;
+}
+
+interface PatientsDTO {
 	patientId: string;
 	name: string;
 	specie: string;
-	entryDate?: string;
-	hasAlert?: boolean;
+	breed: string;
+	hasAlert: boolean;
+	ownerName: string;
+	ownerId: string;
+	ownerPhoneNumber: string;
+	hospitalization: HospitalizationDTO;
 }
 
 export default function () {
 	const hospitalizedPatientsHandler = async (ctx: Context) => {
 		const patients = await service.hospitalizadPatients();
-		const patientDTO: PatientDTO[] = patients.map((patient) => (
+		const patientDTO: PatientsDTO[] = patients.map((patient) => (
 			{
 				patientId: patient.patientId.getValue(),
 				name: patient.name,
 				specie: patient.specie.toString(),
-				entryDate: patient.getActiveHospitalization()!.entryDate.toJSON(),
+				breed: patient.breed,
 				hasAlert: patient.alertStatus,
+				ownerName: patient.owner.name,
+				ownerId: patient.owner.ownerId.toString(),
+				ownerPhoneNumber: patient.owner.phoneNumber,
+				hospitalization: {
+					birthDate: patient.activeHospitalization()!.birthDate.getAge(),
+					weight: patient.activeHospitalization()!.weight,
+					complaints: patient.activeHospitalization()!.complaints,
+					diagnostics: patient.activeHospitalization()!.diagnostics,
+					entryDate: patient.activeHospitalization()!.entryDate.toISOString(),
+					dischargeDate: patient.activeHospitalization()!.dischargeDate
+						.toISOString(),
+					budget: {
+						startOn: patient.activeHospitalization()!.activeBudget().startOn,
+						endOn: patient.activeHospitalization()!.activeBudget().endOn,
+						status: patient.activeHospitalization()!.activeBudget().status,
+					},
+				},
 			}
 		));
 		sendOk(ctx, patientDTO);
