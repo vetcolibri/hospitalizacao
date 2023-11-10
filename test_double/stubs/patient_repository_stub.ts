@@ -34,7 +34,7 @@ export class PatientRepositoryStub implements PatientRepository {
 
 	nonHospitalized(): Promise<Patient[]> {
 		const patients = this.records.filter((patient) =>
-			patient.status === PatientStatus.NONHOSPITALIZED
+			patient.status === PatientStatus.DISCHARGED
 		);
 		return Promise.resolve(patients);
 	}

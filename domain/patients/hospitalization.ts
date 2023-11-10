@@ -8,7 +8,7 @@ import { Budget } from "./budget.ts";
 
 export enum HospitalizationStatus {
 	ACTIVE = "ATIVA",
-	UP = "ALTA",
+	DISABLE = "INATIVA",
 }
 
 export class Hospitalization {
@@ -18,8 +18,8 @@ export class Hospitalization {
 	readonly diagnostics: string[];
 	readonly entryDate: Date;
 	readonly dischargeDate: Date;
-	budget: Budget;
-	status: HospitalizationStatus;
+	budgets: Budget[] = [];
+	status: HospitalizationStatus = HospitalizationStatus.ACTIVE;
 
 	private constructor(builder: HospitalizationBuilder) {
 		this.birthDate = new BirthDate(builder.birthDate);
@@ -28,31 +28,37 @@ export class Hospitalization {
 		this.diagnostics = builder.diagnostics;
 		this.entryDate = new Date(builder.entryDate);
 		this.dischargeDate = new Date(builder.dischargeDate);
-		this.status = HospitalizationStatus.ACTIVE;
-		this.budget = builder.budget;
 	}
 
 	static create(builder: HospitalizationBuilder): Either<Error, Hospitalization> {
-		const date = new Date();
-		const today = new Date(`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`);
-
-		if (new Date(builder.entryDate).getDate() < today.getDate()) {
+		const { entryDate, dischargeDate, complaints, diagnostics } = builder;
+		if (this.isInvalidDate(entryDate)) {
 			return left(new InvalidDate(ERROR_MESSAGES.INVALID_ENTRY_DATE));
 		}
 
-		if (new Date(builder.dischargeDate).getDate() < today.getDate()) {
+		if (this.isInvalidDate(dischargeDate)) {
 			return left(new InvalidDate(ERROR_MESSAGES.INVALID_DISCHARGE_DATE));
 		}
 
-		if (builder.complaints.length > 10) {
+		if (this.isInvalidNumber(complaints, 10)) {
 			return left(new InvalidNumber(ERROR_MESSAGES.INVALID_COMPLAINTS_NUMBER));
 		}
 
-		if (builder.diagnostics.length > 5) {
+		if (this.isInvalidNumber(diagnostics, 5)) {
 			return left(new InvalidNumber(ERROR_MESSAGES.INVALID_DIAGNOSTICS_NUMBER));
 		}
 
-		return right(new Hospitalization(builder));
+		const hospitalization = new Hospitalization(builder);
+		hospitalization.addBudget(builder.budget);
+		return right(hospitalization);
+	}
+
+	addBudget(budget: Budget) {
+		this.budgets.push(budget);
+	}
+
+	activeBudget(): Budget {
+		return this.budgets.find((budget) => budget.isActive())!;
 	}
 
 	getComplaints(): string[] {
@@ -63,11 +69,16 @@ export class Hospitalization {
 		return this.diagnostics;
 	}
 
-	getBudget(): Budget {
-		return this.budget;
+	disable() {
+		this.status = HospitalizationStatus.DISABLE;
 	}
 
-	down() {
-		this.status = HospitalizationStatus.UP;
+	static isInvalidDate(date: string): boolean {
+		const today = new Date().toDateString();
+		return new Date(`${date}T00:00:00.000Z`).getTime() < new Date(today).getTime();
+	}
+
+	static isInvalidNumber(set: string[], limit: number): boolean {
+		return set.length > limit;
 	}
 }

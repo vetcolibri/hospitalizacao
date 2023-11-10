@@ -136,7 +136,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const patient = <Patient> patientOrError.value;
 		assertEquals(patient.hospitalizations.length, 1);
 		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
-		assertEquals(patient.getActiveHospitalization()!.status, HospitalizationStatus.ACTIVE);
+		assertEquals(patient.activeHospitalization()!.status, HospitalizationStatus.ACTIVE);
 	});
 
 	await t.step("Deve actualizar o paciente no repositório", async () => {
@@ -149,6 +149,12 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		assertSpyCall(repoSpy, 0);
 		assertSpyCalls(repoSpy, 1);
+
+		const patientOrError = await patientRepository.getById(ID.New("some-other-id"));
+		const patient = <Patient> patientOrError.value;
+
+		assertEquals(patient.hospitalizations.length, 1);
+		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
 	});
 
 	await t.step("A hospitalização deve receber a data de entrada", async () => {
@@ -160,7 +166,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.getActiveHospitalization()!;
+		const hospitalization = patient.activeHospitalization()!;
 
 		assertEquals(hospitalization.entryDate, new Date(hospitalizationData.entryDate));
 	});
@@ -195,7 +201,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 			const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
 			const patient = <Patient> patientOrError.value;
-			const hospitalization = patient.getActiveHospitalization()!;
+			const hospitalization = patient.activeHospitalization()!;
 
 			assertEquals(
 				hospitalization.dischargeDate,
@@ -244,7 +250,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
 		const patient = <Patient> patientOrError.value;
-		const hospitalization = patient.getActiveHospitalization()!;
+		const hospitalization = patient.activeHospitalization()!;
 		assertEquals(hospitalization.weight, 16.5);
 	});
 
@@ -257,7 +263,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.getActiveHospitalization()!;
+		const hospitalization = patient.activeHospitalization()!;
 		assertEquals(hospitalization.birthDate.getYears(), 10);
 	});
 
@@ -271,7 +277,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		);
 		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.getActiveHospitalization()!;
+		const hospitalization = patient.activeHospitalization()!;
 		const complaints = hospitalization.getComplaints();
 		assertEquals(complaints.length, 2);
 	});
@@ -304,7 +310,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.getActiveHospitalization()!;
+		const hospitalization = patient.activeHospitalization()!;
 		const diagnostics = hospitalization.getDiagnostics();
 
 		assertEquals(diagnostics.length, 1);
@@ -326,33 +332,6 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			assertInstanceOf(error.value, InvalidNumber);
 		},
 	);
-
-
-	//  Pensar melhor sobre os orçamentos.
-
-	await t.step("Deve registar os dados do orçamento da hospitalização.", async () => {
-		const { service, patientRepository } = makeService({
-			patientRepository: new PatientRepositoryStub(),
-		});
-
-		await service.newHospitalization("some-dummy-id", {
-			...hospitalizationData,
-			budget: {
-				status: "PENDENTE",
-				startOn: "2023-11-07",
-				endOn: "2023-11-11",
-			},
-		});
-
-		const patientOrError = await patientRepository.getById(ID.New("some-dummy-id"));
-		const patient = <Patient> patientOrError.value;
-		const hospitalization = patient.getActiveHospitalization()!;
-		const budget = hospitalization.getBudget();
-
-		assertEquals(budget.status, "PENDENTE");
-		assertEquals(budget.startOn, new Date("2023-11-07"));
-		assertEquals(budget.endOn, new Date("2023-11-11"));
-	});
 });
 
 Deno.test("Patient Service - Non Hospitalized Patients", async (t) => {

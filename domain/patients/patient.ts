@@ -7,7 +7,7 @@ import { Either, left, right } from "../../shared/either.ts";
 
 export enum PatientStatus {
 	HOSPITALIZED = "HOSPITALIZADO",
-	NONHOSPITALIZED = "NAO HOSPITALIZADO",
+	DISCHARGED = "ALTA MEDICA",
 }
 
 export enum PatientSpecie {
@@ -23,7 +23,7 @@ export class Patient {
 	readonly breed: string;
 	readonly owner: Owner;
 	status?: PatientStatus;
-	alertStatus?: boolean = false;
+	alertStatus = false;
 
 	constructor(id: string, name: string, breed: string, owner: Owner, specie?: string) {
 		this.patientId = ID.New(id);
@@ -42,7 +42,7 @@ export class Patient {
 	}
 
 	hospitalize(data: HospitalizationData): Either<Error, void> {
-		const newHospitalizationOrError = new HospitalizationBuilder()
+		const hospitalizationOrError = new HospitalizationBuilder()
 			.setBirthDate(data.birthDate)
 			.setWeight(data.weight)
 			.setComplaints(data.complaints)
@@ -51,23 +51,22 @@ export class Patient {
 			.setDischargeDate(data.dischargeDate)
 			.setBudget(data.budget)
 			.build();
-		if (newHospitalizationOrError.isLeft()) return left(newHospitalizationOrError.value);
+		if (hospitalizationOrError.isLeft()) return left(hospitalizationOrError.value);
 
-		this.hospitalizations.push(newHospitalizationOrError.value);
+		this.hospitalizations.push(hospitalizationOrError.value);
 		this.status = PatientStatus.HOSPITALIZED;
-
 		return right(undefined);
 	}
 
-	nonHospitalized() {
-		const hospitalization = this.getActiveHospitalization();
+	discharge() {
+		const hospitalization = this.activeHospitalization();
 		if (hospitalization) {
-			hospitalization.down();
-			this.status = PatientStatus.NONHOSPITALIZED;
+			hospitalization.disable();
+			this.status = PatientStatus.DISCHARGED;
 		}
 	}
 
-	getActiveHospitalization(): Hospitalization | undefined {
+	activeHospitalization(): Hospitalization | undefined {
 		const hospitalization = this.hospitalizations.find((hospitalization) =>
 			hospitalization.status === HospitalizationStatus.ACTIVE
 		);
