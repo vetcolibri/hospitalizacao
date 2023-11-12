@@ -8,8 +8,9 @@ self.addEventListener("message", (event) => {
 
 	if (type === CronType.PUBLISH) {
 		const seconds = alert.time.getSeconds();
+		const rate = alert.repeatEvery.value;
 		const job = new Cron(`${seconds} * * * * *`, {
-			interval: alert.repeatEvery,
+			interval: rate,
 			timezone: "Africa/Luanda",
 			startAt: alert.time.toISOString(),
 		});
@@ -25,11 +26,11 @@ self.addEventListener("message", (event) => {
 			time: alert.time,
 		};
 		job.schedule(() => self.postMessage(payload));
-		jobs.set(alert.alertId.getValue(), job);
+		jobs.set(alert.alertId.value, job);
 	}
 
 	if (type === CronType.REMOVE) {
-		const job = jobs.get(alert.alertId.getValue());
+		const job = jobs.get(alert.alertId.value);
 		if (job) {
 			job.stop();
 		}
