@@ -38,7 +38,11 @@ export default function () {
 		backgroundTask.worker.onmessage = (event) => {
 			for (const wb of websocktClients) {
 				if (wb.readyState === wb.OPEN) {
-					wb.send(JSON.stringify(event.data));
+					const data  = {
+						...event.data,
+						repeatEvery: event.data.repeatEvery.value,
+					}
+					wb.send(JSON.stringify(data));
 				}
 			}
 			websocktClients = websocktClients.filter((wb) => wb.readyState === wb.OPEN);
