@@ -22,11 +22,16 @@ export default function () {
 
 	const latestMeasurementsHandler = async (ctx: ContextWithParams) => {
 		const patientId = ctx.params.patientId;
-		const parameters = await service.latestMeasurements(patientId);
+		const parametersOrError = await service.latestMeasurements(patientId);
+		if (parametersOrError.isLeft()) {
+			sendBadRequest(ctx, parametersOrError.value.message);
+			return;
+		}
+		const parameters = parametersOrError.value;
 		const result = parameters.map((p) => ({
 			name: p.name,
 			value: p.getValue(),
-			issudeAt: p.issuedAt,
+			issuedAt: p.issuedAt,
 		}));
 		sendOk(ctx, result);
 	};
@@ -39,7 +44,7 @@ export default function () {
 			return;
 		}
 		sendOk(ctx, resultOrError.value);
-	}
+	};
 
 	const router = new Router({ prefix: "/rounds" });
 	router.post("/new", validate(roundSchema), newRoundHandler);
