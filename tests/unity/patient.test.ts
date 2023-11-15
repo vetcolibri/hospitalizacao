@@ -1,5 +1,5 @@
 import { assertEquals } from "../../dev_deps.ts";
-import { PatientSpecie, PatientStatus } from "../../domain/patients/patient.ts";
+import { PatientStatus, Species } from "../../domain/patients/patient.ts";
 import { hospitalizationData, patient1 } from "../fake_data.ts";
 
 Deno.test("Patient", async (t) => {
@@ -8,7 +8,8 @@ Deno.test("Patient", async (t) => {
 		assertEquals(patient1.name, "Rex");
 		assertEquals(patient1.patientId.getValue(), "some-patient-id");
 		assertEquals(patient1.getStatus(), PatientStatus.HOSPITALIZED);
-		assertEquals(patient1.specie, PatientSpecie.CANINE);
+		assertEquals(patient1.specie, Species.CANINE);
+		assertEquals(patient1.birthDate.getYears(), 10);
 	});
 	await t.step("Deve recuperar o **entryDate** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
@@ -28,11 +29,11 @@ Deno.test("Patient", async (t) => {
 
 		assertEquals(
 			budget.startOn,
-			new Date(hospitalizationData.budget.startOn),
+			new Date(hospitalizationData.budgetData.startOn),
 		);
 		assertEquals(budget.isActive(), true);
-		assertEquals(budget.endOn, new Date(hospitalizationData.budget.endOn));
-		assertEquals(budget.status, hospitalizationData.budget.status);
+		assertEquals(budget.endOn, new Date(hospitalizationData.budgetData.endOn));
+		assertEquals(budget.status, hospitalizationData.budgetData.status);
 		assertEquals(budget.status, "NÃO PAGO");
 		assertEquals(budget.durationInDays, 9);
 	});
@@ -40,11 +41,6 @@ Deno.test("Patient", async (t) => {
 		patient1.hospitalize(hospitalizationData);
 		const hospitalization = patient1.activeHospitalization();
 		assertEquals(hospitalization?.weight, hospitalizationData.weight);
-	});
-	await t.step("Deve recuperar o **age** do paciente", () => {
-		patient1.hospitalize(hospitalizationData);
-		const hospitalization = patient1.activeHospitalization();
-		assertEquals(hospitalization?.birthDate.getYears(), 10);
 	});
 	await t.step("Deve recuperar o **complaints** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);

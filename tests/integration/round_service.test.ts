@@ -27,7 +27,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			},
 		};
 		const { service, patientRepository } = makeService();
-		const patientSpy = spy(patientRepository, "getById");
+		const patientSpy = spy(patientRepository, "get");
 
 		await service.new(patientId, userId, parameters);
 		assertSpyCall(patientSpy, 0, { args: [ID.New(patientId)] });
@@ -312,36 +312,41 @@ Deno.test("Round Service - Errors", async (t) => {
 		assertEquals(error.isLeft(), true);
 	});
 
-	await t.step("Deve retornar @InvalidParameter se a frequência cardíaca for superior a 300.", async () => {
-		const parameters = {
-			heartRate: {
-				name: "heartRate",
-				value: 301,
-			},
-		};
-		const { service } = makeService();
-		
-		const error = await service.new(patientId, userId, parameters);
+	await t.step(
+		"Deve retornar @InvalidParameter se a frequência cardíaca for superior a 300.",
+		async () => {
+			const parameters = {
+				heartRate: {
+					name: "heartRate",
+					value: 301,
+				},
+			};
+			const { service } = makeService();
 
-		assertEquals(error.isLeft(), true);
-		assertInstanceOf(error.value, InvalidParameter);
-	});
+			const error = await service.new(patientId, userId, parameters);
 
-	await t.step("Deve retornar @InvalidParameter se a frequência respiratória for superior a 100.", async () => {
-		const parameters = {
-			respiratoryRate: {
-				name: "respiratoryRate",
-				value: 101,
-			},
-		};
-		const { service } = makeService();
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, InvalidParameter);
+		},
+	);
 
-		const error = await service.new(patientId, userId, parameters);
+	await t.step(
+		"Deve retornar @InvalidParameter se a frequência respiratória for superior a 100.",
+		async () => {
+			const parameters = {
+				respiratoryRate: {
+					name: "respiratoryRate",
+					value: 101,
+				},
+			};
+			const { service } = makeService();
 
-		assertEquals(error.isLeft(), true);
-		assertInstanceOf(error.value, InvalidParameter);
-	});
+			const error = await service.new(patientId, userId, parameters);
 
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, InvalidParameter);
+		},
+	);
 
 	await t.step("Deve retornar @InvalidParameter se o trc for superior a 10.", async () => {
 		const parameters = {
@@ -356,7 +361,6 @@ Deno.test("Round Service - Errors", async (t) => {
 
 		assertEquals(error.isLeft(), true);
 		assertInstanceOf(error.value, InvalidParameter);
-
 	});
 
 	await t.step("Deve retornar @InvalidParameter se a Avnd não for válida.", async () => {
@@ -364,7 +368,7 @@ Deno.test("Round Service - Errors", async (t) => {
 			avdn: {
 				name: "avdn",
 				value: "some-avdn",
-			}
+			},
 		};
 
 		const { service } = makeService();
@@ -380,7 +384,7 @@ Deno.test("Round Service - Errors", async (t) => {
 			mucosas: {
 				name: "mucosas",
 				value: "some-mucosas",
-			}
+			},
 		};
 
 		const { service } = makeService();
@@ -391,28 +395,31 @@ Deno.test("Round Service - Errors", async (t) => {
 		assertInstanceOf(error.value, InvalidParameter);
 	});
 
-	await t.step("Deve retornar @InvalidParameter se a temperatura for superior a 45.", async () => {
-		const parameters = {
-			temperature: {
-				name: "temperature",
-				value: 146,
-			}
-		};
+	await t.step(
+		"Deve retornar @InvalidParameter se a temperatura for superior a 45.",
+		async () => {
+			const parameters = {
+				temperature: {
+					name: "temperature",
+					value: 146,
+				},
+			};
 
-		const { service } = makeService();
+			const { service } = makeService();
 
-		const error = await service.new(patientId, userId, parameters);
+			const error = await service.new(patientId, userId, parameters);
 
-		assertEquals(error.isLeft(), true);
-		assertInstanceOf(error.value, InvalidParameter);
-	});
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, InvalidParameter);
+		},
+	);
 
 	await t.step("Deve retornar @InvalidParameter se a glicemia for superior a 300.", async () => {
 		const parameters = {
 			bloodGlucose: {
 				name: "bloodGlucose",
 				value: 301,
-			}
+			},
 		};
 
 		const { service } = makeService();
@@ -428,7 +435,7 @@ Deno.test("Round Service - Errors", async (t) => {
 			hct: {
 				name: "hct",
 				value: 101,
-			}
+			},
 		};
 
 		const { service } = makeService();
@@ -439,21 +446,24 @@ Deno.test("Round Service - Errors", async (t) => {
 		assertInstanceOf(error.value, InvalidParameter);
 	});
 
-	await t.step("Deve retornar @InvalidParameter se a pressão arterial não for válida.", async () => {
-		const parameters = {
-			bloodPressure: {
-				name: "bloodPressure",
-				value: "some-blood-pressure",
-			}
-		};
+	await t.step(
+		"Deve retornar @InvalidParameter se a pressão arterial não for válida.",
+		async () => {
+			const parameters = {
+				bloodPressure: {
+					name: "bloodPressure",
+					value: "some-blood-pressure",
+				},
+			};
 
-		const { service } = makeService();
+			const { service } = makeService();
 
-		const error = await service.new(patientId, userId, parameters);
+			const error = await service.new(patientId, userId, parameters);
 
-		assertEquals(error.isLeft(), true);
-		assertInstanceOf(error.value, InvalidParameter);
-	});
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, InvalidParameter);
+		},
+	);
 });
 
 const patientId = "some-id";

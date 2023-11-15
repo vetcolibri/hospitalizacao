@@ -51,7 +51,7 @@ export class RoundService {
 		userId: string,
 		parameters: ParametersData,
 	): Promise<Either<Error, void>> {
-		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.get(ID.New(patientId));
 		if (patientOrError.isLeft()) {
 			return left(patientOrError.value);
 		}
@@ -62,7 +62,9 @@ export class RoundService {
 
 		if (parameters.heartRate) {
 			const heartRate = new HeartRate(Number(parameters.heartRate.value), user);
-			if (!heartRate.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HEART_RATE));
+			if (!heartRate.isValid()) {
+				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HEART_RATE));
+			}
 			round.addParameter(heartRate);
 		}
 
@@ -71,8 +73,10 @@ export class RoundService {
 				Number(parameters.respiratoryRate.value),
 				user,
 			);
-			
-			if (!respiratoryRate.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_RESPIRATORY_RATE));
+
+			if (!respiratoryRate.isValid()) {
+				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_RESPIRATORY_RATE));
+			}
 			round.addParameter(respiratoryRate);
 		}
 
@@ -90,13 +94,17 @@ export class RoundService {
 
 		if (parameters.mucosas) {
 			const mucosas = new Mucosas(String(parameters.mucosas.value), user);
-			if (!mucosas.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_MUCOSAS));
+			if (!mucosas.isValid()) {
+				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_MUCOSAS));
+			}
 			round.addParameter(mucosas);
 		}
 
 		if (parameters.temperature) {
 			const temperature = new Temperature(Number(parameters.temperature.value), user);
-			if (!temperature.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TEMPERATURE));
+			if (!temperature.isValid()) {
+				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TEMPERATURE));
+			}
 			round.addParameter(temperature);
 		}
 
@@ -105,7 +113,9 @@ export class RoundService {
 				Number(parameters.bloodGlucose.value),
 				user,
 			);
-			if (!bloodGlucose.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_GLUCOSE));
+			if (!bloodGlucose.isValid()) {
+				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_GLUCOSE));
+			}
 			round.addParameter(bloodGlucose);
 		}
 
@@ -120,7 +130,9 @@ export class RoundService {
 				String(parameters.bloodPressure.value),
 				user,
 			);
-			if (!bloodPressure.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_PRESSURE));
+			if (!bloodPressure.isValid()) {
+				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_PRESSURE));
+			}
 			round.addParameter(bloodPressure);
 		}
 
@@ -135,13 +147,13 @@ export class RoundService {
 	 * @returns {Promise<Either<PatientNotFound, Parameter[]>>}
 	 */
 	async latestMeasurements(patientId: string): Promise<Either<PatientNotFound, Parameter[]>> {
-		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.get(ID.New(patientId));
 		if (patientOrError.isLeft()) {
-			return left(patientOrError.value)
+			return left(patientOrError.value);
 		}
 
 		const measurements = await this.deps.roundRepository.latestMeasurements(ID.New(patientId));
-		return right(measurements)
+		return right(measurements);
 	}
 
 	/**
@@ -150,13 +162,12 @@ export class RoundService {
 	 * @returns {Promise<Either<PatientNotFound, Parameter[]>>}
 	 */
 	async measurements(patientId: string): Promise<Either<PatientNotFound, Parameter[]>> {
-		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.get(ID.New(patientId));
 		if (patientOrError.isLeft()) {
-			return left(patientOrError.value)
+			return left(patientOrError.value);
 		}
 
 		const measurements = await this.deps.roundRepository.measurements(ID.New(patientId));
-		return right(measurements)
+		return right(measurements);
 	}
-
 }

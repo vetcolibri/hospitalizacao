@@ -1,22 +1,32 @@
 import { z } from "../../deps.ts";
 
+const budgetSchema = z.object({
+	startOn: z.string(),
+	endOn: z.string(),
+	status: z.enum(["PENDENTE", "PAGO", "NÃO PAGO"]),
+});
+
 const patientSchema = z.object({
+	patientId: z.string(),
 	name: z.string(),
-	specie: z.enum(["CANINO", "FELINO"]),
+	specie: z.string(),
 	breed: z.string(),
-	ownerName: z.string(),
+	birthDate: z.string(),
+});
+
+const ownerSchema = z.object({
 	ownerId: z.string(),
-	ownerPhoneNumber: z.string(),
+	name: z.string(),
+	phoneNumber: z.string(),
 });
 
 const hospitalizationSchema = z.object({
+	weight: z.number().int().lte(100),
 	entryDate: z.string(),
 	dischargeDate: z.string(),
-	estimatedBudgetDate: z.string(),
-	age: z.number().int().lte(20),
-	weight: z.number().int().lte(100),
 	complaints: z.string().array(),
 	diagnostics: z.string().array(),
+	budget: budgetSchema,
 });
 
 export const recuringHospitalizationSchema = z.object({
@@ -27,4 +37,5 @@ export const recuringHospitalizationSchema = z.object({
 export const newPatientSchema = z.object({
 	patientData: patientSchema,
 	hospitalizationData: hospitalizationSchema,
+	ownerData: ownerSchema,
 });

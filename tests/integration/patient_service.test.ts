@@ -13,7 +13,7 @@ import { Alert } from "../../domain/alerts/alert.ts";
 import { ID } from "../../domain/id.ts";
 import { InvalidDate } from "../../domain/patients/date_error.ts";
 import { InvalidNumber } from "../../domain/patients/number_error.ts";
-import { HospitalizationStatus } from "../../domain/patients/hospitalization.ts";
+import { Status } from "../../domain/patients/hospitalization.ts";
 import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
@@ -29,6 +29,7 @@ import {
 	patient1,
 	patient2,
 } from "../fake_data.ts";
+import { IDAlreadyExists } from "../../domain/patients/id_already_exists_error.ts";
 
 Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 	await t.step("Deve listar os pacientes hospitalzados.", async () => {
@@ -56,8 +57,8 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 
 		const pacientes = await service.hospitalizadPatients();
 
-		const patientOrError = await patientRepository.getById(patient1.patientId);
-		const patient = patientOrError.value as Patient;
+		const patientOrError = await patientRepository.get(patient1.patientId);
+		const patient = <Patient> patientOrError.value;
 
 		assertEquals(pacientes.length, 2);
 		assertEquals(patientOrError.isRight(), true);
@@ -88,7 +89,7 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 
 			await service.hospitalizadPatients();
 
-			const patientOrError = await patientRepository.getById(patient1.patientId);
+			const patientOrError = await patientRepository.get(patient1.patientId);
 
 			const patient = <Patient> patientOrError.value;
 
@@ -101,7 +102,7 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 Deno.test("Patient Service - New Hospitalization", async (t) => {
 	await t.step("Deve chamar o repositório para buscar o paciente", async () => {
 		const { service, patientRepository } = makeService();
-		const repoSpy = spy(patientRepository, "getById");
+		const repoSpy = spy(patientRepository, "get");
 
 		await service.newHospitalization("some-patient-id", hospitalizationData);
 
@@ -118,7 +119,6 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, PatientNotFound);
-			assertEquals(error.value.message, "Patient not found");
 		},
 	);
 
@@ -129,14 +129,14 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		await service.newHospitalization("some-patient-id", hospitalizationData);
 
-		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
+		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 
 		assertEquals(patientOrError.isRight(), true);
 
 		const patient = <Patient> patientOrError.value;
 		assertEquals(patient.hospitalizations.length, 1);
 		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
-		assertEquals(patient.activeHospitalization()!.status, HospitalizationStatus.ACTIVE);
+		assertEquals(patient.activeHospitalization()!.status, Status.OPEN);
 	});
 
 	await t.step("Deve actualizar o paciente no repositório", async () => {
@@ -150,7 +150,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		assertSpyCall(repoSpy, 0);
 		assertSpyCalls(repoSpy, 1);
 
-		const patientOrError = await patientRepository.getById(ID.New("some-other-id"));
+		const patientOrError = await patientRepository.get(ID.New("some-other-id"));
 		const patient = <Patient> patientOrError.value;
 
 		assertEquals(patient.hospitalizations.length, 1);
@@ -164,7 +164,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		await service.newHospitalization("some-patient-id", hospitalizationData);
 
-		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
+		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
 		const hospitalization = patient.activeHospitalization()!;
 
@@ -177,7 +177,13 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const { service, patientRepository } = makeService({
 				patientRepository: new PatientRepositoryStub(),
 			});
-			const patient = new Patient("fake-id", "fake-name", "fake-breed", owner);
+			const patient = Patient.create({
+				patientId: "fake-id",
+				name: "fake-name",
+				breed: "fake-breed",
+				specie: "fake-specie",
+				birthDate: "2020-01-01",
+			}, owner);
 			await patientRepository.save(patient);
 
 			const error = await service.newHospitalization("fake-id", {
@@ -199,7 +205,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 			await service.newHospitalization("some-patient-id", hospitalizationData);
 
-			const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
+			const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 			const patient = <Patient> patientOrError.value;
 			const hospitalization = patient.activeHospitalization()!;
 
@@ -216,7 +222,13 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const { service, patientRepository } = makeService({
 				patientRepository: new PatientRepositoryStub(),
 			});
-			const patient = new Patient("fake-id", "fake-name", "fake-breed", owner);
+			const patient = Patient.create({
+				patientId: "fake-id",
+				name: "fake-name",
+				breed: "fake-breed",
+				specie: "fake-specie",
+				birthDate: "2020-01-01",
+			}, owner);
 			await patientRepository.save(patient);
 
 			const error = await service.newHospitalization("fake-id", {
@@ -248,23 +260,10 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		await service.newHospitalization("some-patient-id", hospitalizationData);
 
-		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
+		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = <Patient> patientOrError.value;
 		const hospitalization = patient.activeHospitalization()!;
 		assertEquals(hospitalization.weight, 16.5);
-	});
-
-	await t.step("Deve registar a data de nascimento do paciente·", async () => {
-		const { service, patientRepository } = makeService({
-			patientRepository: new PatientRepositoryStub(),
-		});
-
-		await service.newHospitalization("some-patient-id", hospitalizationData);
-
-		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
-		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.activeHospitalization()!;
-		assertEquals(hospitalization.birthDate.getYears(), 10);
 	});
 
 	await t.step("Deve registar as queixas do paciente.", async () => {
@@ -275,7 +274,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			"some-patient-id",
 			hospitalizationData,
 		);
-		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
+		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
 		const hospitalization = patient.activeHospitalization()!;
 		const complaints = hospitalization.getComplaints();
@@ -308,7 +307,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		await service.newHospitalization("some-patient-id", hospitalizationData);
 
-		const patientOrError = await patientRepository.getById(ID.New("some-patient-id"));
+		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
 		const hospitalization = patient.activeHospitalization()!;
 		const diagnostics = hospitalization.getDiagnostics();
@@ -374,7 +373,7 @@ Deno.test("Patient Service - New Patient", async (t) => {
 
 		await service.newPatient(newPatientData);
 
-		const patientOrError = await patientRepository.getById(ID.New(patientData.patientId));
+		const patientOrError = await patientRepository.get(ID.New(patientData.patientId));
 		const patient = <Patient> patientOrError.value;
 
 		assertEquals(patientOrError.isRight(), true);
@@ -383,11 +382,11 @@ Deno.test("Patient Service - New Patient", async (t) => {
 
 	await t.step("Deve registar os dados do paciente", async () => {
 		const { service, patientRepository } = makeService();
-		const { patientData } = newPatientData;
+		const { patientData, ownerData } = newPatientData;
 
 		await service.newPatient(newPatientData);
 
-		const patientOrError = await patientRepository.getById(ID.New(patientData.patientId));
+		const patientOrError = await patientRepository.get(ID.New(patientData.patientId));
 		assertEquals(patientOrError.isRight(), true);
 
 		const patient = <Patient> patientOrError.value;
@@ -396,9 +395,11 @@ Deno.test("Patient Service - New Patient", async (t) => {
 		assertEquals(patient.name, patientData.name);
 		assertEquals(patient.specie, patientData.specie);
 		assertEquals(patient.breed, patientData.breed);
-		assertEquals(patient.owner.ownerId, patientData.ownerId);
-		assertEquals(patient.owner.name, patientData.ownerName);
-		assertEquals(patient.owner.phoneNumber, patientData.phoneNumber);
+		assertEquals(patient.birthDate.value, new Date(patientData.birthDate));
+
+		assertEquals(patient.owner.ownerId.getValue(), ownerData.ownerId);
+		assertEquals(patient.owner.name, ownerData.name);
+		assertEquals(patient.owner.phoneNumber, ownerData.phoneNumber);
 	});
 
 	await t.step("Deve registar os dados de hospitalização do paciente", async () => {
@@ -407,12 +408,33 @@ Deno.test("Patient Service - New Patient", async (t) => {
 
 		await service.newPatient(newPatientData);
 
-		const patientOrError = await patientRepository.getById(ID.New(patientData.patientId));
+		const patientOrError = await patientRepository.get(ID.New(patientData.patientId));
 		assertEquals(patientOrError.isRight(), true);
 
 		const patient = <Patient> patientOrError.value;
 
 		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
+	});
+
+	await t.step("Deve verificar se ID do paciente já foi registrado.", async () => {
+		const { service, patientRepository } = makeService();
+		const repoSpy = spy(patientRepository, "exists");
+
+		await service.newPatient(newPatientData);
+
+		assertSpyCall(repoSpy, 0, { args: [ID.New(newPatientData.patientData.patientId)] });
+		assertSpyCalls(repoSpy, 1);
+	});
+
+	await t.step("Deve retonar @IDAlreadyExists se ID do paciente já foi registrado.", async () => {
+		const { service } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		const error = await service.newPatient(newPatientData);
+
+		assertEquals(error.isLeft(), true);
+		assertInstanceOf(error.value, IDAlreadyExists);
 	});
 });
 

@@ -11,7 +11,6 @@ const factory = new InmemServicesFactory();
 const service = factory.createPatientService();
 
 interface HospitalizationDTO {
-	birthDate: string;
 	weight: number;
 	complaints: string[];
 	diagnostics: string[];
@@ -44,8 +43,8 @@ export default function () {
 				ownerName: patient.owner.name,
 				ownerId: patient.owner.ownerId.toString(),
 				ownerPhoneNumber: patient.owner.phoneNumber,
+				birthDate: patient.birthDate.getAge(),
 				hospitalization: {
-					birthDate: patient.activeHospitalization()!.birthDate.getAge(),
 					weight: patient.activeHospitalization()!.weight,
 					complaints: patient.activeHospitalization()!.complaints,
 					diagnostics: patient.activeHospitalization()!.diagnostics,
@@ -79,7 +78,7 @@ export default function () {
 
 	const nonHospitalizedHandler = async (ctx: ContextWithParams) => {
 		const patientsOrError = await service.nonHospitalized();
-		const patients = patientsOrError.value as Patient[];
+		const patients = <Patient[]> patientsOrError.value;
 		const results = patients.map((patient) => (
 			{
 				patientId: patient.patientId.getValue(),
@@ -94,8 +93,13 @@ export default function () {
 	};
 
 	const newPatientHandler = async (ctx: Context) => {
-		const { patientData, hospitalizationData } = ctx.state.validatedData;
-		await service.newPatient({ patientData, hospitalizationData });
+		const newPatientData = ctx.state.validatedData;
+		const voidOrError = await service.newPatient(newPatientData);
+		if (voidOrError.isLeft()) {
+			sendBadRequest(ctx, voidOrError.value.message);
+			return;
+		}
+
 		sendOk(ctx);
 	};
 

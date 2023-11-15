@@ -7,15 +7,19 @@ export const patientData = {
 	name: "Rex",
 	specie: "CANINO",
 	breed: "bulldog",
+	birthDate: "2013-07-01",
+};
+
+export const ownerData = {
 	ownerId: "PR - 101002/2012",
-	ownerName: "Huston",
+	name: "Huston",
 	phoneNumber: "933843893",
 };
 
 export const hospitalizationData = {
 	entryDate: new Date().toISOString(),
 	dischargeDate: new Date().toISOString(),
-	budget: {
+	budgetData: {
 		startOn: "2021-01-01",
 		endOn: "2021-01-10",
 		status: "NÃO PAGO",
@@ -29,6 +33,7 @@ export const hospitalizationData = {
 export const newPatientData = {
 	patientData,
 	hospitalizationData,
+	ownerData,
 };
 
 const generateArrayString = (size: number) => {
@@ -42,11 +47,11 @@ const generateArrayString = (size: number) => {
 export const invalidComplaints = generateArrayString(11);
 export const invalidDiagnostics = generateArrayString(6);
 
-export const owner = new Owner("1001", "Jonh", "933001122");
-export const patient1 = new Patient("some-patient-id", "Rex", "Bulldog", owner);
-export const patient2 = new Patient("some-id", "Huston", "Pitbull", owner);
-export const patient3 = new Patient("some-other-id", "Huston", "Pitbull", owner);
-export const patient4 = new Patient("some-dummy-id", "Huston 1", "Pitbull", owner);
+export const owner = Owner.create({ ownerId: "1001", name: "Jonh", phoneNumber: "933001122" });
+export const patient1 = Patient.create({ ...patientData, patientId: "some-patient-id" }, owner);
+export const patient2 = Patient.create({ ...patientData, patientId: "some-id" }, owner);
+export const patient3 = Patient.create({ ...patientData, patientId: "some-other-id" }, owner);
+export const patient4 = Patient.create({ ...patientData, patientId: "some-dummy-id" }, owner);
 export const alert1 = Alert.create(
 	patient1,
 	["heartRate", "bloodPressure", "glicemia"],

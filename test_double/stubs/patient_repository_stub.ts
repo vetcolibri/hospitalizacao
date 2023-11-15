@@ -12,7 +12,7 @@ export class PatientRepositoryStub implements PatientRepository {
 		this.#populate();
 	}
 
-	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
+	get(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
 		const patient = this.records.find((patient) =>
 			patient.patientId.getValue() === patientId.getValue()
 		);
@@ -40,9 +40,16 @@ export class PatientRepositoryStub implements PatientRepository {
 	}
 
 	update(patient: Patient): Promise<void> {
-		const id = patient.patientId.toString();
+		const id = patient.patientId.getValue();
 		this.#data[id] = patient;
 		return Promise.resolve(undefined);
+	}
+
+	exists(patientId: ID): Promise<boolean> {
+		const exists = this.records.some((patient) =>
+			patient.patientId.getValue() === patientId.getValue()
+		);
+		return Promise.resolve(exists);
 	}
 
 	#populate() {

@@ -1,30 +1,22 @@
 import { AlertRepository } from "../domain/alerts/alert_repository.ts";
 import { ID } from "../domain/id.ts";
+import { IDAlreadyExists } from "../domain/patients/id_already_exists_error.ts";
 import { Owner } from "../domain/patients/owner.ts";
 import { Patient, PatientStatus } from "../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../shared/either.ts";
-import { HospitalizationData } from "../shared/types.ts";
+import { HospitalizationData, OwnerData, PatientData } from "../shared/types.ts";
 
 interface Dependencies {
 	alertRepository: AlertRepository;
 	patientRepository: PatientRepository;
 }
 
-type PatientData = {
-	readonly patientId: string;
-	readonly name: string;
-	readonly specie: string;
-	readonly breed: string;
-	readonly ownerId: string;
-	readonly ownerName: string;
-	readonly phoneNumber: string;
-};
-
 type NewPatientData = {
 	readonly patientData: PatientData;
 	readonly hospitalizationData: HospitalizationData;
+	readonly ownerData: OwnerData;
 };
 
 export class PatientService {
@@ -57,7 +49,7 @@ export class PatientService {
 		patientId: string,
 		hospitalizationData: HospitalizationData,
 	): Promise<Either<Error, void>> {
-		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.get(ID.New(patientId));
 		if (patientOrError.isLeft()) return left(patientOrError.value);
 
 		const patient = patientOrError.value;
@@ -87,19 +79,16 @@ export class PatientService {
 	 * @returns {Promise<Either<Error, void>>}
 	 */
 	async newPatient(newPatientData: NewPatientData): Promise<Either<Error, void>> {
-		const { patientData, hospitalizationData } = newPatientData;
+		const { patientData, hospitalizationData, ownerData } = newPatientData;
 		const {
 			patientId,
-			name,
-			breed,
-			specie,
-			ownerName,
-			ownerId,
-			phoneNumber,
 		} = patientData;
 
-		const owner = new Owner(ownerId, ownerName, phoneNumber);
-		const patient = new Patient(patientId, name, breed, owner, specie);
+		const patientExists = await this.deps.patientRepository.exists(ID.New(patientId));
+		if (patientExists) return left(new IDAlreadyExists());
+
+		const owner = Owner.create(ownerData);
+		const patient = Patient.create(patientData, owner);
 
 		const voidOrError = patient.hospitalize(hospitalizationData);
 		if (voidOrError.isLeft()) return left(voidOrError.value);

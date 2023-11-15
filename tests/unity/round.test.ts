@@ -192,4 +192,11 @@ Deno.test("Rounds", async (t) => {
 });
 
 const medVet = new User("123");
-const patient = new Patient("some-id", "Rex", "Bulldog", owner);
+const patientData = {
+	patientId: "123",
+	name: "Fulano",
+	specie: "CANINO",
+	breed: "SRD",
+	birthDate: "2019-01-01",
+};
+const patient = Patient.create(patientData, owner);

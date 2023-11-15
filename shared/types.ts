@@ -11,5 +11,19 @@ export type HospitalizationData = {
 	readonly diagnostics: string[];
 	readonly entryDate: string;
 	readonly dischargeDate: string;
-	readonly budget: BudgetData;
+	readonly budgetData: BudgetData;
+};
+
+export type PatientData = {
+	readonly patientId: string;
+	readonly name: string;
+	readonly specie: string;
+	readonly breed: string;
+	readonly birthDate: string;
+};
+
+export type OwnerData = {
+	readonly ownerId: string;
+	readonly name: string;
+	readonly phoneNumber: string;
 };

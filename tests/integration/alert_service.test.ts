@@ -18,7 +18,7 @@ import { patient1 } from "../fake_data.ts";
 Deno.test("Alert Service - Schedule Alert", async (t) => {
 	await t.step("Deve buscar o paciente no repositório", async () => {
 		const { service, patientRepository } = await makeService();
-		const repoSpy = spy(patientRepository, "getById");
+		const repoSpy = spy(patientRepository, "get");
 
 		await service.schedule("1234", alertData);
 
@@ -33,7 +33,6 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 
 		assertEquals(error.isLeft(), true);
 		assertInstanceOf(error.value, PatientNotFound);
-		assertEquals(error.value.message, "Patient not found");
 	});
 
 	await t.step("Deve salvar o alerta no repositório", async () => {

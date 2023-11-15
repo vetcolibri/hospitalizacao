@@ -1,37 +1,48 @@
-import { HospitalizationBuilder } from "./hospitalization_builder.ts";
 import { Either, left, right } from "../../shared/either.ts";
 import { ERROR_MESSAGES } from "../../shared/error_messages.ts";
 import { InvalidDate } from "./date_error.ts";
 import { InvalidNumber } from "./number_error.ts";
-import { BirthDate } from "./birth_date.ts";
 import { Budget } from "./budget.ts";
+import { BudgetData, HospitalizationData } from "../../shared/types.ts";
 
-export enum HospitalizationStatus {
-	ACTIVE = "ATIVA",
-	DISABLE = "INATIVA",
+export enum Status {
+	OPEN = "ABERTA",
+	CLOSE = "FECHADA",
 }
 
 export class Hospitalization {
-	readonly birthDate: BirthDate;
 	readonly weight: number;
 	readonly complaints: string[];
 	readonly diagnostics: string[];
 	readonly entryDate: Date;
 	readonly dischargeDate: Date;
 	budgets: Budget[] = [];
-	status: HospitalizationStatus = HospitalizationStatus.ACTIVE;
+	status: Status = Status.OPEN;
 
-	private constructor(builder: HospitalizationBuilder) {
-		this.birthDate = new BirthDate(builder.birthDate);
-		this.weight = builder.weight;
-		this.complaints = builder.complaints;
-		this.diagnostics = builder.diagnostics;
-		this.entryDate = new Date(builder.entryDate);
-		this.dischargeDate = new Date(builder.dischargeDate);
+	private constructor(
+		weight: number,
+		complaints: string[],
+		diagnostics: string[],
+		entryDate: Date,
+		dischargeDate: Date,
+	) {
+		this.weight = weight;
+		this.complaints = complaints;
+		this.diagnostics = diagnostics;
+		this.entryDate = entryDate;
+		this.dischargeDate = dischargeDate;
 	}
 
-	static create(builder: HospitalizationBuilder): Either<Error, Hospitalization> {
-		const { entryDate, dischargeDate, complaints, diagnostics } = builder;
+	static create(hospitalizationData: HospitalizationData): Either<Error, Hospitalization> {
+		const {
+			entryDate,
+			dischargeDate,
+			complaints,
+			diagnostics,
+			weight,
+			budgetData,
+		} = hospitalizationData;
+
 		if (this.isInvalidDate(entryDate)) {
 			return left(new InvalidDate(ERROR_MESSAGES.INVALID_ENTRY_DATE));
 		}
@@ -48,12 +59,22 @@ export class Hospitalization {
 			return left(new InvalidNumber(ERROR_MESSAGES.INVALID_DIAGNOSTICS_NUMBER));
 		}
 
-		const hospitalization = new Hospitalization(builder);
-		hospitalization.addBudget(builder.budget);
+		const hospitalization = new Hospitalization(
+			weight,
+			complaints,
+			diagnostics,
+			new Date(entryDate),
+			new Date(dischargeDate),
+		);
+
+		hospitalization.addBudget(budgetData);
+
 		return right(hospitalization);
 	}
 
-	addBudget(budget: Budget) {
+	addBudget(budgetData: BudgetData) {
+		const budget = new Budget(budgetData.startOn, budgetData.endOn, budgetData.status);
+
 		this.budgets.push(budget);
 	}
 
@@ -70,7 +91,7 @@ export class Hospitalization {
 	}
 
 	disable() {
-		this.status = HospitalizationStatus.DISABLE;
+		this.status = Status.CLOSE;
 	}
 
 	static isInvalidDate(date: string): boolean {
