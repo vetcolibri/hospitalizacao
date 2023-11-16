@@ -85,8 +85,9 @@ export default function () {
 				name: patient.name,
 				specie: patient.specie.toString(),
 				breed: patient.breed,
+				ownerId: patient.owner.ownerId.getValue(),
 				ownerName: patient.owner.name,
-				ownerPhone: patient.owner.phoneNumber,
+				ownerPhoneNumber: patient.owner.phoneNumber,
 			}
 		));
 		sendOk(ctx, results);

@@ -45,7 +45,7 @@ export class Patient {
 		this.hospitalizations = [];
 	}
 
-	static create(patientData: PatientData, owner: Owner) {
+	static create(patientData: PatientData, owner: Owner): Patient {
 		const { patientId, name, breed, specie, birthDate } = patientData;
 
 		const patientBirthDate = new BirthDate(birthDate);

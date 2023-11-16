@@ -26,7 +26,7 @@ const hospitalizationSchema = z.object({
 	dischargeDate: z.string(),
 	complaints: z.string().array(),
 	diagnostics: z.string().array(),
-	budget: budgetSchema,
+	budgetData: budgetSchema,
 });
 
 export const recuringHospitalizationSchema = z.object({
