@@ -41,7 +41,7 @@ export default function () {
 				breed: patient.breed,
 				hasAlert: patient.alertStatus,
 				ownerName: patient.owner.name,
-				ownerId: patient.owner.ownerId.toString(),
+				ownerId: patient.owner.ownerId.getValue(),
 				ownerPhoneNumber: patient.owner.phoneNumber,
 				birthDate: patient.birthDate.getAge(),
 				hospitalization: {
