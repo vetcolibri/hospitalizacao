@@ -5,7 +5,7 @@ import { InvalidNumber } from "./number_error.ts";
 import { Budget } from "./budget.ts";
 import { BudgetData, HospitalizationData } from "../../shared/types.ts";
 
-export enum Status {
+export enum HospitalizationStatus {
 	OPEN = "ABERTA",
 	CLOSE = "FECHADA",
 }
@@ -17,7 +17,7 @@ export class Hospitalization {
 	readonly entryDate: Date;
 	readonly dischargeDate: Date;
 	budgets: Budget[] = [];
-	status: Status = Status.OPEN;
+	status: HospitalizationStatus = HospitalizationStatus.OPEN;
 
 	private constructor(
 		weight: number,
@@ -74,7 +74,6 @@ export class Hospitalization {
 
 	addBudget(budgetData: BudgetData) {
 		const budget = new Budget(budgetData.startOn, budgetData.endOn, budgetData.status);
-
 		this.budgets.push(budget);
 	}
 
@@ -91,7 +90,13 @@ export class Hospitalization {
 	}
 
 	disable() {
-		this.status = Status.CLOSE;
+		if (this.isOpen()) {
+			this.status = HospitalizationStatus.CLOSE;
+		}
+	}
+
+	isOpen(): boolean {
+		return this.status === HospitalizationStatus.OPEN;
 	}
 
 	static isInvalidDate(date: string): boolean {

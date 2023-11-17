@@ -1,4 +1,4 @@
-import { Hospitalization, Status } from "./hospitalization.ts";
+import { Hospitalization, HospitalizationStatus } from "./hospitalization.ts";
 import { ID } from "../id.ts";
 import { HospitalizationData, PatientData } from "../../shared/types.ts";
 import { Owner } from "./owner.ts";
@@ -14,6 +14,9 @@ export enum Species {
 	CANINE = "CANINO",
 	FELINE = "FELINO",
 	EXOTIC = "EXÓTICO",
+	EXOTIC_MONKEY = "EXÓTICO - MACACO",
+	EXOTIC_REPTILE = "EXÓTICO - RÉPTIL",
+	EXOTIC_PARROT = "EXÓTICO - PAPAGAIO",
 	BIRDS = "AVES",
 }
 
@@ -26,7 +29,7 @@ export class Patient {
 	readonly hospitalizations: Hospitalization[];
 	birthDate: BirthDate;
 	status?: PatientStatus;
-	alertStatus = false;
+	hasAlert = false;
 
 	private constructor(
 		id: ID,
@@ -48,15 +51,14 @@ export class Patient {
 	static create(patientData: PatientData, owner: Owner): Patient {
 		const { patientId, name, breed, specie, birthDate } = patientData;
 
-		const patientBirthDate = new BirthDate(birthDate);
-
-		const patientSpecie = findSpecie(specie);
-
-		return new Patient(ID.New(patientId), name, breed, patientSpecie, patientBirthDate, owner);
-	}
-
-	getStatus(): PatientStatus | undefined {
-		return this.status;
+		return new Patient(
+			ID.New(patientId),
+			name,
+			breed,
+			findSpecie(specie),
+			new BirthDate(birthDate),
+			owner,
+		);
 	}
 
 	hospitalize(data: HospitalizationData): Either<Error, void> {
@@ -71,8 +73,14 @@ export class Patient {
 		return right(undefined);
 	}
 
+	openHospitalization(): Hospitalization | undefined {
+		return this.hospitalizations.find((hospitalization) =>
+			hospitalization.status === HospitalizationStatus.OPEN
+		);
+	}
+
 	discharge(): void {
-		const hospitalization = this.activeHospitalization();
+		const hospitalization = this.openHospitalization();
 
 		if (hospitalization) {
 			hospitalization.disable();
@@ -80,30 +88,17 @@ export class Patient {
 		}
 	}
 
-	activeHospitalization(): Hospitalization | undefined {
-		const hospitalization = this.hospitalizations.find((hospitalization) =>
-			hospitalization.status === Status.OPEN
-		);
-
-		return hospitalization;
+	getStatus(): PatientStatus | undefined {
+		return this.status;
 	}
 
 	changeAlertStatus(status: boolean): void {
-		this.alertStatus = status;
+		this.hasAlert = status;
 	}
 }
 
-function findSpecie(specie: string): Species {
-	switch (specie) {
-		case "CANINO":
-			return Species.CANINE;
-		case "FELINO":
-			return Species.FELINE;
-		case "EXÓTICO":
-			return Species.EXOTIC;
-		case "AVES":
-			return Species.BIRDS;
-		default:
-			return Species.CANINE;
-	}
+function findSpecie(name: string): Species {
+	const specie = Object.values(Species).find((specie) => specie === name);
+	if (specie) return specie;
+	return Species.CANINE;
 }

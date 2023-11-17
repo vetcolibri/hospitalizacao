@@ -13,7 +13,7 @@ import { Alert } from "../../domain/alerts/alert.ts";
 import { ID } from "../../domain/id.ts";
 import { InvalidDate } from "../../domain/patients/date_error.ts";
 import { InvalidNumber } from "../../domain/patients/number_error.ts";
-import { Status } from "../../domain/patients/hospitalization.ts";
+import { HospitalizationStatus } from "../../domain/patients/hospitalization.ts";
 import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
@@ -94,7 +94,7 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 			const patient = <Patient> patientOrError.value;
 
 			assertEquals(patientOrError.value, patient1);
-			assertEquals(patient.alertStatus, true);
+			assertEquals(patient.hasAlert, true);
 		},
 	);
 });
@@ -136,7 +136,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const patient = <Patient> patientOrError.value;
 		assertEquals(patient.hospitalizations.length, 1);
 		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
-		assertEquals(patient.activeHospitalization()!.status, Status.OPEN);
+		assertEquals(patient.openHospitalization()!.status, HospitalizationStatus.OPEN);
 	});
 
 	await t.step("Deve actualizar o paciente no repositório", async () => {
@@ -166,7 +166,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.activeHospitalization()!;
+		const hospitalization = patient.openHospitalization()!;
 
 		assertEquals(hospitalization.entryDate, new Date(hospitalizationData.entryDate));
 	});
@@ -207,7 +207,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 			const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 			const patient = <Patient> patientOrError.value;
-			const hospitalization = patient.activeHospitalization()!;
+			const hospitalization = patient.openHospitalization()!;
 
 			assertEquals(
 				hospitalization.dischargeDate,
@@ -262,7 +262,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = <Patient> patientOrError.value;
-		const hospitalization = patient.activeHospitalization()!;
+		const hospitalization = patient.openHospitalization()!;
 		assertEquals(hospitalization.weight, 16.5);
 	});
 
@@ -276,7 +276,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		);
 		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.activeHospitalization()!;
+		const hospitalization = patient.openHospitalization()!;
 		const complaints = hospitalization.getComplaints();
 		assertEquals(complaints.length, 2);
 	});
@@ -309,7 +309,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		const patientOrError = await patientRepository.get(ID.New("some-patient-id"));
 		const patient = patientOrError.value as Patient;
-		const hospitalization = patient.activeHospitalization()!;
+		const hospitalization = patient.openHospitalization()!;
 		const diagnostics = hospitalization.getDiagnostics();
 
 		assertEquals(diagnostics.length, 1);

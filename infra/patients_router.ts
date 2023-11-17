@@ -39,22 +39,22 @@ export default function () {
 				name: patient.name,
 				specie: patient.specie.toString(),
 				breed: patient.breed,
-				hasAlert: patient.alertStatus,
+				hasAlert: patient.hasAlert,
 				ownerName: patient.owner.name,
 				ownerId: patient.owner.ownerId.getValue(),
 				ownerPhoneNumber: patient.owner.phoneNumber,
 				birthDate: patient.birthDate.getAge(),
 				hospitalization: {
-					weight: patient.activeHospitalization()!.weight,
-					complaints: patient.activeHospitalization()!.complaints,
-					diagnostics: patient.activeHospitalization()!.diagnostics,
-					entryDate: patient.activeHospitalization()!.entryDate.toISOString(),
-					dischargeDate: patient.activeHospitalization()!.dischargeDate
+					weight: patient.openHospitalization()!.weight,
+					complaints: patient.openHospitalization()!.complaints,
+					diagnostics: patient.openHospitalization()!.diagnostics,
+					entryDate: patient.openHospitalization()!.entryDate.toISOString(),
+					dischargeDate: patient.openHospitalization()!.dischargeDate
 						.toISOString(),
 					budget: {
-						startOn: patient.activeHospitalization()!.activeBudget().startOn,
-						endOn: patient.activeHospitalization()!.activeBudget().endOn,
-						status: patient.activeHospitalization()!.activeBudget().status,
+						startOn: patient.openHospitalization()!.activeBudget().startOn,
+						endOn: patient.openHospitalization()!.activeBudget().endOn,
+						status: patient.openHospitalization()!.activeBudget().status,
 					},
 				},
 			}

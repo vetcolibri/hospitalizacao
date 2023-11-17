@@ -19,21 +19,21 @@ Deno.test("Patient", async (t) => {
 	await t.step("Deve recuperar o **entryDate** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
 
-		const hospitalization = patient1.activeHospitalization();
+		const hospitalization = patient1.openHospitalization();
 
 		assertEquals(hospitalization?.entryDate, new Date(hospitalizationData.entryDate));
 	});
 	await t.step("Deve recuperar o **dischargeDate** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
 
-		const hospitalization = patient1.activeHospitalization();
+		const hospitalization = patient1.openHospitalization();
 
 		assertEquals(hospitalization?.dischargeDate, new Date(hospitalizationData.dischargeDate));
 	});
 	await t.step("Deve recuperar o **budget** da Hospitalização", () => {
 		patient1.hospitalize(hospitalizationData);
 
-		const hospitalization = patient1.activeHospitalization();
+		const hospitalization = patient1.openHospitalization();
 
 		const budget = hospitalization!.activeBudget();
 
@@ -57,21 +57,21 @@ Deno.test("Patient", async (t) => {
 	await t.step("Deve recuperar o **weight** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
 
-		const hospitalization = patient1.activeHospitalization();
+		const hospitalization = patient1.openHospitalization();
 
 		assertEquals(hospitalization?.weight, hospitalizationData.weight);
 	});
 	await t.step("Deve recuperar o **complaints** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
 
-		const hospitalization = patient1.activeHospitalization();
+		const hospitalization = patient1.openHospitalization();
 
 		assertEquals(hospitalization?.complaints, hospitalizationData.complaints);
 	});
 	await t.step("Deve recuperar o **diagnostics** do paciente", () => {
 		patient1.hospitalize(hospitalizationData);
 
-		const hospitalization = patient1.activeHospitalization();
+		const hospitalization = patient1.openHospitalization();
 
 		assertEquals(hospitalization?.diagnostics, hospitalizationData.diagnostics);
 	});
