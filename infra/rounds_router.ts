@@ -49,7 +49,7 @@ export default function () {
 	const router = new Router({ prefix: "/rounds" });
 	router.post("/new", validate(roundSchema), newRoundHandler);
 	router.get(
-		"/latest-measurements/:patientId",
+		"/measurements/latest/:patientId",
 		latestMeasurementsHandler,
 	);
 	router.get(

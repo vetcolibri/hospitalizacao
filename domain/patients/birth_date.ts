@@ -37,7 +37,7 @@ export class BirthDate {
 			age += `${this.getMonths()} meses `;
 		}
 
-		if (this.getDays() === 1) {
+		if (this.getDays() === 1 || this.getDays() === 0) {
 			age += `${this.getDays()} dia `;
 		} else if (this.getDays() > 1) {
 			age += `${this.getDays()} dias `;

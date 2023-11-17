@@ -30,7 +30,7 @@ export class InmemRoundRepository implements RoundRepository {
 
 	latestMeasurements(patientId: ID): Promise<Parameter[]> {
 		const rounds = this.#rounds.filter((round) =>
-			round.patient.patientId.toString() === patientId.toString()
+			round.patient.patientId.getValue() === patientId.getValue()
 		);
 		const parameters: Parameter[] = [];
 		for (const round of rounds) {
