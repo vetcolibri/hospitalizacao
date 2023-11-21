@@ -28,12 +28,12 @@ export default function () {
 			return;
 		}
 		const parameters = parametersOrError.value;
-		const result = parameters.map((p) => ({
+		const results = parameters.map((p) => ({
 			name: p.name,
 			value: p.getValue(),
 			issuedAt: p.issuedAt,
 		}));
-		sendOk(ctx, result);
+		sendOk(ctx, results);
 	};
 
 	const measurementsHandler = async (ctx: ContextWithParams) => {
@@ -43,7 +43,12 @@ export default function () {
 			sendBadRequest(ctx, resultOrError.value.message);
 			return;
 		}
-		sendOk(ctx, resultOrError.value);
+		const results = resultOrError.value.map((p) => ({
+			name: p.name,
+			value: p.getValue(),
+			issuedAt: p.issuedAt,
+		}));
+		sendOk(ctx, results);
 	};
 
 	const router = new Router({ prefix: "/rounds" });
