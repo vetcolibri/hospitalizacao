@@ -10,7 +10,7 @@ export enum AlertStatus {
 }
 
 export class Alert {
-	readonly alertId: ID;
+	alertId: ID;
 	readonly patient: Patient;
 	readonly parameters: string[];
 	readonly repeatEvery: RepeatEvery;
@@ -46,6 +46,19 @@ export class Alert {
 		return right(alert);
 	}
 
+	static compose(alertData: any) {
+		const alert = new Alert(
+			alertData.patient,
+			alertData.repeatEvery,
+			alertData.comments,
+			alertData.time,
+		);
+		alert.addParameters(alertData.parameters);
+		alert.status = alertData.status;
+		alert.alertId = alertData.alertId;
+		return alert;
+	}
+
 	addParameters(parameters: string[]): void {
 		this.parameters.push(...parameters);
 	}
@@ -55,7 +68,7 @@ export class Alert {
 	}
 
 	isDisabled(): boolean {
-		return this.status === AlertStatus.DISABLED
+		return this.status === AlertStatus.DISABLED;
 	}
 
 	getStatus(): string {

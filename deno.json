@@ -5,5 +5,8 @@
     "lineWidth": 100,
     "singleQuote": false,
     "proseWrap": "preserve"
+  },
+  "tasks": {
+    "initdb": "deno run -A ./adaptors/persistence/init_db.ts"
   }
 }

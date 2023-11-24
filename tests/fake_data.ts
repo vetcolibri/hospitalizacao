@@ -57,7 +57,7 @@ export const alert1 = Alert.create(
 	["heartRate", "bloodPressure", "glicemia"],
 	120,
 	"dummy",
-	new Date().toLocaleDateString(),
+	new Date().toISOString(),
 );
 patient1.hospitalize(hospitalizationData);
 patient2.hospitalize(hospitalizationData);
