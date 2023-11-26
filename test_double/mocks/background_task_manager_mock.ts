@@ -1,7 +1,6 @@
-import { CronType } from "../../adaptors/tasks/background_task_manager.ts";
+import { CronType } from "../../adaptors/worker/worker_manager.ts";
 import { Manager } from "../../application/alert_service.ts";
 import { Alert } from "../../domain/alerts/alert.ts";
-import { ID } from "../../domain/id.ts";
 
 type Message = {
 	alert: Alert;
@@ -12,7 +11,7 @@ interface mockWorker {
 	postMessage(message: Message): void;
 }
 
-export class BackgroundTaskManagerMock implements Manager {
+export class WorkerManagerMock implements Manager {
 	readonly worker: mockWorker;
 
 	constructor() {

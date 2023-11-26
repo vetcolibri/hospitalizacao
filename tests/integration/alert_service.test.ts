@@ -1,6 +1,6 @@
 import { InmemAlertRepository } from "../../adaptors/inmem/inmem_alert_repository.ts";
 import { InmemPatientRepository } from "../../adaptors/inmem/inmem_patient_repository.ts";
-import { CronType } from "../../adaptors/tasks/background_task_manager.ts";
+import { CronType } from "../../adaptors/worker/worker_manager.ts";
 import { AlertService } from "../../application/alert_service.ts";
 import {
 	assertEquals,
@@ -12,7 +12,7 @@ import {
 import { Alert, AlertStatus } from "../../domain/alerts/alert.ts";
 import { ID } from "../../domain/id.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
-import { BackgroundTaskManagerMock } from "../../test_double/mocks/background_task_manager_mock.ts";
+import { WorkerManagerMock } from "../../test_double/mocks/background_task_manager_mock.ts";
 import { patient1 } from "../fake_data.ts";
 
 Deno.test("Alert Service - Schedule Alert", async (t) => {
@@ -220,7 +220,7 @@ async function makeService() {
 	await alertRepository.save(alert.value as Alert);
 	const patientRepository = new InmemPatientRepository();
 	await patientRepository.save(patient1);
-	const taskManager = new BackgroundTaskManagerMock();
+	const taskManager = new WorkerManagerMock();
 	const deps = {
 		alertRepository: alertRepository,
 		patientRepository: patientRepository,

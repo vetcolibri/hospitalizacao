@@ -1,4 +1,4 @@
-import { CronType } from "../../adaptors/tasks/background_task_manager.ts";
+import { CronType } from "../../adaptors/worker/worker_manager.ts";
 import { Cron } from "../../deps.ts";
 
 const jobs = new Map<string, Cron>();

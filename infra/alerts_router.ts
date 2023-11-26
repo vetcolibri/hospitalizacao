@@ -1,4 +1,4 @@
-import { BackgroundTaskManager } from "../adaptors/tasks/background_task_manager.ts";
+import { WorkerManager } from "../adaptors/worker/worker_manager.ts";
 import { Context, Router } from "../deps.ts";
 import { validate } from "../shared/tools.ts";
 import { sendBadRequest, sendOk } from "./responses.ts";
@@ -6,7 +6,7 @@ import { cancelAlertSchema, scheduleAlertSchema } from "./schemas/alert_schema.t
 import { InmemServicesFactory } from "./services.ts";
 
 const workerUrl = "../../infra/workers/alert_worker.ts";
-const backgroundTask = new BackgroundTaskManager(workerUrl);
+const backgroundTask = new WorkerManager(workerUrl);
 const factory = new InmemServicesFactory();
 const service = factory.createAlertService(backgroundTask);
 let websocktClients: WebSocket[] = [];
