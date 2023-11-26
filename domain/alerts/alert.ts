@@ -1,4 +1,5 @@
 import { Either, left, right } from "../../shared/either.ts";
+import { AlertComposeData, AlertData } from "../../shared/types.ts";
 import { ID } from "../id.ts";
 import { Patient } from "../patients/patient.ts";
 import { RepeatEvery } from "./repeat_every.ts";
@@ -28,13 +29,8 @@ export class Alert {
 		this.status = AlertStatus.ACTIVE;
 	}
 
-	static create(
-		patient: Patient,
-		parameters: string[],
-		rate: number,
-		comments: string,
-		time: string,
-	): Either<InvalidRepeatEvery, Alert> {
+	static create(patient: Patient, data: AlertData): Either<InvalidRepeatEvery, Alert> {
+		const { rate, comments, time, parameters } = data;
 		const repeatEvery = new RepeatEvery(rate);
 		if (!repeatEvery.isValid()) {
 			return left(new InvalidRepeatEvery());
@@ -46,16 +42,27 @@ export class Alert {
 		return right(alert);
 	}
 
-	static compose(alertData: any) {
+	static compose(data: AlertComposeData) {
+		const { patient, rate, comments, time, parameters } = data;
+		const repeatEvery  = new RepeatEvery(rate)
 		const alert = new Alert(
-			alertData.patient,
-			alertData.repeatEvery,
-			alertData.comments,
-			alertData.time,
+			patient,
+			repeatEvery,
+			comments,
+			time
 		);
-		alert.addParameters(alertData.parameters);
-		alert.status = alertData.status;
-		alert.alertId = alertData.alertId;
+		
+		alert.alertId = ID.New(data.alertId);
+		
+		if (AlertStatus.ACTIVE === data.status) {
+			alert.status = AlertStatus.ACTIVE;
+		}
+
+		if (AlertStatus.DISABLED === data.status) {
+			alert.status = AlertStatus.DISABLED;
+		}
+
+		alert.addParameters(parameters);
 		return alert;
 	}
 

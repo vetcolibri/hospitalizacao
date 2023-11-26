@@ -1,3 +1,5 @@
+import { Patient } from "../domain/patients/patient.ts";
+
 export type BudgetData = {
 	readonly startOn: string;
 	readonly endOn: string;
@@ -27,3 +29,20 @@ export type OwnerData = {
 	readonly name: string;
 	readonly phoneNumber: string;
 };
+
+export type AlertData = {
+	readonly parameters: string[];
+	readonly rate: number;
+	readonly comments: string;
+	readonly time: string;
+};
+
+export interface PatientComposeData extends PatientData {
+	status: string;
+}
+
+export interface AlertComposeData extends AlertData {
+	alertId: string;
+	status: string;
+	patient: Patient;
+}

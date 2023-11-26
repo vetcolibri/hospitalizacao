@@ -1,48 +1,31 @@
-import { DB, SqliteOptions } from "../../deps.ts";
-import { Alert } from "../../domain/alerts/alert.ts";
 import { AlertNotFound } from "../../domain/alerts/alert_not_found_error.ts";
 import { AlertRepository } from "../../domain/alerts/alert_repository.ts";
-import { ID } from "../../domain/id.ts";
+import { Alert, AlertStatus } from "../../domain/alerts/alert.ts";
+import { Either, left, right } from "../../shared/either.ts";
 import { Patient } from "../../domain/patients/patient.ts";
-import { Either } from "../../shared/either.ts";
+import { DB, RowObject } from "../../deps.ts";
+import { ID } from "../../domain/id.ts";
+
 
 export class SQLiteAlertRepository implements AlertRepository {
 	readonly #db: DB;
 
-	constructor(path?: string, options?: SqliteOptions) {
-		this.#db = new DB(path, options);
+	constructor(db: DB) {
+		this.#db = db;
 	}
 
 	findAll(patientId: ID): Promise<Alert[]> {
-		const query =
-			"SELECT * FROM alerts JOIN patients ON alerts.patient_id = ? JOIN owners ON patients.owner_id = owners.owner_id";
-		const rows = this.#db.queryEntries(query, [patientId.getValue()]);
+		const sql = `
+			SELECT alerts.status as alert_status, * FROM alerts 
+			JOIN patients ON alerts.patient_id = '${patientId.getValue()}' 
+			JOIN owners ON patients.owner_id = owners.owner_id`;
+		const rows = this.#db.queryEntries(sql);
 		const alerts: Alert[] = [];
-		rows.forEach((row) => {
-			const ownerData = {
-				ownerId: row.owner_id as ID,
-				name: row.owner_name as string,
-				phoneNumber: row.phone_number as string,
-			};
 
-			const patientData = {
-				patientId: row.patient_id as string,
-				name: row.name as string,
-				specie: row.specie as string,
-				breed: row.breed as string,
-				status: row.status as string,
-				birthDate: row.birth_date as string,
-			};
+		if (rows.length === 0) return Promise.resolve(alerts);
 
-			const alertData = {
-				alertId: row.alert_id,
-				parameters: String(row.parameters).split(","),
-				repeatEvery: row.repeat_every,
-				time: row.time,
-				comments: row.comments,
-				status: row.status,
-				patient: Patient.create(patientData, ownerData),
-			};
+		rows.forEach((row) => {			
+			const alertData = this.#composeAlertData(row);
 
 			const alert = Alert.compose(alertData);
 
@@ -53,27 +36,121 @@ export class SQLiteAlertRepository implements AlertRepository {
 		return Promise.resolve(alerts);
 	}
 
-	verify(patient: Patient): Promise<boolean> {
-		throw new Error("Method not implemented.");
+	verify(patientId: ID): Promise<boolean> {
+		const sql = "SELECT * FROM alerts WHERE patient_id = ? AND status = ?";
+		const rows = this.#db.queryEntries(sql, [patientId.getValue(), AlertStatus.ACTIVE]);
+		this.#db.close();
+
+		if (rows.length === 0) return Promise.resolve(false);
+
+		return Promise.resolve(true);
 	}
 
 	save(alert: Alert): Promise<void> {
+		const sql = `INSERT INTO alerts (
+				alert_id,
+				patient_id,
+				parameters,
+				repeat_every,
+				time,
+				comments,
+				status
+			)  VALUES (
+				'${alert.alertId.getValue()}',
+				'${alert.patient.patientId.getValue()}',
+				'${JSON.stringify(alert.parameters.join(","))}',
+				'${alert.repeatEvery.getValue()}',
+				'${alert.time.toISOString()}',
+				'${alert.comments}',
+				'${alert.status}'
+			)
+		`;
+
+		this.#db.query(sql);
+		
 		return Promise.resolve(undefined);
 	}
 
 	last(): Promise<Alert> {
-		throw new Error("Method not implemented.");
+		const sql = `
+			SELECT alerts.status as alert_status, * FROM alerts
+			JOIN patients ON alerts.patient_id = patients.patient_id
+			JOIN owners ON patients.owner_id = owners.owner_id 
+			ORDER BY alert_id DESC LIMIT 1
+		`;
+		const rows = this.#db.queryEntries(sql);
+		this.#db.close();
+
+		const row = rows[0];
+
+		const alertData = this.#composeAlertData(row);
+
+		const alert = Alert.compose(alertData);
+
+		return Promise.resolve(alert);
 	}
 
-	getById(AlertId: ID): Promise<Either<AlertNotFound, Alert>> {
-		throw new Error("Method not implemented.");
+	getById(alertId: ID): Promise<Either<AlertNotFound, Alert>> {
+		const sql = `
+			SELECT alerts.status as alert_status, * FROM alerts 
+			JOIN patients ON alerts.patient_id = patients.patient_id 
+			JOIN owners ON patients.owner_id = owners.owner_id
+			WHERE alerts.alert_id = ? LIMIT 1`;
+		const rows = this.#db.queryEntries(sql, [alertId.getValue()]);
+		this.#db.close();
+
+		if (rows.length === 0) return Promise.resolve(left(new AlertNotFound()));
+
+		const row = rows[0]
+
+		const alertData = this.#composeAlertData(row);
+
+		const alert = Alert.compose(alertData);
+
+		return Promise.resolve(right(alert))
 	}
 
 	update(alert: Alert): Promise<void> {
-		throw new Error("Method not implemented.");
+		const alertId = alert.alertId.getValue();
+		
+		const sql = "UPDATE alerts SET status = ? WHERE alert_id = ?";
+		
+		this.#db.query(sql, [AlertStatus.DISABLED, alertId]);
+		
+		return Promise.resolve(undefined);
 	}
 
-	get db(): DB {
-		return this.#db;
+	#composeOwnerData(row: RowObject) {
+		return {
+			ownerId: ID.New(String(row.owner_id)),
+			name: String(row.owner_name),
+			phoneNumber: String(row.phone_number),
+		};
+	}
+
+	#composePatientData(row: RowObject) {
+		return {
+			patientId: String(row.patient_id),
+			name: String(row.name),
+			specie: String(row.specie),
+			breed: String(row.breed),
+			status: String(row.status),
+			birthDate: String(row.birth_date),
+		};
+	}
+
+	#composeAlertData(row: RowObject) {
+		const ownerData = this.#composeOwnerData(row);
+		const patientData = this.#composePatientData(row);
+		const patient = Patient.compose(patientData, ownerData);
+		return {
+			alertId: String(row.alert_id),
+			parameters: String(row.parameters).split(","),
+			rate: Number(row.repeat_every),
+			time: String(row.time),
+			comments: String(row.comments),
+			status: String(row.alert_status),
+			patient: patient,
+		};
 	}
 }

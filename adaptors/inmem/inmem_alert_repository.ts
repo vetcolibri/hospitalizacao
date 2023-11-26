@@ -2,7 +2,6 @@ import { Alert, AlertStatus } from "../../domain/alerts/alert.ts";
 import { AlertNotFound } from "../../domain/alerts/alert_not_found_error.ts";
 import { AlertRepository } from "../../domain/alerts/alert_repository.ts";
 import { ID } from "../../domain/id.ts";
-import { Patient } from "../../domain/patients/patient.ts";
 import { Either, left, right } from "../../shared/either.ts";
 
 export class InmemAlertRepository implements AlertRepository {
@@ -14,9 +13,9 @@ export class InmemAlertRepository implements AlertRepository {
 		return Promise.resolve(right(alert));
 	}
 
-	verify(patient: Patient): Promise<boolean> {
+	verify(patientId: ID): Promise<boolean> {
 		const hasAlert = this.records.some((alert) =>
-			alert.patient.patientId.getValue() === patient.patientId.getValue() &&
+			alert.patient.patientId.getValue() === patientId.getValue() &&
 			alert.status === AlertStatus.ACTIVE
 		);
 		return Promise.resolve(hasAlert);

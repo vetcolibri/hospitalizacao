@@ -1,9 +1,9 @@
 import { Hospitalization, HospitalizationStatus } from "./hospitalization.ts";
-import { ID } from "../id.ts";
-import { HospitalizationData, PatientData } from "../../shared/types.ts";
-import { Owner } from "./owner.ts";
+import { HospitalizationData, PatientComposeData, PatientData } from "../../shared/types.ts";
 import { Either, left, right } from "../../shared/either.ts";
 import { BirthDate } from "./birth_date.ts";
+import { Owner } from "./owner.ts";
+import { ID } from "../id.ts";
 
 export enum PatientStatus {
 	HOSPITALIZED = "HOSPITALIZADO",
@@ -59,6 +59,22 @@ export class Patient {
 			new BirthDate(birthDate),
 			owner,
 		);
+	}
+
+	static compose(patientData: PatientComposeData, owner: Owner): Patient {
+		const { status } = patientData;
+		
+		const patient = Patient.create(patientData, owner)
+
+		if (PatientStatus.HOSPITALIZED === status){
+			patient.status = PatientStatus.HOSPITALIZED;
+		}
+
+		if (PatientStatus.DISCHARGED === status){
+			patient.status = PatientStatus.DISCHARGED;
+		}
+
+		return patient
 	}
 
 	hospitalize(data: HospitalizationData): Either<Error, void> {

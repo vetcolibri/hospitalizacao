@@ -214,10 +214,7 @@ const alertData = {
 async function makeService() {
 	const alert = Alert.create(
 		patient1,
-		alertData.parameters,
-		alertData.rate,
-		alertData.comments,
-		alertData.time,
+		alertData
 	);
 	const alertRepository = new InmemAlertRepository();
 	await alertRepository.save(alert.value as Alert);
