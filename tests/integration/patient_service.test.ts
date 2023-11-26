@@ -18,7 +18,7 @@ import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
-import { PatientRepositoryStub } from "../../test_double/stubs/patient_repository_stub.ts";
+import { PatientRepositoryStub } from "../test_double/stubs/patient_repository_stub.ts";
 import {
 	alert1,
 	hospitalizationData,

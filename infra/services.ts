@@ -3,8 +3,8 @@ import { InmemRoundRepository } from "../adaptors/inmem/inmem_round_repository.t
 import { AlertService, Manager } from "../application/alert_service.ts";
 import { PatientService } from "../application/patient_service.ts";
 import { RoundService } from "../application/round_service.ts";
-import { PatientRepositoryStub } from "../test_double/stubs/patient_repository_stub.ts";
-import { UserRepositoryStub } from "../test_double/stubs/user_repository_stub.ts";
+import { PatientRepositoryStub } from "../tests/test_double/stubs/patient_repository_stub.ts";
+import { UserRepositoryStub } from "../tests/test_double/stubs/user_repository_stub.ts";
 
 const alertRepository = new InmemAlertRepository();
 const patientRepository = new PatientRepositoryStub();

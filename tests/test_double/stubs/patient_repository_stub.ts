@@ -1,9 +1,9 @@
-import { ID } from "../../domain/id.ts";
-import { Patient, PatientStatus } from "../../domain/patients/patient.ts";
-import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
-import { PatientRepository } from "../../domain/patients/patient_repository.ts";
-import { Either, left, right } from "../../shared/either.ts";
-import { patient1, patient2, patient3, patient4 } from "../../tests/fake_data.ts";
+import { ID } from "../../../domain/id.ts";
+import { Patient, PatientStatus } from "../../../domain/patients/patient.ts";
+import { PatientNotFound } from "../../../domain/patients/patient_not_found_error.ts";
+import { PatientRepository } from "../../../domain/patients/patient_repository.ts";
+import { Either, left, right } from "../../../shared/either.ts";
+import { patient1, patient2, patient3, patient4 } from "../../fake_data.ts";
 
 export class PatientRepositoryStub implements PatientRepository {
 	readonly #data: Record<string, Patient> = {};

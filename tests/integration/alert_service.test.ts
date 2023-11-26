@@ -12,7 +12,7 @@ import {
 import { Alert, AlertStatus } from "../../domain/alerts/alert.ts";
 import { ID } from "../../domain/id.ts";
 import { PatientNotFound } from "../../domain/patients/patient_not_found_error.ts";
-import { WorkerManagerMock } from "../../test_double/mocks/background_task_manager_mock.ts";
+import { WorkerManagerMock } from "../test_double/mocks/background_task_manager_mock.ts";
 import { patient1 } from "../fake_data.ts";
 
 Deno.test("Alert Service - Schedule Alert", async (t) => {

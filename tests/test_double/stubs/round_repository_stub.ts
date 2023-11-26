@@ -1,11 +1,11 @@
-import { ID } from "../../domain/id.ts";
-import { HeartRate } from "../../domain/parameters/heart_rate.ts";
-import { Parameter, PARAMETER_NAMES } from "../../domain/parameters/parameter.ts";
-import { Trc } from "../../domain/parameters/trc.ts";
-import { Round } from "../../domain/rounds/round.ts";
-import { RoundRepository } from "../../domain/rounds/round_repository.ts";
-import { User } from "../../domain/users/user.ts";
-import { patient1 } from "../../tests/fake_data.ts";
+import { ID } from "../../../domain/id.ts";
+import { HeartRate } from "../../../domain/parameters/heart_rate.ts";
+import { Parameter, PARAMETER_NAMES } from "../../../domain/parameters/parameter.ts";
+import { Trc } from "../../../domain/parameters/trc.ts";
+import { Round } from "../../../domain/rounds/round.ts";
+import { RoundRepository } from "../../../domain/rounds/round_repository.ts";
+import { User } from "../../../domain/users/user.ts";
+import { patient1 } from "../../fake_data.ts";
 
 export class RoundRepositoryStub implements RoundRepository {
 	readonly #rounds: Round[] = [];

@@ -1,6 +1,6 @@
-import { CronType } from "../../adaptors/worker/worker_manager.ts";
-import { Manager } from "../../application/alert_service.ts";
-import { Alert } from "../../domain/alerts/alert.ts";
+import { CronType } from "../../../adaptors/worker/worker_manager.ts";
+import { Manager } from "../../../application/alert_service.ts";
+import { Alert } from "../../../domain/alerts/alert.ts";
 
 type Message = {
 	alert: Alert;
