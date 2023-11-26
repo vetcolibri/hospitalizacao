@@ -27,7 +27,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			},
 		};
 		const { service, patientRepository } = makeService();
-		const patientSpy = spy(patientRepository, "get");
+		const patientSpy = spy(patientRepository, "getById");
 
 		await service.new(patientId, userId, parameters);
 		assertSpyCall(patientSpy, 0, { args: [ID.New(patientId)] });

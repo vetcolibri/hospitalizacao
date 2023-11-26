@@ -2,9 +2,12 @@ import { AlertNotFound } from "../../domain/alerts/alert_not_found_error.ts";
 import { AlertRepository } from "../../domain/alerts/alert_repository.ts";
 import { Alert, AlertStatus } from "../../domain/alerts/alert.ts";
 import { Either, left, right } from "../../shared/either.ts";
-import { Patient } from "../../domain/patients/patient.ts";
-import { DB, RowObject } from "../../deps.ts";
+import { DB } from "../../deps.ts";
 import { ID } from "../../domain/id.ts";
+import { ComposeFactory } from "../../shared/factory.ts";
+
+
+const factory = new ComposeFactory()			
 
 
 export class SQLiteAlertRepository implements AlertRepository {
@@ -17,15 +20,18 @@ export class SQLiteAlertRepository implements AlertRepository {
 	findAll(patientId: ID): Promise<Alert[]> {
 		const sql = `
 			SELECT alerts.status as alert_status, * FROM alerts 
-			JOIN patients ON alerts.patient_id = '${patientId.getValue()}' 
-			JOIN owners ON patients.owner_id = owners.owner_id`;
+			JOIN patients ON alerts.patient_id = patients.patient_id 
+			JOIN owners ON patients.owner_id = owners.owner_id
+			WHERE alerts.patient_id = '${patientId.getValue()}'
+		`;
 		const rows = this.#db.queryEntries(sql);
+		
 		const alerts: Alert[] = [];
 
 		if (rows.length === 0) return Promise.resolve(alerts);
 
-		rows.forEach((row) => {			
-			const alertData = this.#composeAlertData(row);
+		rows.forEach((row) => {
+			const alertData = factory.composeAlertData(row);
 
 			const alert = Alert.compose(alertData);
 
@@ -33,17 +39,21 @@ export class SQLiteAlertRepository implements AlertRepository {
 		});
 
 		this.#db.close();
+		
 		return Promise.resolve(alerts);
 	}
 
 	verify(patientId: ID): Promise<boolean> {
-		const sql = "SELECT * FROM alerts WHERE patient_id = ? AND status = ?";
+		const sql = `
+			SELECT * FROM alerts 
+			WHERE patient_id = ? AND status = ?
+			LIMIT 1
+		`;
 		const rows = this.#db.queryEntries(sql, [patientId.getValue(), AlertStatus.ACTIVE]);
+		
 		this.#db.close();
 
-		if (rows.length === 0) return Promise.resolve(false);
-
-		return Promise.resolve(true);
+		return Promise.resolve(rows.length > 0);
 	}
 
 	save(alert: Alert): Promise<void> {
@@ -79,14 +89,15 @@ export class SQLiteAlertRepository implements AlertRepository {
 			ORDER BY alert_id DESC LIMIT 1
 		`;
 		const rows = this.#db.queryEntries(sql);
-		this.#db.close();
-
+		
 		const row = rows[0];
-
-		const alertData = this.#composeAlertData(row);
-
+		
+		const alertData = factory.composeAlertData(row);
+		
 		const alert = Alert.compose(alertData);
-
+		
+		this.#db.close();
+	
 		return Promise.resolve(alert);
 	}
 
@@ -97,15 +108,16 @@ export class SQLiteAlertRepository implements AlertRepository {
 			JOIN owners ON patients.owner_id = owners.owner_id
 			WHERE alerts.alert_id = ? LIMIT 1`;
 		const rows = this.#db.queryEntries(sql, [alertId.getValue()]);
-		this.#db.close();
-
+		
 		if (rows.length === 0) return Promise.resolve(left(new AlertNotFound()));
-
+		
 		const row = rows[0]
-
-		const alertData = this.#composeAlertData(row);
-
+		
+		const alertData = factory.composeAlertData(row);
+		
 		const alert = Alert.compose(alertData);
+		
+		this.#db.close();
 
 		return Promise.resolve(right(alert))
 	}
@@ -118,39 +130,5 @@ export class SQLiteAlertRepository implements AlertRepository {
 		this.#db.query(sql, [AlertStatus.DISABLED, alertId]);
 		
 		return Promise.resolve(undefined);
-	}
-
-	#composeOwnerData(row: RowObject) {
-		return {
-			ownerId: ID.New(String(row.owner_id)),
-			name: String(row.owner_name),
-			phoneNumber: String(row.phone_number),
-		};
-	}
-
-	#composePatientData(row: RowObject) {
-		return {
-			patientId: String(row.patient_id),
-			name: String(row.name),
-			specie: String(row.specie),
-			breed: String(row.breed),
-			status: String(row.status),
-			birthDate: String(row.birth_date),
-		};
-	}
-
-	#composeAlertData(row: RowObject) {
-		const ownerData = this.#composeOwnerData(row);
-		const patientData = this.#composePatientData(row);
-		const patient = Patient.compose(patientData, ownerData);
-		return {
-			alertId: String(row.alert_id),
-			parameters: String(row.parameters).split(","),
-			rate: Number(row.repeat_every),
-			time: String(row.time),
-			comments: String(row.comments),
-			status: String(row.alert_status),
-			patient: patient,
-		};
 	}
 }

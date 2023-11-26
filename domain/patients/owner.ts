@@ -6,14 +6,14 @@ export class Owner {
 	readonly name: string;
 	readonly phoneNumber: string;
 
-	private constructor(ownerId: ID, name: string, phoneNumber: string) {
-		this.ownerId = ownerId;
+	private constructor(ownerId: string, name: string, phoneNumber: string) {
+		this.ownerId = ID.New(ownerId);
 		this.name = name;
 		this.phoneNumber = phoneNumber;
 	}
 
 	static create(ownerData: OwnerData) {
 		const { ownerId, name, phoneNumber } = ownerData;
-		return new Owner(ID.New(ownerId), name, phoneNumber);
+		return new Owner(ownerId, name, phoneNumber);
 	}
 }

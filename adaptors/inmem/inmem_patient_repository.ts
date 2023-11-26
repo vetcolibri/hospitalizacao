@@ -7,7 +7,7 @@ import { Either, left, right } from "../../shared/either.ts";
 export class InmemPatientRepository implements PatientRepository {
 	readonly #data: Record<string, Patient> = {};
 
-	get(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
+	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
 		const patient = this.records.find((patient) =>
 			patient.patientId.getValue() === patientId.getValue()
 		);

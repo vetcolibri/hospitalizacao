@@ -49,7 +49,7 @@ export class PatientService {
 		patientId: string,
 		hospitalizationData: HospitalizationData,
 	): Promise<Either<Error, void>> {
-		const patientOrError = await this.deps.patientRepository.get(
+		const patientOrError = await this.deps.patientRepository.getById(
 			ID.New(patientId),
 		);
 		if (patientOrError.isLeft()) return left(patientOrError.value);

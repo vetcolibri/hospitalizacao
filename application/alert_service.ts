@@ -39,7 +39,7 @@ export class AlertService {
 		patientId: string,
 		alertData: AlertData,
 	): Promise<Either<Error, void>> {
-		const patientOrError = await this.deps.patientRepository.get(ID.New(patientId));
+		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
 		if (patientOrError.isLeft()) return left(patientOrError.value);
 
 		const patient = patientOrError.value;

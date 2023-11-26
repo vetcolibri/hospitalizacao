@@ -1,3 +1,5 @@
+import { ID } from "../id.ts";
+
 export enum BudgetStatus {
 	PAID = "PAGO",
 	PENDING = "PENDENTE",
@@ -5,12 +7,14 @@ export enum BudgetStatus {
 }
 
 export class Budget {
+	budgetId: ID;
 	readonly startOn: Date;
 	readonly endOn: Date;
 	readonly status: BudgetStatus;
 	durationInDays = 0;
 
 	constructor(startOn: string, endOn: string, status: string) {
+		this.budgetId = ID.RandomID();
 		this.startOn = new Date(startOn);
 		this.endOn = new Date(endOn);
 

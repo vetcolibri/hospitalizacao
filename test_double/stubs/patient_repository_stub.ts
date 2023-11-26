@@ -12,7 +12,7 @@ export class PatientRepositoryStub implements PatientRepository {
 		this.#populate();
 	}
 
-	get(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
+	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
 		const patient = this.records.find((patient) =>
 			patient.patientId.getValue() === patientId.getValue()
 		);

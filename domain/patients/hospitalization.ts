@@ -1,9 +1,10 @@
-import { Either, left, right } from "../../shared/either.ts";
+import { BudgetData, HospitalizationComposeData, HospitalizationData } from "../../shared/types.ts";
 import { ERROR_MESSAGES } from "../../shared/error_messages.ts";
-import { InvalidDate } from "./date_error.ts";
+import { Either, left, right } from "../../shared/either.ts";
 import { InvalidNumber } from "./number_error.ts";
+import { InvalidDate } from "./date_error.ts";
 import { Budget } from "./budget.ts";
-import { BudgetData, HospitalizationData } from "../../shared/types.ts";
+import { ID } from "../id.ts";
 
 export enum HospitalizationStatus {
 	OPEN = "ABERTA",
@@ -11,6 +12,7 @@ export enum HospitalizationStatus {
 }
 
 export class Hospitalization {
+	hospitalizationId: ID
 	readonly weight: number;
 	readonly complaints: string[];
 	readonly diagnostics: string[];
@@ -26,6 +28,7 @@ export class Hospitalization {
 		entryDate: Date,
 		dischargeDate: Date,
 	) {
+		this.hospitalizationId = ID.RandomID();
 		this.weight = weight;
 		this.complaints = complaints;
 		this.diagnostics = diagnostics;
@@ -70,6 +73,38 @@ export class Hospitalization {
 		hospitalization.addBudget(budgetData);
 
 		return right(hospitalization);
+	}
+
+	static compose(hospitalizationData: HospitalizationComposeData) {
+		const {
+			hospitalizationId,
+			weight,
+			entryDate,
+			dischargeDate,
+			complaints,
+			diagnostics,
+			status,
+		} = hospitalizationData;
+
+		const hospitalization = new Hospitalization(
+			weight,
+			complaints,
+			diagnostics,
+			new Date(entryDate),
+			new Date(dischargeDate),
+		);
+
+		hospitalization.hospitalizationId = ID.New(hospitalizationId);
+
+		if (status === HospitalizationStatus.OPEN) {
+			hospitalization.status = HospitalizationStatus.OPEN;
+		}
+
+		if (status === HospitalizationStatus.CLOSE) {
+			hospitalization.status = HospitalizationStatus.CLOSE;
+		}
+
+		return hospitalization;
 	}
 
 	addBudget(budgetData: BudgetData) {

@@ -18,7 +18,7 @@ import { patient1 } from "../fake_data.ts";
 Deno.test("Alert Service - Schedule Alert", async (t) => {
 	await t.step("Deve buscar o paciente no repositório", async () => {
 		const { service, patientRepository } = await makeService();
-		const repoSpy = spy(patientRepository, "get");
+		const repoSpy = spy(patientRepository, "getById");
 
 		await service.schedule("1234", alertData);
 

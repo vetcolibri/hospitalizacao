@@ -1,5 +1,5 @@
 import { Hospitalization, HospitalizationStatus } from "./hospitalization.ts";
-import { HospitalizationData, PatientComposeData, PatientData } from "../../shared/types.ts";
+import { HospitalizationData, OwnerData, PatientComposeData, PatientData } from "../../shared/types.ts";
 import { Either, left, right } from "../../shared/either.ts";
 import { BirthDate } from "./birth_date.ts";
 import { Owner } from "./owner.ts";
@@ -61,9 +61,9 @@ export class Patient {
 		);
 	}
 
-	static compose(patientData: PatientComposeData, owner: Owner): Patient {
+	static compose(patientData: PatientComposeData, ownerData: OwnerData): Patient {
 		const { status } = patientData;
-		
+		const owner = Owner.create(ownerData);
 		const patient = Patient.create(patientData, owner)
 
 		if (PatientStatus.HOSPITALIZED === status){

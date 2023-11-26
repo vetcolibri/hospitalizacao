@@ -46,3 +46,13 @@ export interface AlertComposeData extends AlertData {
 	status: string;
 	patient: Patient;
 }
+
+export type HospitalizationComposeData = {
+	readonly hospitalizationId: string;
+	readonly weight: number;
+	readonly complaints: string[];
+	readonly diagnostics: string[];
+	readonly entryDate: string;
+	readonly dischargeDate: string;
+	readonly status: string;
+}
