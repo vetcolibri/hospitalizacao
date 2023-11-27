@@ -9,7 +9,6 @@ import { DB, RowObject } from "../../deps.ts";
 
 const factory = new ComposeFactory();
 
-
 export class SQLitePatientRepository implements PatientRepository {
 	readonly #db: DB;
 
@@ -27,8 +26,8 @@ export class SQLitePatientRepository implements PatientRepository {
 
 		const rows = this.#db.queryEntries(sql);
 
-		if (rows.length === 0) return Promise.resolve(left(new PatientNotFound()))
-		
+		if (rows.length === 0) return Promise.resolve(left(new PatientNotFound()));
+
 		const patientData = factory.composePatientData(rows[0]);
 
 		const ownerData = factory.composeOwnerData(rows[0]);
@@ -40,10 +39,8 @@ export class SQLitePatientRepository implements PatientRepository {
 			const hospitalization = Hospitalization.compose(hospitalizations);
 			patient.hospitalizations.push(hospitalization);
 		}
-		
-		return Promise.resolve(right(patient));
-		
 
+		return Promise.resolve(right(patient));
 	}
 
 	save(patient: Patient): Promise<void> {
@@ -113,7 +110,7 @@ export class SQLitePatientRepository implements PatientRepository {
 			'${budget?.endOn}',
 			'${budget?.status}',
 			${budget?.durationInDays}
-		)`
+		)`;
 
 		this.#db.query(sql);
 
@@ -123,7 +120,7 @@ export class SQLitePatientRepository implements PatientRepository {
 
 		this.#db.query(sql4);
 
-		return Promise.resolve(undefined)
+		return Promise.resolve(undefined);
 	}
 
 	update(patient: Patient): Promise<void> {
@@ -161,7 +158,6 @@ export class SQLitePatientRepository implements PatientRepository {
 		this.#db.query(sql2);
 
 		return Promise.resolve(undefined);
-
 	}
 
 	hospitalized(): Promise<Patient[]> {
@@ -176,10 +172,8 @@ export class SQLitePatientRepository implements PatientRepository {
 		const patients: Patient[] = [];
 
 		rows.forEach((row) => {
-			this.#buildPatients(patients, row)
+			this.#buildPatients(patients, row);
 		});
-
-		console.log(2, patients)
 
 		return Promise.resolve(patients);
 	}
@@ -197,7 +191,7 @@ export class SQLitePatientRepository implements PatientRepository {
 		const patients: Patient[] = [];
 
 		rows.forEach((row) => {
-			this.#buildPatients(patients, row)
+			this.#buildPatients(patients, row);
 		});
 
 		return Promise.resolve(patients);
@@ -214,15 +208,14 @@ export class SQLitePatientRepository implements PatientRepository {
 	}
 
 	#buildPatients(patients: Patient[], row: RowObject) {
-
 		const patient = patients.find((patient) => patient.patientId.getValue() === row.patient_id);
-			
+
 		if (patient) {
 			const hospitalizationData = factory.composeHospitalizationsData(row);
 			const budgetData = factory.composeBudgetsData(row);
 			const hospitalization = Hospitalization.compose(hospitalizationData);
 			patient.hospitalizations.push(hospitalization);
-			hospitalization.addBudget(budgetData)
+			hospitalization.addBudget(budgetData);
 			return;
 		}
 
@@ -232,7 +225,7 @@ export class SQLitePatientRepository implements PatientRepository {
 			const ownerData = factory.composeOwnerData(row);
 			const hospitalizationData = factory.composeHospitalizationsData(row);
 			const hospitalization = Hospitalization.compose(hospitalizationData);
-			hospitalization.addBudget(budgetData)
+			hospitalization.addBudget(budgetData);
 			const patient = Patient.compose(patientData, ownerData);
 			patient.hospitalizations.push(hospitalization);
 			patients.push(patient);
