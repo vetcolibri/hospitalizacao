@@ -3,6 +3,7 @@ import { AlertRepository } from "../domain/alerts/alert_repository.ts";
 import { ID } from "../domain/id.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../shared/either.ts";
+import { AlertData } from "../shared/types.ts";
 
 export interface Manager {
 	registerCron(alert: Alert): void;
@@ -14,13 +15,6 @@ interface Dependencies {
 	patientRepository: PatientRepository;
 	taskManager: Manager;
 }
-
-type AlertData = {
-	parameters: string[];
-	rate: number;
-	time: string;
-	comments: string;
-};
 
 export class AlertService {
 	private readonly deps: Dependencies;

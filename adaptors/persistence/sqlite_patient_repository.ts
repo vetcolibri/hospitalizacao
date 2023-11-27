@@ -99,15 +99,15 @@ export class SQLitePatientRepository implements PatientRepository {
 		const sql4 = `INSERT INTO budgets (
 			budget_id,
 			hospitalization_id,
-			'start_on',
-			'end_on',
-			'status',
-			'days'
+			start_on,
+			end_on,
+			status,
+			days
 		) VALUES (
 			'${budget?.budgetId.getValue()}',
 			'${hospitalization?.hospitalizationId.getValue()}',
-			'${budget?.startOn}',
-			'${budget?.endOn}',
+			'${budget?.startOn.toISOString()}',
+			'${budget?.endOn.toISOString()}',
 			'${budget?.status}',
 			${budget?.durationInDays}
 		)`;
@@ -162,7 +162,8 @@ export class SQLitePatientRepository implements PatientRepository {
 
 	hospitalized(): Promise<Patient[]> {
 		const sql = `
-			SELECT hospitalizations.status as h_status, * FROM hospitalizations
+			SELECT hospitalizations.status as h_status, budgets.status as b_status, * FROM hospitalizations
+			JOIN budgets ON hospitalizations.hospitalization_id = budgets.hospitalization_id
 			JOIN patients ON hospitalizations.patient_id = patients.patient_id
 			JOIN owners ON patients.owner_id = owners.owner_id
 			WHERE patients.status = '${PatientStatus.HOSPITALIZED}'

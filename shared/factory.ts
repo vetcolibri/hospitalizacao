@@ -8,8 +8,7 @@ export interface Factory {
 	composeAlertData(row: RowObject): AlertComposeData;
 }
 
-export class ComposeFactory implements Factory  {
-	
+export class ComposeFactory implements Factory {
 	composeOwnerData(row: RowObject) {
 		return {
 			ownerId: String(row.owner_id),
@@ -50,8 +49,8 @@ export class ComposeFactory implements Factory  {
 			entryDate: String(row.entry_date),
 			dischargeDate: String(row.discharge_date),
 			weight: Number(row.weight),
-			complaints: String(row.complaints).split(","),
-			diagnostics: String(row.diagnostics).split(","),
+			complaints: JSON.parse(String(row.complaints)).split(","),
+			diagnostics: JSON.parse(String(row.diagnostics)).split(","),
 			status: String(row.h_status),
 		};
 	}

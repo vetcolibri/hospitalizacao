@@ -6,18 +6,12 @@ import { Patient, PatientStatus } from "../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
 import { Either, left, right } from "../shared/either.ts";
-import { HospitalizationData, OwnerData, PatientData } from "../shared/types.ts";
+import { HospitalizationData, NewPatientData } from "../shared/types.ts";
 
 interface Dependencies {
 	alertRepository: AlertRepository;
 	patientRepository: PatientRepository;
 }
-
-type NewPatientData = {
-	readonly patientData: PatientData;
-	readonly hospitalizationData: HospitalizationData;
-	readonly ownerData: OwnerData;
-};
 
 export class PatientService {
 	private readonly deps: Dependencies;

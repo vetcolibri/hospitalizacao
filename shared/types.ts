@@ -30,6 +30,12 @@ export type OwnerData = {
 	readonly phoneNumber: string;
 };
 
+export type NewPatientData = {
+	readonly patientData: PatientData;
+	readonly hospitalizationData: HospitalizationData;
+	readonly ownerData: OwnerData;
+};
+
 export type AlertData = {
 	readonly parameters: string[];
 	readonly rate: number;
@@ -55,4 +61,4 @@ export type HospitalizationComposeData = {
 	readonly entryDate: string;
 	readonly dischargeDate: string;
 	readonly status: string;
-}
+};
