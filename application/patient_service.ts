@@ -32,6 +32,7 @@ export class PatientService {
 	 */
 	async hospitalizadPatients(): Promise<Patient[]> {
 		const patients = await this.deps.patientRepository.hospitalized();
+		console.log(1, patients);
 		for (const patient of patients) {
 			const hasAlert = await this.deps.alertRepository.verify(patient.patientId);
 			patient.changeAlertStatus(hasAlert);

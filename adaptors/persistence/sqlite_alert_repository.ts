@@ -38,7 +38,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 			alerts.push(alert);
 		});
 
-		this.#db.close();
+		
 		
 		return Promise.resolve(alerts);
 	}
@@ -51,7 +51,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 		`;
 		const rows = this.#db.queryEntries(sql, [patientId.getValue(), AlertStatus.ACTIVE]);
 		
-		this.#db.close();
+		
 
 		return Promise.resolve(rows.length > 0);
 	}
@@ -96,7 +96,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 		
 		const alert = Alert.compose(alertData);
 		
-		this.#db.close();
+		
 	
 		return Promise.resolve(alert);
 	}
@@ -117,7 +117,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 		
 		const alert = Alert.compose(alertData);
 		
-		this.#db.close();
+		
 
 		return Promise.resolve(right(alert))
 	}

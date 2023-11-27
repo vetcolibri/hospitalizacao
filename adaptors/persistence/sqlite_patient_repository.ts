@@ -70,7 +70,7 @@ export class SQLitePatientRepository implements PatientRepository {
 			'${patient.name}',
 			'${patient.breed}',
 			'${patient.specie}',
-			'${patient.birthDate}',
+			'${patient.birthDate.value.toISOString()}',
 			'${patient.owner.ownerId.getValue()}',
 			'${patient.status}'
 		)`;
@@ -179,6 +179,8 @@ export class SQLitePatientRepository implements PatientRepository {
 			this.#buildPatients(patients, row)
 		});
 
+		console.log(2, patients)
+
 		return Promise.resolve(patients);
 	}
 
@@ -217,16 +219,20 @@ export class SQLitePatientRepository implements PatientRepository {
 			
 		if (patient) {
 			const hospitalizationData = factory.composeHospitalizationsData(row);
+			const budgetData = factory.composeBudgetsData(row);
 			const hospitalization = Hospitalization.compose(hospitalizationData);
 			patient.hospitalizations.push(hospitalization);
+			hospitalization.addBudget(budgetData)
 			return;
 		}
 
 		if (!patient) {
 			const patientData = factory.composePatientData(row);
+			const budgetData = factory.composeBudgetsData(row);
 			const ownerData = factory.composeOwnerData(row);
 			const hospitalizationData = factory.composeHospitalizationsData(row);
 			const hospitalization = Hospitalization.compose(hospitalizationData);
+			hospitalization.addBudget(budgetData)
 			const patient = Patient.compose(patientData, ownerData);
 			patient.hospitalizations.push(hospitalization);
 			patients.push(patient);

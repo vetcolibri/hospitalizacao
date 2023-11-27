@@ -54,6 +54,14 @@ export class ComposeFactory implements Factory  {
 			diagnostics: String(row.diagnostics).split(","),
 			status: String(row.h_status),
 		};
-	
+	}
+
+	composeBudgetsData(row: RowObject) {
+		return {
+			budgetId: String(row.budget_id),
+			startOn: String(row.start_on),
+			endOn: String(row.end_on),
+			status: String(row.b_status),
+		};
 	}
 }
