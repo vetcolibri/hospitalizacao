@@ -1,11 +1,14 @@
+import { ID } from "../id.ts";
 import { Parameter } from "../parameters/parameter.ts";
 import { Patient } from "../patients/patient.ts";
 
 export class Round {
+	roundId: ID;
 	readonly patient: Patient;
 	readonly parameters: Parameter[];
 
 	constructor(patient: Patient) {
+		this.roundId = ID.RandomID();
 		this.patient = patient;
 		this.parameters = [];
 	}

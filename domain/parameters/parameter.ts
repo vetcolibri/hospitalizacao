@@ -1,10 +1,8 @@
 import { Measurement } from "../parameters/measurement.ts";
-import { User } from "../users/user.ts";
 
 export interface Parameter {
 	readonly name: string;
 	readonly measurement: Measurement;
-	readonly user: User;
 	readonly issuedAt: Date;
 
 	getValue(): unknown;

@@ -1,18 +1,21 @@
 import { Measurement } from "./measurement.ts";
 import { Parameter, PARAMETER_NAMES } from "./parameter.ts";
-import { User } from "../users/user.ts";
 
 export class Trc implements Parameter {
 	readonly name: string;
 	readonly measurement: Measurement;
-	readonly user: User;
-	readonly issuedAt: Date;
+	issuedAt: Date;
 
-	constructor(value: number, user: User) {
+	constructor(value: number) {
 		this.name = PARAMETER_NAMES.TRC;
 		this.measurement = Measurement.new(value);
 		this.issuedAt = new Date();
-		this.user = user;
+	}
+
+	static compose(value: number, issuedAt: string) {
+		const trc = new Trc(value);
+		trc.issuedAt = new Date(issuedAt);
+		return trc;
 	}
 
 	getValue(): number {

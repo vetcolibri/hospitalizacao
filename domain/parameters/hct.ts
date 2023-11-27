@@ -1,18 +1,21 @@
 import { Measurement } from "../parameters/measurement.ts";
 import { Parameter, PARAMETER_NAMES } from "./parameter.ts";
-import { User } from "../users/user.ts";
 
 export class Hct implements Parameter {
 	readonly name: string;
 	readonly measurement: Measurement;
-	readonly user: User;
-	readonly issuedAt: Date;
+	issuedAt: Date;
 
-	constructor(value: number, user: User) {
+	constructor(value: number) {
 		this.name = PARAMETER_NAMES.HCT;
 		this.measurement = Measurement.new(value);
 		this.issuedAt = new Date();
-		this.user = user;
+	}
+
+	static compose(value: number, issuedAt: string) {
+		const hct = new Hct(value);
+		hct.issuedAt = new Date(issuedAt);
+		return hct;
 	}
 
 	getValue(): number {

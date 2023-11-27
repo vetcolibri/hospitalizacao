@@ -1,7 +1,6 @@
 import { assertEquals, assertInstanceOf } from "../../dev_deps.ts";
 import { Round } from "../../domain/rounds/round.ts";
 import { Patient } from "../../domain/patients/patient.ts";
-import { User } from "../../domain/users/user.ts";
 import { HeartRate } from "../../domain/parameters/heart_rate.ts";
 import { RespiratoryRate } from "../../domain/parameters/respiratore_rate.ts";
 import { Trc } from "../../domain/parameters/trc.ts";
@@ -21,7 +20,7 @@ Deno.test("Rounds", async (t) => {
 	await t.step(
 		"Deve criar a ronda com a medição da Frequência cardiaca.",
 		() => {
-			const parameter = new HeartRate(78, medVet);
+			const parameter = new HeartRate(78);
 			const round = new Round(patient);
 
 			round.addParameter(parameter);
@@ -33,8 +32,8 @@ Deno.test("Rounds", async (t) => {
 		},
 	);
 	await t.step("Deve criar uma ronda com a medição da Frequência respiratória.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const parameter = new RespiratoryRate(12, medVet);
+		const heartRate = new HeartRate(78);
+		const parameter = new RespiratoryRate(12);
 		const round = new Round(patient);
 
 		round.addParameter(heartRate);
@@ -45,9 +44,9 @@ Deno.test("Rounds", async (t) => {
 		assertInstanceOf(respiratoryRate, RespiratoryRate);
 	});
 	await t.step("Deve criar uma ronda com a medição da Trc.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const respiratoryRate = new RespiratoryRate(12, medVet);
-		const parameter = new Trc(2, medVet);
+		const heartRate = new HeartRate(78);
+		const respiratoryRate = new RespiratoryRate(12);
+		const parameter = new Trc(2);
 		const round = new Round(patient);
 
 		round.addParameter(heartRate);
@@ -59,10 +58,10 @@ Deno.test("Rounds", async (t) => {
 		assertInstanceOf(trc, Trc);
 	});
 	await t.step("Deve criar uma ronda com a medição da Avdn.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const respiratoryRate = new RespiratoryRate(12, medVet);
-		const trc = new Trc(1, medVet);
-		const parameter = new Avdn("Alerta", medVet);
+		const heartRate = new HeartRate(78);
+		const respiratoryRate = new RespiratoryRate(12);
+		const trc = new Trc(1);
+		const parameter = new Avdn("Alerta");
 
 		const round = new Round(patient);
 
@@ -76,11 +75,11 @@ Deno.test("Rounds", async (t) => {
 		assertInstanceOf(avdn, Avdn);
 	});
 	await t.step("Deve criar uma ronda com a medição da Mucosas.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const respiratoryRate = new RespiratoryRate(12, medVet);
-		const trc = new Trc(1, medVet);
-		const avdn = new Avdn("Alerta", medVet);
-		const parameter = new Mucosas("Rosadas", medVet);
+		const heartRate = new HeartRate(78);
+		const respiratoryRate = new RespiratoryRate(12);
+		const trc = new Trc(1);
+		const avdn = new Avdn("Alerta");
+		const parameter = new Mucosas("Rosadas");
 
 		const round = new Round(patient);
 
@@ -95,12 +94,12 @@ Deno.test("Rounds", async (t) => {
 		assertInstanceOf(mucosas, Mucosas);
 	});
 	await t.step("Deve criar uma ronda com a medição da Temperatura.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const respiratoryRate = new RespiratoryRate(12, medVet);
-		const trc = new Trc(1, medVet);
-		const avdn = new Avdn("Alerta", medVet);
-		const mucosas = new Mucosas("Rosadas", medVet);
-		const parameter = new Temperature(38, medVet);
+		const heartRate = new HeartRate(78);
+		const respiratoryRate = new RespiratoryRate(12);
+		const trc = new Trc(1);
+		const avdn = new Avdn("Alerta");
+		const mucosas = new Mucosas("Rosadas");
+		const parameter = new Temperature(38);
 
 		const round = new Round(patient);
 
@@ -115,13 +114,13 @@ Deno.test("Rounds", async (t) => {
 		assertInstanceOf(temperature, Mucosas);
 	});
 	await t.step("Deve criar uma ronda com a medição da Glicemia.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const respiratoryRate = new RespiratoryRate(12, medVet);
-		const trc = new Trc(1, medVet);
-		const avdn = new Avdn("Alerta", medVet);
-		const mucosas = new Mucosas("Rosadas", medVet);
-		const temperature = new Temperature(38, medVet);
-		const parameter = new BloodGlucose(67, medVet);
+		const heartRate = new HeartRate(78);
+		const respiratoryRate = new RespiratoryRate(12);
+		const trc = new Trc(1);
+		const avdn = new Avdn("Alerta");
+		const mucosas = new Mucosas("Rosadas");
+		const temperature = new Temperature(38);
+		const parameter = new BloodGlucose(67);
 
 		const round = new Round(patient);
 
@@ -138,14 +137,14 @@ Deno.test("Rounds", async (t) => {
 		assertInstanceOf(glicemia, BloodGlucose);
 	});
 	await t.step("Deve criar uma ronda com a medição da Hct.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const respiratoryRate = new RespiratoryRate(12, medVet);
-		const trc = new Trc(1, medVet);
-		const avdn = new Avdn("Alerta", medVet);
-		const mucosas = new Mucosas("Rosadas", medVet);
-		const temperature = new Temperature(38, medVet);
-		const glicemia = new BloodGlucose(67, medVet);
-		const parameter = new Hct(40, medVet);
+		const heartRate = new HeartRate(78);
+		const respiratoryRate = new RespiratoryRate(12);
+		const trc = new Trc(1);
+		const avdn = new Avdn("Alerta");
+		const mucosas = new Mucosas("Rosadas");
+		const temperature = new Temperature(38);
+		const glicemia = new BloodGlucose(67);
+		const parameter = new Hct(40);
 
 		const round = new Round(patient);
 
@@ -163,15 +162,15 @@ Deno.test("Rounds", async (t) => {
 		assertInstanceOf(hct, Hct);
 	});
 	await t.step("Deve criar uma ronda com a medição da Pressão arterial.", () => {
-		const heartRate = new HeartRate(78, medVet);
-		const respiratoryRate = new RespiratoryRate(12, medVet);
-		const trc = new Trc(1, medVet);
-		const avdn = new Avdn("Alerta", medVet);
-		const mucosas = new Mucosas("Rosadas", medVet);
-		const temperature = new Temperature(38, medVet);
-		const glicemia = new BloodGlucose(67, medVet);
-		const hct = new Hct(40, medVet);
-		const parameter = new BloodPressure("123/80(60)", medVet);
+		const heartRate = new HeartRate(78);
+		const respiratoryRate = new RespiratoryRate(12);
+		const trc = new Trc(1);
+		const avdn = new Avdn("Alerta");
+		const mucosas = new Mucosas("Rosadas");
+		const temperature = new Temperature(38);
+		const glicemia = new BloodGlucose(67);
+		const hct = new Hct(40);
+		const parameter = new BloodPressure("123/80(60)");
 
 		const round = new Round(patient);
 
@@ -191,7 +190,6 @@ Deno.test("Rounds", async (t) => {
 	});
 });
 
-const medVet = new User("123");
 const patientData = {
 	patientId: "123",
 	name: "Fulano",

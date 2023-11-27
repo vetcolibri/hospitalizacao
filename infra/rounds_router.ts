@@ -11,8 +11,8 @@ const service = factory.createRoundService();
 
 export default function () {
 	const newRoundHandler = async (ctx: Context) => {
-		const { patientId, userId, parameters } = ctx.state.validatedData;
-		const resultOrError = await service.new(patientId, userId, parameters);
+		const { patientId, parameters } = ctx.state.validatedData;
+		const resultOrError = await service.new(patientId, parameters);
 		if (resultOrError.isLeft()) {
 			sendBadRequest(ctx, resultOrError.value.message);
 			return;

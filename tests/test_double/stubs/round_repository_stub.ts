@@ -4,7 +4,6 @@ import { Parameter, PARAMETER_NAMES } from "../../../domain/parameters/parameter
 import { Trc } from "../../../domain/parameters/trc.ts";
 import { Round } from "../../../domain/rounds/round.ts";
 import { RoundRepository } from "../../../domain/rounds/round_repository.ts";
-import { User } from "../../../domain/users/user.ts";
 import { patient1 } from "../../fake_data.ts";
 
 export class RoundRepositoryStub implements RoundRepository {
@@ -58,9 +57,8 @@ export class RoundRepositoryStub implements RoundRepository {
 	}
 
 	#populate() {
-		const user = new User("some-user");
-		const heartRate = new HeartRate(78, user);
-		const trc = new Trc(1, user);
+		const heartRate = new HeartRate(78);
+		const trc = new Trc(1);
 		const round1 = new Round(patient1);
 		const round2 = new Round(patient1);
 		const round3 = new Round(patient1);

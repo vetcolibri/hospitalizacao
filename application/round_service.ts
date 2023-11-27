@@ -48,7 +48,6 @@ export class RoundService {
 	 */
 	async new(
 		patientId: string,
-		userId: string,
 		parameters: ParametersData,
 	): Promise<Either<Error, void>> {
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
@@ -56,12 +55,11 @@ export class RoundService {
 			return left(patientOrError.value);
 		}
 
-		const user = await this.deps.userRepository.get(ID.New(userId));
 		const patient = patientOrError.value;
 		const round = new Round(patient);
 
 		if (parameters.heartRate) {
-			const heartRate = new HeartRate(Number(parameters.heartRate.value), user);
+			const heartRate = new HeartRate(Number(parameters.heartRate.value));
 			if (!heartRate.isValid()) {
 				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HEART_RATE));
 			}
@@ -70,8 +68,7 @@ export class RoundService {
 
 		if (parameters.respiratoryRate) {
 			const respiratoryRate = new RespiratoryRate(
-				Number(parameters.respiratoryRate.value),
-				user,
+				Number(parameters.respiratoryRate.value)
 			);
 
 			if (!respiratoryRate.isValid()) {
@@ -81,19 +78,19 @@ export class RoundService {
 		}
 
 		if (parameters.trc) {
-			const trc = new Trc(Number(parameters.trc.value), user);
+			const trc = new Trc(Number(parameters.trc.value));
 			if (!trc.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TRC));
 			round.addParameter(trc);
 		}
 
 		if (parameters.avdn) {
-			const avdn = new Avdn(String(parameters.avdn.value), user);
+			const avdn = new Avdn(String(parameters.avdn.value));
 			if (!avdn.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_AVDN));
 			round.addParameter(avdn);
 		}
 
 		if (parameters.mucosas) {
-			const mucosas = new Mucosas(String(parameters.mucosas.value), user);
+			const mucosas = new Mucosas(String(parameters.mucosas.value));
 			if (!mucosas.isValid()) {
 				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_MUCOSAS));
 			}
@@ -101,7 +98,7 @@ export class RoundService {
 		}
 
 		if (parameters.temperature) {
-			const temperature = new Temperature(Number(parameters.temperature.value), user);
+			const temperature = new Temperature(Number(parameters.temperature.value));
 			if (!temperature.isValid()) {
 				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TEMPERATURE));
 			}
@@ -110,8 +107,7 @@ export class RoundService {
 
 		if (parameters.bloodGlucose) {
 			const bloodGlucose = new BloodGlucose(
-				Number(parameters.bloodGlucose.value),
-				user,
+				Number(parameters.bloodGlucose.value)
 			);
 			if (!bloodGlucose.isValid()) {
 				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_GLUCOSE));
@@ -120,15 +116,14 @@ export class RoundService {
 		}
 
 		if (parameters.hct) {
-			const hct = new Hct(Number(parameters.hct.value), user);
+			const hct = new Hct(Number(parameters.hct.value));
 			if (!hct.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HCT));
 			round.addParameter(hct);
 		}
 
 		if (parameters.bloodPressure) {
 			const bloodPressure = new BloodPressure(
-				String(parameters.bloodPressure.value),
-				user,
+				String(parameters.bloodPressure.value)
 			);
 			if (!bloodPressure.isValid()) {
 				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_PRESSURE));

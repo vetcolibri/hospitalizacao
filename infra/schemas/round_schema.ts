@@ -2,7 +2,6 @@ import { z } from "../../deps.ts";
 
 export const roundSchema = z.object({
 	patientId: z.string(),
-	userId: z.string(),
 	parameters: z.object({
 		heartRate: z.object({
 			value: z.number(),

@@ -3,7 +3,6 @@ import { Alert } from "../../domain/alerts/alert.ts";
 import { alert1, patient1 } from "../fake_data.ts";
 import { DB } from "../../deps.ts";
 
-
 export async function init_test_db(): Promise<DB> {
 	const path = new URL("../../adaptors/persistence/schema.sql", import.meta.url);
 
@@ -15,8 +14,6 @@ export async function init_test_db(): Promise<DB> {
 
 	return db;
 }
-
-
 
 export function populate(db: DB) {
 	const testAlert = <Alert>alert1.value;

@@ -48,6 +48,24 @@ CREATE TABLE IF NOT EXISTS "budgets" (
     "hospitalization_id" bigint NOT NULL REFERENCES "hospitalizations" ("hospitalization_id") DEFERRABLE INITIALLY DEFERRED
 );
 
+-- 
+-- Criar a tabela de rondas
+-- 
+CREATE TABLE IF NOT EXISTS "rounds" (
+    "round_id" varchar(50) NOT NULL UNIQUE,
+    "patient_id" bigint NOT NULL REFERENCES "patients" ("patient_id") DEFERRABLE INITIALLY DEFERRED
+);
+
+--
+-- Criar a tabela das medições
+--
+CREATE TABLE IF NOT EXISTS "measurements" (
+    "name" varchar(50) NOT NULL,
+    "value" varchar(50) NOT NULL,
+    "issued_at" datetime NOT NULL,
+    "round_id" bigint NOT NULL REFERENCES "rounds" ("round_id") DEFERRABLE INITIALLY DEFERRED
+);
+
 --
 -- Criar a tabela de alertas
 --
@@ -65,5 +83,7 @@ CREATE INDEX IF NOT EXISTS "alerts_patient_id_idx" ON "alerts" ("patient_id");
 CREATE INDEX IF NOT EXISTS "patients_owner_id_idx" ON "patients" ("owner_id");
 CREATE INDEX IF NOT EXISTS "hospitalizations_patient_id_idx" ON "hospitalizations" ("patient_id");
 CREATE INDEX IF NOT EXISTS "budgets_hospitalization_id_idx" ON "budgets" ("hospitalization_id");
+CREATE INDEX IF NOT EXISTS "rounds_patient_id_idx" ON "rounds" ("patient_id");
+CREATE INDEX IF NOT EXISTS "measurements_round_id_idx" ON "measurements" ("round_id");
 
 COMMIT;
