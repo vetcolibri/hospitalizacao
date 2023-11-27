@@ -1,6 +1,5 @@
 import { RoundRepository } from "../domain/rounds/round_repository.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
-import { UserRepository } from "../domain/users/user_repository.ts";
 import { Round } from "../domain/rounds/round.ts";
 import { HeartRate } from "../domain/parameters/heart_rate.ts";
 import { ID } from "../domain/id.ts";
@@ -21,7 +20,6 @@ import { ERROR_MESSAGES } from "../shared/error_messages.ts";
 interface Dependencies {
 	roundRepository: RoundRepository;
 	patientRepository: PatientRepository;
-	userRepository: UserRepository;
 }
 
 type MeasurementData = {

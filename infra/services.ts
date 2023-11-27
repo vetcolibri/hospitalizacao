@@ -4,11 +4,9 @@ import { AlertService, Manager } from "../application/alert_service.ts";
 import { PatientService } from "../application/patient_service.ts";
 import { RoundService } from "../application/round_service.ts";
 import { PatientRepositoryStub } from "../tests/test_double/stubs/patient_repository_stub.ts";
-import { UserRepositoryStub } from "../tests/test_double/stubs/user_repository_stub.ts";
 
 const alertRepository = new InmemAlertRepository();
 const patientRepository = new PatientRepositoryStub();
-const userRepository = new UserRepositoryStub();
 const roundRepository = new InmemRoundRepository();
 
 interface ServicesFactory {
@@ -39,7 +37,6 @@ export class InmemServicesFactory implements ServicesFactory {
 		const deps = {
 			patientRepository,
 			roundRepository,
-			userRepository,
 		};
 		return new RoundService(deps);
 	}

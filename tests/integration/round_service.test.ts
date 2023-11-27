@@ -7,7 +7,6 @@ import {
 	assertSpyCalls,
 	spy,
 } from "../../dev_deps.ts";
-import { UserRepositoryStub } from "../test_double/stubs/user_repository_stub.ts";
 import { InmemRoundRepository } from "../../adaptors/inmem/inmem_round_repository.ts";
 import { ID } from "../../domain/id.ts";
 import { PatientRepository } from "../../domain/patients/patient_repository.ts";
@@ -461,12 +460,10 @@ interface options {
 function makeService(options?: options) {
 	const roundRepository = options?.roundRepository ?? new InmemRoundRepository();
 	const patientRepository = options?.patientRepository ?? new PatientRepositoryStub();
-	const userRepository = new UserRepositoryStub();
 	const deps = {
 		roundRepository,
 		patientRepository,
-		userRepository,
 	};
 	const service = new RoundService(deps);
-	return { service, patientRepository, userRepository, roundRepository };
+	return { service, patientRepository, roundRepository };
 }
