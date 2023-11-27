@@ -1,21 +1,23 @@
-import { InmemAlertRepository } from "../adaptors/inmem/inmem_alert_repository.ts";
-import { InmemRoundRepository } from "../adaptors/inmem/inmem_round_repository.ts";
+import { SQLiteAlertRepository } from "../adaptors/persistence/sqlite_alert_repository.ts";
+import { SQLitePatientRepository } from "../adaptors/persistence/sqlite_patient_repository.ts";
+import { SQLiteRoundRepository } from "../adaptors/persistence/sqlite_round_repository.ts";
 import { AlertService, Manager } from "../application/alert_service.ts";
 import { PatientService } from "../application/patient_service.ts";
 import { RoundService } from "../application/round_service.ts";
-import { PatientRepositoryStub } from "../tests/test_double/stubs/patient_repository_stub.ts";
+import { DB } from "../deps.ts";
 
-const alertRepository = new InmemAlertRepository();
-const patientRepository = new PatientRepositoryStub();
-const roundRepository = new InmemRoundRepository();
+const db = new DB("db.sqlite3");
+const alertRepository = new SQLiteAlertRepository(db);
+const patientRepository = new SQLitePatientRepository(db);
+const roundRepository = new SQLiteRoundRepository(db);
 
-interface ServicesFactory {
+interface Services {
 	createAlertService(tasks: Manager): AlertService;
 	createPatientService(): PatientService;
 	createRoundService(): RoundService;
 }
 
-export class InmemServicesFactory implements ServicesFactory {
+export class ServicesFactory implements Services {
 	createAlertService(tasks: Manager): AlertService {
 		const deps = {
 			alertRepository,

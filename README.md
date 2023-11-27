@@ -17,9 +17,23 @@ Backoffice para gestão da hospitalização dos pacientes.
 $ docker build -f ./.build/Dockerfile -t hospitalizacao-api .
 ```
 
-2. Excução do container
+2. Execução do container
 
 ```bash
 $ docker run -d -p 3001:8080 hospitalizacao-api
 
+```
+
+### Ambiente de desenvolvimento
+
+1. Base de dados
+
+```bash
+$ deno task initdb
+```
+
+2. Execução do servidor
+
+```bash
+$ deno run -A infra/server.ts
 ```

@@ -4,9 +4,9 @@ import { ContextWithParams } from "./context_with_params.ts";
 import { sendOk } from "./responses.ts";
 import { sendBadRequest } from "./responses.ts";
 import { roundSchema } from "./schemas/round_schema.ts";
-import { InmemServicesFactory } from "./services.ts";
+import { ServicesFactory } from "./services.ts";
 
-const factory = new InmemServicesFactory();
+const factory = new ServicesFactory();
 const service = factory.createRoundService();
 
 export default function () {

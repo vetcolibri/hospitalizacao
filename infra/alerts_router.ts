@@ -3,11 +3,11 @@ import { Context, Router } from "../deps.ts";
 import { validate } from "../shared/tools.ts";
 import { sendBadRequest, sendOk } from "./responses.ts";
 import { cancelAlertSchema, scheduleAlertSchema } from "./schemas/alert_schema.ts";
-import { InmemServicesFactory } from "./services.ts";
+import { ServicesFactory } from "./services.ts";
 
 const workerUrl = "../../infra/workers/alert_worker.ts";
 const backgroundTask = new WorkerManager(workerUrl);
-const factory = new InmemServicesFactory();
+const factory = new ServicesFactory();
 const service = factory.createAlertService(backgroundTask);
 let websocktClients: WebSocket[] = [];
 
@@ -38,10 +38,10 @@ export default function () {
 		backgroundTask.worker.onmessage = (event) => {
 			for (const wb of websocktClients) {
 				if (wb.readyState === wb.OPEN) {
-					const data  = {
+					const data = {
 						...event.data,
 						repeatEvery: event.data.repeatEvery.value,
-					}
+					};
 					wb.send(JSON.stringify(data));
 				}
 			}
