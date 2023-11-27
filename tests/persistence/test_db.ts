@@ -16,7 +16,7 @@ export async function init_test_db(): Promise<DB> {
 }
 
 export function populate(db: DB) {
-	const testAlert = <Alert>alert1.value;
+	const testAlert = <Alert> alert1.value;
 
 	const insert_owner = `INSERT INTO owners (
 			owner_id,
@@ -48,7 +48,6 @@ export function populate(db: DB) {
 			'${patient1.owner.ownerId.getValue()}'
 		)
 	`;
-
 
 	const insert_patient_1 = `INSERT INTO patients (
 			patient_id,
@@ -111,6 +110,38 @@ export function populate(db: DB) {
 		)
 	`;
 
+	const insert_budget = `INSERT INTO budgets (
+			budget_id,
+			hospitalization_id,
+			start_on,
+			end_on,
+			status,
+			days
+		)  VALUES (
+			'${"some-budget-id"}',
+			'${"some-dummy-id"}',
+			'${new Date().toISOString()}',
+			'${new Date().toISOString()}',
+			'${"some-status"}',
+			${1}
+		)`;
+
+	const insert_budget_1 = `INSERT INTO budgets (
+			budget_id,
+			hospitalization_id,
+			start_on,
+			end_on,
+			status,
+			days
+		)  VALUES (
+			'${"some-fake-budget-id"}',
+			'${"some-hospitalization-id"}',
+			'${new Date().toISOString()}',
+			'${new Date().toISOString()}',
+			'${"some-status"}',
+			${1}
+		)`;
+
 	const insert_hospitalization_1 = `INSERT INTO hospitalizations (
 			weight,
 			entry_date,
@@ -132,7 +163,6 @@ export function populate(db: DB) {
 		)
 	`;
 
-
 	const insert_hospitalization_2 = `INSERT INTO hospitalizations (
 			weight,
 			entry_date,
@@ -153,7 +183,6 @@ export function populate(db: DB) {
 			'${"some-fake-patient-id"}'
 		)
 	`;
-
 
 	const insert_alert = `INSERT INTO alerts (
 			alert_id,
@@ -187,6 +216,10 @@ export function populate(db: DB) {
 	db.execute(insert_hospitalization_1);
 
 	db.execute(insert_hospitalization_2);
+
+	db.execute(insert_budget);
+
+	db.execute(insert_budget_1);
 
 	db.execute(insert_alert);
 }

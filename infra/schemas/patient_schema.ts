@@ -21,7 +21,7 @@ const ownerSchema = z.object({
 });
 
 const hospitalizationSchema = z.object({
-	weight: z.number().int().lte(100),
+	weight: z.number().lte(100),
 	entryDate: z.string(),
 	dischargeDate: z.string(),
 	complaints: z.string().array(),

@@ -4,7 +4,7 @@ BEGIN;
 -- Criar a tabela dos donos
 -- 
 CREATE TABLE IF NOT EXISTS "owners" (
-    "owner_id" varchar(20) NOT NULL UNIQUE,
+    "owner_id" bigint NOT NULL UNIQUE,
     "owner_name" varchar(50) NOT NULL,
     "phone_number" varchar(9) NOT NULL
 );
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS "owners" (
 -- Criar a tabela de pacientes
 --
 CREATE TABLE IF NOT EXISTS "patients" (
-    "patient_id" varchar(50) NOT NULL UNIQUE,
+    "patient_id" bigint NOT NULL UNIQUE,
     "name" varchar(50) NOT NULL,
     "specie" varchar(50) NOT NULL,
     "breed" varchar(50) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS "patients" (
 -- Criar a tabela de hospitalizações
 --
 CREATE TABLE IF NOT EXISTS "hospitalizations" (
-    "hospitalization_id" varchar(50) NOT NULL UNIQUE,
+    "hospitalization_id" bigint NOT NULL UNIQUE,
     "weight" integer NOT NULL,
     "complaints" text NOT NULL CHECK ((JSON_VALID("complaints") OR "complaints" IS NULL)),
     "diagnostics" text NOT NULL CHECK ((JSON_VALID("diagnostics") OR "diagnostics" IS NULL)),

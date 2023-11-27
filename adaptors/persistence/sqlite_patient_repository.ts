@@ -44,7 +44,10 @@ export class SQLitePatientRepository implements PatientRepository {
 	}
 
 	save(patient: Patient): Promise<void> {
-		const sql = `INSERT INTO owners (
+		const hospitalization = patient.openHospitalization();
+		const budget = hospitalization?.activeBudget();
+
+		const sql1 = `INSERT INTO owners (
 			owner_id,
 			owner_name,
 			phone_number
@@ -71,10 +74,6 @@ export class SQLitePatientRepository implements PatientRepository {
 			'${patient.owner.ownerId.getValue()}',
 			'${patient.status}'
 		)`;
-
-		const hospitalization = patient.openHospitalization();
-
-		const budget = hospitalization?.activeBudget();
 
 		const sql3 = `INSERT INTO hospitalizations (
 			hospitalization_id,
@@ -112,7 +111,7 @@ export class SQLitePatientRepository implements PatientRepository {
 			${budget?.durationInDays}
 		)`;
 
-		this.#db.query(sql);
+		this.#db.query(sql1);
 
 		this.#db.query(sql2);
 
