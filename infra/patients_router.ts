@@ -3,7 +3,7 @@ import { Patient } from "../domain/patients/patient.ts";
 import { PatientNotFound } from "../domain/patients/patient_not_found_error.ts";
 import { validate } from "../shared/tools.ts";
 import { ContextWithParams } from "./context_with_params.ts";
-import { sendBadRequest, sendNotFound, sendOk } from "./responses.ts";
+import { sendBadRequest, sendCreated, sendNotFound, sendOk } from "./responses.ts";
 import { newPatientSchema, recuringHospitalizationSchema } from "./schemas/patient_schema.ts";
 import { ServicesFactory } from "./services.ts";
 
@@ -73,7 +73,7 @@ export default function () {
 			sendBadRequest(ctx, resultOrError.value.message);
 			return;
 		}
-		sendOk(ctx);
+		sendCreated(ctx);
 	};
 
 	const nonHospitalizedHandler = async (ctx: ContextWithParams) => {
@@ -101,13 +101,30 @@ export default function () {
 			return;
 		}
 
-		sendOk(ctx);
+		sendCreated(ctx);
+	};
+
+	const findOwnerHandler = async (ctx: ContextWithParams) => {
+		const ownerId = ctx.params.ownerId;
+		const ownerOrError = await service.findOwner(ownerId);
+		if (ownerOrError.isLeft()) {
+			sendNotFound(ctx, ownerOrError.value.message);
+			return;
+		}
+		const owner = ownerOrError.value;
+		const ownerDTO = {
+			ownerId: owner.ownerId.getValue(),
+			name: owner.name,
+			phoneNumber: owner.phoneNumber,
+		};
+		sendOk(ctx, ownerDTO);
 	};
 
 	const router = new Router({ prefix: "/patients" });
 	router.get("/hospitalized", hospitalizedPatientsHandler);
 	router.post("/hospitalize", validate(recuringHospitalizationSchema), hospitalizePatientHandler);
 	router.post("/new-patient", validate(newPatientSchema), newPatientHandler);
+	router.get("/owner/:ownerId", findOwnerHandler);
 	router.get("/", nonHospitalizedHandler);
 	return router;
 }

@@ -28,8 +28,11 @@ import {
 	owner,
 	patient1,
 	patient2,
+	patientWithSomeOwner,
 } from "../fake_data.ts";
 import { IDAlreadyExists } from "../../domain/patients/id_already_exists_error.ts";
+import { OwnerNotFound } from "../../domain/patients/owner_not_found_error.ts";
+import { Owner } from "../../domain/patients/owner.ts";
 
 Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 	await t.step("Deve listar os pacientes hospitalzados.", async () => {
@@ -409,10 +412,10 @@ Deno.test("Patient Service - New Patient", async (t) => {
 		await service.newPatient(newPatientData);
 
 		const patientOrError = await patientRepository.getById(ID.New(patientData.patientId));
-		assertEquals(patientOrError.isRight(), true);
 
 		const patient = <Patient> patientOrError.value;
 
+		assertEquals(patientOrError.isRight(), true);
 		assertEquals(patient.getStatus(), PatientStatus.HOSPITALIZED);
 	});
 
@@ -435,6 +438,68 @@ Deno.test("Patient Service - New Patient", async (t) => {
 
 		assertEquals(error.isLeft(), true);
 		assertInstanceOf(error.value, IDAlreadyExists);
+	});
+
+	await t.step("Deve chamar o método findOwner no repositório.", async () => {
+		const { service, patientRepository } = makeService();
+		const repoSpy = spy(patientRepository, "findOwner");
+
+		await service.newPatient(newPatientData);
+
+		assertSpyCall(repoSpy, 0, { args: [ID.New(newPatientData.ownerData.ownerId)] });
+		assertSpyCalls(repoSpy, 1);
+	});
+
+	await t.step("Deve salvar os dados do paciente com o owner.", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		const voidOrError = await service.newPatient(patientWithSomeOwner);
+
+		assertEquals(voidOrError.isRight(), true);
+
+		const patientOrError = await patientRepository.getById(
+			ID.New(patientWithSomeOwner.patientData.patientId),
+		);
+
+		const patient = <Patient> patientOrError.value;
+		assertEquals(patientOrError.isRight(), true);
+		assertEquals(patient.owner.ownerId.getValue(), patientWithSomeOwner.ownerData.ownerId);
+	});
+});
+
+Deno.test("Patient Service - Find Owner", async (t) => {
+	await t.step("Deve chamar o método findOwner no repositório", async () => {
+		const { service, patientRepository } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		const repoSpy = spy(patientRepository, "findOwner");
+
+		await service.findOwner("1001");
+
+		assertSpyCall(repoSpy, 0, { args: [ID.New("1001")] });
+		assertSpyCalls(repoSpy, 1);
+	});
+
+	await t.step("Deve recuperar o dono do paciente se ele existir no repositório.", async () => {
+		const { service } = makeService({ patientRepository: new PatientRepositoryStub() });
+
+		const ownerOrError = await service.findOwner("1001");
+
+		const owner = <Owner> ownerOrError.value;
+		assertEquals(owner.ownerId.getValue(), "1001");
+		assertEquals(owner.name, "John");
+		assertEquals(owner.phoneNumber, "933001122");
+	});
+
+	await t.step("Deve retornar @OwnerNotFound se o dono não existir no repositório.", async () => {
+		const { service } = makeService({ patientRepository: new PatientRepositoryStub() });
+
+		const error = await service.findOwner("1002");
+
+		assertEquals(error.isLeft(), true);
+		assertInstanceOf(error.value, OwnerNotFound);
 	});
 });
 

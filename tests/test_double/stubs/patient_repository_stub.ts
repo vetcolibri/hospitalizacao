@@ -1,4 +1,6 @@
 import { ID } from "../../../domain/id.ts";
+import { Owner } from "../../../domain/patients/owner.ts";
+import { OwnerNotFound } from "../../../domain/patients/owner_not_found_error.ts";
 import { Patient, PatientStatus } from "../../../domain/patients/patient.ts";
 import { PatientNotFound } from "../../../domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "../../../domain/patients/patient_repository.ts";
@@ -32,6 +34,11 @@ export class PatientRepositoryStub implements PatientRepository {
 		return Promise.resolve(undefined);
 	}
 
+	saveWithOwner(patient: Patient): Promise<void> {
+		this.save(patient);
+		return Promise.resolve(undefined);
+	}
+
 	nonHospitalized(): Promise<Patient[]> {
 		const patients = this.records.filter((patient) =>
 			patient.status === PatientStatus.DISCHARGED
@@ -50,6 +57,15 @@ export class PatientRepositoryStub implements PatientRepository {
 			patient.patientId.getValue() === patientId.getValue()
 		);
 		return Promise.resolve(exists);
+	}
+
+	findOwner(ownerId: ID): Promise<Either<OwnerNotFound, Owner>> {
+		const patient = this.records.find((patient) =>
+			patient.owner.ownerId.getValue() === ownerId.getValue()
+		);
+		if (!patient) return Promise.resolve(left(new OwnerNotFound()));
+		const owner = patient.owner;
+		return Promise.resolve(right(owner));
 	}
 
 	#populate() {

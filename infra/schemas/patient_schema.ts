@@ -3,7 +3,7 @@ import { z } from "../../deps.ts";
 const budgetSchema = z.object({
 	startOn: z.string(),
 	endOn: z.string(),
-	status: z.enum(["PENDENTE", "PAGO", "NÃO PAGO"]),
+	status: z.enum(["PENDENTE", "PAGO", "NÃO PAGO", "PENDENTE (ORÇAMENTO ENVIADO)"]),
 });
 
 const patientSchema = z.object({

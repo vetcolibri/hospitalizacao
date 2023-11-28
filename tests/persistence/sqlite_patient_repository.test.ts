@@ -4,6 +4,7 @@ import { init_test_db, populate } from "./test_db.ts";
 import { patient1, patient2 } from "../fake_data.ts";
 import { assertEquals } from "../../dev_deps.ts";
 import { ID } from "../../domain/id.ts";
+import { Owner } from "../../domain/patients/owner.ts";
 
 Deno.test("SQLite - Patient Repository", async (t) => {
 	await t.step("Deve verificar se o paciente existe.", async () => {
@@ -112,5 +113,27 @@ Deno.test("SQLite - Patient Repository", async (t) => {
 		assertEquals(patient.status, PatientStatus.HOSPITALIZED);
 		assertEquals(hospitalization?.isOpen(), true);
 		assertEquals(hospitalization?.weight, 16.5);
+	});
+
+	await t.step("Deve recuperar o Dono do paciente.", async () => {
+		const db = await init_test_db();
+		populate(db);
+		const repository = new SQLitePatientRepository(db);
+
+		const ownerOrError = await repository.findOwner(ID.New("1001"));
+		const owner = <Owner> ownerOrError.value;
+
+		assertEquals(ownerOrError.isRight(), true);
+		assertEquals(owner.ownerId.getValue(), "1001");
+	});
+
+	await t.step("Deve retornar @OwnerNotFound se o dono não existir.", async () => {
+		const db = await init_test_db();
+		populate(db);
+		const repository = new SQLitePatientRepository(db);
+
+		const ownerOrError = await repository.findOwner(ID.New("some-fake-id"));
+
+		assertEquals(ownerOrError.isLeft(), true);
 	});
 });

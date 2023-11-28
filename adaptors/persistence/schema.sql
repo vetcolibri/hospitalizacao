@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS "budgets" (
     "budget_id" varchar(50) NOT NULL UNIQUE,
     "start_on" datetime NOT NULL,
     "end_on" datetime NOT NULL,
-    "status" varchar(10) NOT NULL,
+    "status" varchar(50) NOT NULL,
     "days" integer NOT NULL,
     "hospitalization_id" bigint NOT NULL REFERENCES "hospitalizations" ("hospitalization_id") DEFERRABLE INITIALLY DEFERRED
 );

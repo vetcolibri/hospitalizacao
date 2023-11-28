@@ -36,12 +36,24 @@ export const newPatientData = {
 	ownerData,
 };
 
+export const patientWithSomeOwner = {
+	patientData: {
+		...patientData,
+		patientId: "patient-with-same-owner-id",
+	},
+	hospitalizationData,
+	ownerData: {
+		...ownerData,
+		ownerId: "1001",
+	},
+};
+
 const alertData = {
 	parameters: ["heartRate", "bloodPressure", "glicemia"],
 	rate: 120,
 	comments: "dummy",
 	time: new Date().toISOString(),
-}
+};
 
 const generateArrayString = (size: number) => {
 	const array = [];
@@ -54,14 +66,14 @@ const generateArrayString = (size: number) => {
 export const invalidComplaints = generateArrayString(11);
 export const invalidDiagnostics = generateArrayString(6);
 
-export const owner = Owner.create({ ownerId: "1001", name: "Jonh", phoneNumber: "933001122" });
+export const owner = Owner.create({ ownerId: "1001", name: "John", phoneNumber: "933001122" });
 export const patient1 = Patient.create({ ...patientData, patientId: "some-patient-id" }, owner);
 export const patient2 = Patient.create({ ...patientData, patientId: "some-id" }, owner);
 export const patient3 = Patient.create({ ...patientData, patientId: "some-other-id" }, owner);
 export const patient4 = Patient.create({ ...patientData, patientId: "some-dummy-id" }, owner);
 export const alert1 = Alert.create(
 	patient1,
-	alertData
+	alertData,
 );
 patient1.hospitalize(hospitalizationData);
 patient2.hospitalize(hospitalizationData);

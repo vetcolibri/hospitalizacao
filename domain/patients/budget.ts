@@ -1,9 +1,10 @@
 import { ID } from "../id.ts";
 
 export enum BudgetStatus {
-	PAID = "PAGO",
-	PENDING = "PENDENTE",
 	UNPAID = "NÃO PAGO",
+	PENDING = "PENDENTE",
+	PENDING_WITH_BUDGET_SENT = "PENDENTE (ORÇAMENTO ENVIADO)",
+	PAID = "PAGO",
 }
 
 export class Budget {
@@ -22,6 +23,8 @@ export class Budget {
 			this.status = BudgetStatus.PAID;
 		} else if (status === BudgetStatus.PENDING) {
 			this.status = BudgetStatus.PENDING;
+		} else if (status === BudgetStatus.PENDING_WITH_BUDGET_SENT) {
+			this.status = BudgetStatus.PENDING_WITH_BUDGET_SENT;
 		} else {
 			this.status = BudgetStatus.UNPAID;
 		}
@@ -37,6 +40,8 @@ export class Budget {
 	}
 
 	isActive(): boolean {
-		return this.status === BudgetStatus.PENDING || this.status === BudgetStatus.UNPAID;
+		return this.status === BudgetStatus.PENDING ||
+			this.status === BudgetStatus.UNPAID ||
+			this.status === BudgetStatus.PENDING_WITH_BUDGET_SENT;
 	}
 }

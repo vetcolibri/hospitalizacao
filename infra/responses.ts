@@ -17,7 +17,7 @@ export function sendCreated(ctx: Context, body?: ResponseBody) {
 }
 
 export function sendNotFound(ctx: Context, body?: ResponseBody) {
-	sendResponse(ctx, Status.NotFound, body);
+	sendResponse(ctx, Status.NotFound, { message: body });
 }
 
 export function sendOk(ctx: Context, body?: ResponseBody) {

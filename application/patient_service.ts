@@ -2,6 +2,7 @@ import { AlertRepository } from "../domain/alerts/alert_repository.ts";
 import { ID } from "../domain/id.ts";
 import { IDAlreadyExists } from "../domain/patients/id_already_exists_error.ts";
 import { Owner } from "../domain/patients/owner.ts";
+import { OwnerNotFound } from "../domain/patients/owner_not_found_error.ts";
 import { Patient, PatientStatus } from "../domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "../domain/patients/patient_already_hospitalized_error.ts";
 import { PatientRepository } from "../domain/patients/patient_repository.ts";
@@ -85,14 +86,34 @@ export class PatientService {
 		);
 		if (patientExists) return left(new IDAlreadyExists());
 
-		const owner = Owner.create(ownerData);
-		const patient = Patient.create(patientData, owner);
+		const ownerOrError = await this.deps.patientRepository.findOwner(ID.New(ownerData.ownerId));
 
-		const voidOrError = patient.hospitalize(hospitalizationData);
-		if (voidOrError.isLeft()) return left(voidOrError.value);
+		if (ownerOrError.isLeft()) {
+			const owner = Owner.create(ownerData);
+			const patient = Patient.create(patientData, owner);
+			const voidOrError = patient.hospitalize(hospitalizationData);
+			if (voidOrError.isLeft()) return left(voidOrError.value);
+			await this.deps.patientRepository.save(patient);
+		}
 
-		await this.deps.patientRepository.save(patient);
+		if (ownerOrError.isRight()) {
+			console.log("owner found");
+			const owner = ownerOrError.value;
+			const patient = Patient.create(patientData, owner);
+			const voidOrError = patient.hospitalize(hospitalizationData);
+			if (voidOrError.isLeft()) return left(voidOrError.value);
+			await this.deps.patientRepository.saveWithOwner(patient);
+		}
 
 		return right(undefined);
+	}
+
+	async findOwner(ownerId: string): Promise<Either<OwnerNotFound, Owner>> {
+		const ownerOrError = await this.deps.patientRepository.findOwner(ID.New(ownerId));
+		if (ownerOrError.isLeft()) return left(ownerOrError.value);
+
+		const owner = ownerOrError.value;
+
+		return right(owner);
 	}
 }
