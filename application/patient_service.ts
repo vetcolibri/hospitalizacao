@@ -97,7 +97,6 @@ export class PatientService {
 		}
 
 		if (ownerOrError.isRight()) {
-			console.log("owner found");
 			const owner = ownerOrError.value;
 			const patient = Patient.create(patientData, owner);
 			const voidOrError = patient.hospitalize(hospitalizationData);
