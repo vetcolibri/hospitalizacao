@@ -1,12 +1,12 @@
 import { Either, left, right } from "../../shared/either.ts";
-import { AlertComposeData, AlertData } from "../../shared/types.ts";
+import { AlertData } from "../../shared/types.ts";
 import { ID } from "../id.ts";
 import { Patient } from "../patients/patient.ts";
 import { RepeatEvery } from "./repeat_every.ts";
 import { InvalidRepeatEvery } from "./repeat_every_error.ts";
 
 export enum AlertStatus {
-	ACTIVE = "active",
+	ENABLED = "enabled",
 	DISABLED = "disabled",
 }
 
@@ -26,7 +26,7 @@ export class Alert {
 		this.repeatEvery = rate;
 		this.comments = comments;
 		this.time = new Date(time);
-		this.status = AlertStatus.ACTIVE;
+		this.status = AlertStatus.ENABLED;
 	}
 
 	static create(patient: Patient, data: AlertData): Either<InvalidRepeatEvery, Alert> {
@@ -40,30 +40,6 @@ export class Alert {
 		alert.addParameters(parameters);
 
 		return right(alert);
-	}
-
-	static compose(data: AlertComposeData) {
-		const { patient, rate, comments, time, parameters } = data;
-		const repeatEvery  = new RepeatEvery(rate)
-		const alert = new Alert(
-			patient,
-			repeatEvery,
-			comments,
-			time
-		);
-		
-		alert.alertId = ID.New(data.alertId);
-		
-		if (AlertStatus.ACTIVE === data.status) {
-			alert.status = AlertStatus.ACTIVE;
-		}
-
-		if (AlertStatus.DISABLED === data.status) {
-			alert.status = AlertStatus.DISABLED;
-		}
-
-		alert.addParameters(parameters);
-		return alert;
 	}
 
 	addParameters(parameters: string[]): void {

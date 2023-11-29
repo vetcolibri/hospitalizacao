@@ -16,7 +16,7 @@ export class InmemAlertRepository implements AlertRepository {
 	verify(patientId: ID): Promise<boolean> {
 		const hasAlert = this.records.some((alert) =>
 			alert.patient.patientId.getValue() === patientId.getValue() &&
-			alert.status === AlertStatus.ACTIVE
+			alert.status === AlertStatus.ENABLED
 		);
 		return Promise.resolve(hasAlert);
 	}

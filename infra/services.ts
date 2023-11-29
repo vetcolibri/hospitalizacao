@@ -17,7 +17,7 @@ interface Services {
 	createRoundService(): RoundService;
 }
 
-export class ServicesFactory implements Services {
+export class ServiceFactory implements Services {
 	createAlertService(tasks: Manager): AlertService {
 		const deps = {
 			alertRepository,

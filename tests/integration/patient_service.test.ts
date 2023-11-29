@@ -440,16 +440,6 @@ Deno.test("Patient Service - New Patient", async (t) => {
 		assertInstanceOf(error.value, IDAlreadyExists);
 	});
 
-	await t.step("Deve chamar o método findOwner no repositório.", async () => {
-		const { service, patientRepository } = makeService();
-		const repoSpy = spy(patientRepository, "findOwner");
-
-		await service.newPatient(newPatientData);
-
-		assertSpyCall(repoSpy, 0, { args: [ID.New(newPatientData.ownerData.ownerId)] });
-		assertSpyCalls(repoSpy, 1);
-	});
-
 	await t.step("Deve salvar os dados do paciente com o owner.", async () => {
 		const { service, patientRepository } = makeService({
 			patientRepository: new PatientRepositoryStub(),

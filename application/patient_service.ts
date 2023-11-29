@@ -86,23 +86,12 @@ export class PatientService {
 		);
 		if (patientExists) return left(new IDAlreadyExists());
 
-		const ownerOrError = await this.deps.patientRepository.findOwner(ID.New(ownerData.ownerId));
+		const owner = Owner.create(ownerData);
+		const patient = Patient.create(patientData, owner);
+		const voidOrError = patient.hospitalize(hospitalizationData);
+		if (voidOrError.isLeft()) return left(voidOrError.value);
 
-		if (ownerOrError.isLeft()) {
-			const owner = Owner.create(ownerData);
-			const patient = Patient.create(patientData, owner);
-			const voidOrError = patient.hospitalize(hospitalizationData);
-			if (voidOrError.isLeft()) return left(voidOrError.value);
-			await this.deps.patientRepository.save(patient);
-		}
-
-		if (ownerOrError.isRight()) {
-			const owner = ownerOrError.value;
-			const patient = Patient.create(patientData, owner);
-			const voidOrError = patient.hospitalize(hospitalizationData);
-			if (voidOrError.isLeft()) return left(voidOrError.value);
-			await this.deps.patientRepository.saveWithOwner(patient);
-		}
+		await this.deps.patientRepository.save(patient);
 
 		return right(undefined);
 	}

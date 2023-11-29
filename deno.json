@@ -8,5 +8,6 @@
   },
   "tasks": {
     "initdb": "deno run -A ./adaptors/persistence/init_db.ts"
-  }
+  },
+  "importMap": "import_map.json"
 }

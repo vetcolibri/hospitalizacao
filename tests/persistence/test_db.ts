@@ -157,7 +157,7 @@ export function populate(db: DB) {
 			'${new Date().toISOString()}',
 			'${JSON.stringify(["some-complaints"].join(","))}',
 			'${JSON.stringify(["some-diagnostics"].join(","))}',
-			'${HospitalizationStatus.OPEN}',
+			'${HospitalizationStatus.CLOSE}',
 			'${"some-dummy-id"}',
 			'${"some-patient-id"}'
 		)

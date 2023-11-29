@@ -3,11 +3,11 @@ import { Context, Router } from "../deps.ts";
 import { validate } from "../shared/tools.ts";
 import { sendBadRequest, sendOk } from "./responses.ts";
 import { cancelAlertSchema, scheduleAlertSchema } from "./schemas/alert_schema.ts";
-import { ServicesFactory } from "./services.ts";
+import { ServiceFactory } from "./services.ts";
 
 const workerUrl = "../../infra/workers/alert_worker.ts";
 const backgroundTask = new WorkerManager(workerUrl);
-const factory = new ServicesFactory();
+const factory = new ServiceFactory();
 const service = factory.createAlertService(backgroundTask);
 let websocktClients: WebSocket[] = [];
 

@@ -4,11 +4,9 @@ import { Alert, AlertStatus } from "../../domain/alerts/alert.ts";
 import { Either, left, right } from "../../shared/either.ts";
 import { DB } from "../../deps.ts";
 import { ID } from "../../domain/id.ts";
-import { ComposeFactory } from "../../shared/factory.ts";
+import { EntityFactory } from "../../shared/factory.ts";
 
-
-const factory = new ComposeFactory()			
-
+const factory = new EntityFactory();
 
 export class SQLiteAlertRepository implements AlertRepository {
 	readonly #db: DB;
@@ -25,21 +23,17 @@ export class SQLiteAlertRepository implements AlertRepository {
 			WHERE alerts.patient_id = '${patientId.getValue()}'
 		`;
 		const rows = this.#db.queryEntries(sql);
-		
+
 		const alerts: Alert[] = [];
 
 		if (rows.length === 0) return Promise.resolve(alerts);
 
 		rows.forEach((row) => {
-			const alertData = factory.composeAlertData(row);
-
-			const alert = Alert.compose(alertData);
+			const alert = factory.createAlert(row);
 
 			alerts.push(alert);
 		});
 
-		
-		
 		return Promise.resolve(alerts);
 	}
 
@@ -49,9 +43,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 			WHERE patient_id = ? AND status = ?
 			LIMIT 1
 		`;
-		const rows = this.#db.queryEntries(sql, [patientId.getValue(), AlertStatus.ACTIVE]);
-		
-		
+		const rows = this.#db.queryEntries(sql, [patientId.getValue(), AlertStatus.ENABLED]);
 
 		return Promise.resolve(rows.length > 0);
 	}
@@ -77,7 +69,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 		`;
 
 		this.#db.query(sql);
-		
+
 		return Promise.resolve(undefined);
 	}
 
@@ -89,15 +81,11 @@ export class SQLiteAlertRepository implements AlertRepository {
 			ORDER BY alert_id DESC LIMIT 1
 		`;
 		const rows = this.#db.queryEntries(sql);
-		
+
 		const row = rows[0];
-		
-		const alertData = factory.composeAlertData(row);
-		
-		const alert = Alert.compose(alertData);
-		
-		
-	
+
+		const alert = factory.createAlert(row);
+
 		return Promise.resolve(alert);
 	}
 
@@ -108,27 +96,23 @@ export class SQLiteAlertRepository implements AlertRepository {
 			JOIN owners ON patients.owner_id = owners.owner_id
 			WHERE alerts.alert_id = ? LIMIT 1`;
 		const rows = this.#db.queryEntries(sql, [alertId.getValue()]);
-		
-		if (rows.length === 0) return Promise.resolve(left(new AlertNotFound()));
-		
-		const row = rows[0]
-		
-		const alertData = factory.composeAlertData(row);
-		
-		const alert = Alert.compose(alertData);
-		
-		
 
-		return Promise.resolve(right(alert))
+		if (rows.length === 0) return Promise.resolve(left(new AlertNotFound()));
+
+		const row = rows[0];
+
+		const alert = factory.createAlert(row);
+
+		return Promise.resolve(right(alert));
 	}
 
 	update(alert: Alert): Promise<void> {
 		const alertId = alert.alertId.getValue();
-		
+
 		const sql = "UPDATE alerts SET status = ? WHERE alert_id = ?";
-		
+
 		this.#db.query(sql, [AlertStatus.DISABLED, alertId]);
-		
+
 		return Promise.resolve(undefined);
 	}
 }

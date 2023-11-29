@@ -4,9 +4,9 @@ import { ContextWithParams } from "./context_with_params.ts";
 import { sendOk } from "./responses.ts";
 import { sendBadRequest } from "./responses.ts";
 import { roundSchema } from "./schemas/round_schema.ts";
-import { ServicesFactory } from "./services.ts";
+import { ServiceFactory } from "./services.ts";
 
-const factory = new ServicesFactory();
+const factory = new ServiceFactory();
 const service = factory.createRoundService();
 
 export default function () {

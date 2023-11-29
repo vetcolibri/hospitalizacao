@@ -7,7 +7,6 @@ export type BudgetData = {
 };
 
 export type HospitalizationData = {
-	readonly birthDate: string;
 	readonly weight: number;
 	readonly complaints: string[];
 	readonly diagnostics: string[];

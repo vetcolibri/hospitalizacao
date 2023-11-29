@@ -1,4 +1,4 @@
-import { BudgetData, HospitalizationComposeData, HospitalizationData } from "../../shared/types.ts";
+import { BudgetData, HospitalizationData } from "../../shared/types.ts";
 import { ERROR_MESSAGES } from "../../shared/error_messages.ts";
 import { Either, left, right } from "../../shared/either.ts";
 import { InvalidNumber } from "./number_error.ts";
@@ -12,7 +12,7 @@ export enum HospitalizationStatus {
 }
 
 export class Hospitalization {
-	hospitalizationId: ID
+	hospitalizationId: ID;
 	readonly weight: number;
 	readonly complaints: string[];
 	readonly diagnostics: string[];
@@ -73,38 +73,6 @@ export class Hospitalization {
 		hospitalization.addBudget(budgetData);
 
 		return right(hospitalization);
-	}
-
-	static compose(hospitalizationData: HospitalizationComposeData) {
-		const {
-			hospitalizationId,
-			weight,
-			entryDate,
-			dischargeDate,
-			complaints,
-			diagnostics,
-			status,
-		} = hospitalizationData;
-
-		const hospitalization = new Hospitalization(
-			weight,
-			complaints,
-			diagnostics,
-			new Date(entryDate),
-			new Date(dischargeDate),
-		);
-
-		hospitalization.hospitalizationId = ID.New(hospitalizationId);
-
-		if (status === HospitalizationStatus.OPEN) {
-			hospitalization.status = HospitalizationStatus.OPEN;
-		}
-
-		if (status === HospitalizationStatus.CLOSE) {
-			hospitalization.status = HospitalizationStatus.CLOSE;
-		}
-
-		return hospitalization;
 	}
 
 	addBudget(budgetData: BudgetData) {

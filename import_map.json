@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "https://deno.land/std/node/util.ts": "node:util",
+    "https://deno.land/std/node/events.ts": "node:events",
+    "https://deno.land/std/node/assert.ts": "node:assert",
+    "https://deno.land/std/node/url.ts": "node:url",
+    "https://deno.land/std/node/stream.ts": "node:stream"
+  }
+}

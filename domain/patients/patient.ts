@@ -1,5 +1,5 @@
 import { Hospitalization, HospitalizationStatus } from "./hospitalization.ts";
-import { HospitalizationData, OwnerData, PatientComposeData, PatientData } from "../../shared/types.ts";
+import { HospitalizationData, PatientData } from "../../shared/types.ts";
 import { Either, left, right } from "../../shared/either.ts";
 import { BirthDate } from "./birth_date.ts";
 import { Owner } from "./owner.ts";
@@ -27,8 +27,8 @@ export class Patient {
 	readonly breed: string;
 	readonly owner: Owner;
 	readonly hospitalizations: Hospitalization[];
-	birthDate: BirthDate;
 	status?: PatientStatus;
+	birthDate: BirthDate;
 	hasAlert = false;
 
 	private constructor(
@@ -50,31 +50,17 @@ export class Patient {
 
 	static create(patientData: PatientData, owner: Owner): Patient {
 		const { patientId, name, breed, specie, birthDate } = patientData;
+		const birth = new BirthDate(birthDate);
+		const findedSpecie = findSpecie(specie);
 
 		return new Patient(
 			ID.New(patientId),
 			name,
 			breed,
-			findSpecie(specie),
-			new BirthDate(birthDate),
+			findedSpecie,
+			birth,
 			owner,
 		);
-	}
-
-	static compose(patientData: PatientComposeData, ownerData: OwnerData): Patient {
-		const { status } = patientData;
-		const owner = Owner.create(ownerData);
-		const patient = Patient.create(patientData, owner)
-
-		if (PatientStatus.HOSPITALIZED === status){
-			patient.status = PatientStatus.HOSPITALIZED;
-		}
-
-		if (PatientStatus.DISCHARGED === status){
-			patient.status = PatientStatus.DISCHARGED;
-		}
-
-		return patient
 	}
 
 	hospitalize(data: HospitalizationData): Either<Error, void> {

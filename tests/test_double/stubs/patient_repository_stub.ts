@@ -34,11 +34,6 @@ export class PatientRepositoryStub implements PatientRepository {
 		return Promise.resolve(undefined);
 	}
 
-	saveWithOwner(patient: Patient): Promise<void> {
-		this.save(patient);
-		return Promise.resolve(undefined);
-	}
-
 	nonHospitalized(): Promise<Patient[]> {
 		const patients = this.records.filter((patient) =>
 			patient.status === PatientStatus.DISCHARGED

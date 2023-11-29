@@ -5,9 +5,9 @@ import { validate } from "../shared/tools.ts";
 import { ContextWithParams } from "./context_with_params.ts";
 import { sendBadRequest, sendCreated, sendNotFound, sendOk } from "./responses.ts";
 import { newPatientSchema, recuringHospitalizationSchema } from "./schemas/patient_schema.ts";
-import { ServicesFactory } from "./services.ts";
+import { ServiceFactory } from "./services.ts";
 
-const factory = new ServicesFactory();
+const factory = new ServiceFactory();
 const service = factory.createPatientService();
 
 interface HospitalizationDTO {

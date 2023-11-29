@@ -13,5 +13,4 @@ export interface PatientRepository {
 	hospitalized(): Promise<Patient[]>;
 	nonHospitalized(): Promise<Patient[]>;
 	findOwner(ownerId: ID): Promise<Either<OwnerNotFound, Owner>>;
-	saveWithOwner(patient: Patient): Promise<void>;
 }

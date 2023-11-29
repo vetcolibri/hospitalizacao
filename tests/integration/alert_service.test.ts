@@ -45,7 +45,7 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 
 		assertSpyCall(repoSpy, 0, { args: [alert] });
 		assertSpyCalls(repoSpy, 1);
-		assertEquals(alert.getStatus(), AlertStatus.ACTIVE);
+		assertEquals(alert.getStatus(), AlertStatus.ENABLED);
 	});
 
 	await t.step("Deve registar os parâmetros do alerta", async () => {
@@ -214,7 +214,7 @@ const alertData = {
 async function makeService() {
 	const alert = Alert.create(
 		patient1,
-		alertData
+		alertData,
 	);
 	const alertRepository = new InmemAlertRepository();
 	await alertRepository.save(alert.value as Alert);
