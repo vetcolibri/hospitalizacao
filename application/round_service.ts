@@ -1,28 +1,17 @@
-import { RoundRepository } from "../domain/rounds/round_repository.ts";
-import { PatientRepository } from "../domain/patients/patient_repository.ts";
-import { Round } from "../domain/rounds/round.ts";
-import { HeartRate } from "../domain/parameters/heart_rate.ts";
-import { ID } from "../domain/id.ts";
-import { Either, left, right } from "../shared/either.ts";
 import { PatientNotFound } from "../domain/patients/patient_not_found_error.ts";
-import { RespiratoryRate } from "../domain/parameters/respiratore_rate.ts";
-import { Trc } from "../domain/parameters/trc.ts";
-import { Temperature } from "../domain/parameters/temperature.ts";
-import { Avdn } from "../domain/parameters/avdn.ts";
-import { Mucosas } from "../domain/parameters/mucosas.ts";
-import { BloodGlucose } from "../domain/parameters/blood_glucose.ts";
-import { Hct } from "../domain/parameters/hct.ts";
-import { BloodPressure } from "../domain/parameters/blood_pressure.ts";
+import { PatientRepository } from "../domain/patients/patient_repository.ts";
+import { RoundRepository } from "../domain/rounds/round_repository.ts";
+import { RoundBuilder } from "../domain/rounds/round_builder.ts";
 import { Parameter } from "../domain/parameters/parameter.ts";
-import { InvalidParameter } from "../domain/parameters/parameter_error.ts";
-import { ERROR_MESSAGES } from "../shared/error_messages.ts";
+import { Either, left, right } from "../shared/either.ts";
+import { ID } from "../domain/id.ts";
 
 interface Dependencies {
 	roundRepository: RoundRepository;
 	patientRepository: PatientRepository;
 }
 
-type MeasurementData = {
+export type MeasurementData = {
 	value: unknown;
 };
 
@@ -49,85 +38,35 @@ export class RoundService {
 		parameters: ParametersData,
 	): Promise<Either<Error, void>> {
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
-		if (patientOrError.isLeft()) {
-			return left(patientOrError.value);
-		}
+		if (patientOrError.isLeft()) return left(patientOrError.value);
 
 		const patient = patientOrError.value;
-		const round = new Round(patient);
+		const {
+			heartRate,
+			respiratoryRate,
+			trc,
+			avdn,
+			mucosas,
+			temperature,
+			bloodGlucose,
+			hct,
+			bloodPressure,
+		} = parameters;
+		const roundBuilder = new RoundBuilder(patient)
+			.withHeartRate(heartRate)
+			.withRespiratoryRate(respiratoryRate)
+			.withTrc(trc)
+			.withAvdn(avdn)
+			.withMucosas(mucosas)
+			.withTemperature(temperature)
+			.withBloodGlucose(bloodGlucose)
+			.withHct(hct)
+			.withBloodPressure(bloodPressure)
+			.build();
 
-		if (parameters.heartRate) {
-			const heartRate = new HeartRate(Number(parameters.heartRate.value));
-			if (!heartRate.isValid()) {
-				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HEART_RATE));
-			}
-			round.addParameter(heartRate);
-		}
+		if (roundBuilder.isLeft()) return left(roundBuilder.value);
 
-		if (parameters.respiratoryRate) {
-			const respiratoryRate = new RespiratoryRate(
-				Number(parameters.respiratoryRate.value)
-			);
-
-			if (!respiratoryRate.isValid()) {
-				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_RESPIRATORY_RATE));
-			}
-			round.addParameter(respiratoryRate);
-		}
-
-		if (parameters.trc) {
-			const trc = new Trc(Number(parameters.trc.value));
-			if (!trc.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TRC));
-			round.addParameter(trc);
-		}
-
-		if (parameters.avdn) {
-			const avdn = new Avdn(String(parameters.avdn.value));
-			if (!avdn.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_AVDN));
-			round.addParameter(avdn);
-		}
-
-		if (parameters.mucosas) {
-			const mucosas = new Mucosas(String(parameters.mucosas.value));
-			if (!mucosas.isValid()) {
-				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_MUCOSAS));
-			}
-			round.addParameter(mucosas);
-		}
-
-		if (parameters.temperature) {
-			const temperature = new Temperature(Number(parameters.temperature.value));
-			if (!temperature.isValid()) {
-				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_TEMPERATURE));
-			}
-			round.addParameter(temperature);
-		}
-
-		if (parameters.bloodGlucose) {
-			const bloodGlucose = new BloodGlucose(
-				Number(parameters.bloodGlucose.value)
-			);
-			if (!bloodGlucose.isValid()) {
-				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_GLUCOSE));
-			}
-			round.addParameter(bloodGlucose);
-		}
-
-		if (parameters.hct) {
-			const hct = new Hct(Number(parameters.hct.value));
-			if (!hct.isValid()) return left(new InvalidParameter(ERROR_MESSAGES.INVALID_HCT));
-			round.addParameter(hct);
-		}
-
-		if (parameters.bloodPressure) {
-			const bloodPressure = new BloodPressure(
-				String(parameters.bloodPressure.value)
-			);
-			if (!bloodPressure.isValid()) {
-				return left(new InvalidParameter(ERROR_MESSAGES.INVALID_BLOOD_PRESSURE));
-			}
-			round.addParameter(bloodPressure);
-		}
+		const round = roundBuilder.value;
 
 		await this.deps.roundRepository.save(round);
 
@@ -141,9 +80,7 @@ export class RoundService {
 	 */
 	async latestMeasurements(patientId: string): Promise<Either<PatientNotFound, Parameter[]>> {
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
-		if (patientOrError.isLeft()) {
-			return left(patientOrError.value);
-		}
+		if (patientOrError.isLeft()) return left(patientOrError.value);
 
 		const measurements = await this.deps.roundRepository.latestMeasurements(ID.New(patientId));
 		return right(measurements);
@@ -156,9 +93,7 @@ export class RoundService {
 	 */
 	async measurements(patientId: string): Promise<Either<PatientNotFound, Parameter[]>> {
 		const patientOrError = await this.deps.patientRepository.getById(ID.New(patientId));
-		if (patientOrError.isLeft()) {
-			return left(patientOrError.value);
-		}
+		if (patientOrError.isLeft()) return left(patientOrError.value);
 
 		const measurements = await this.deps.roundRepository.measurements(ID.New(patientId));
 		return right(measurements);

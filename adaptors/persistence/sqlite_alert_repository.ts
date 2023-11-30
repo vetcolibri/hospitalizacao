@@ -50,23 +50,22 @@ export class SQLiteAlertRepository implements AlertRepository {
 
 	save(alert: Alert): Promise<void> {
 		const sql = `INSERT INTO alerts (
-				alert_id,
-				patient_id,
-				parameters,
-				repeat_every,
-				time,
-				comments,
-				status
-			)  VALUES (
-				'${alert.alertId.getValue()}',
-				'${alert.patient.patientId.getValue()}',
-				'${JSON.stringify(alert.parameters.join(","))}',
-				'${alert.repeatEvery.getValue()}',
-				'${alert.time.toISOString()}',
-				'${alert.comments}',
-				'${alert.status}'
-			)
-		`;
+			alert_id,
+			patient_id,
+			parameters,
+			repeat_every,
+			time,
+			comments,
+			status
+		)  VALUES (
+			'${alert.alertId.getValue()}',
+			'${alert.patient.patientId.getValue()}',
+			'${JSON.stringify(alert.parameters.join(","))}',
+			'${alert.repeatEvery.getValue()}',
+			'${alert.time.toISOString()}',
+			'${alert.comments}',
+			'${alert.status}'
+		)`;
 
 		this.#db.query(sql);
 

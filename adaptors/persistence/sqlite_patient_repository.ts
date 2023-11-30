@@ -7,6 +7,7 @@ import { ID } from "../../domain/id.ts";
 import { DB, RowObject } from "../../deps.ts";
 import { Owner } from "../../domain/patients/owner.ts";
 import { OwnerNotFound } from "../../domain/patients/owner_not_found_error.ts";
+import { Hospitalization } from "../../domain/patients/hospitalization.ts";
 
 const factory = new EntityFactory();
 
@@ -23,6 +24,7 @@ export class SQLitePatientRepository implements PatientRepository {
 			JOIN patients ON hospitalizations.patient_id = patients.patient_id
 			JOIN owners ON patients.owner_id = owners.owner_id
 			WHERE patients.patient_id = '${patientId.getValue()}'
+			LIMIT 1
 		`;
 
 		const rows = this.#db.queryEntries(sql);
@@ -40,24 +42,12 @@ export class SQLitePatientRepository implements PatientRepository {
 	}
 
 	async save(patient: Patient): Promise<void> {
-		const hospitalization = patient.openHospitalization();
-		const budget = hospitalization?.activeBudget();
-
 		const owner = await this.findOwner(patient.owner.ownerId);
 		if (owner.isLeft()) {
-			const sql1 = `INSERT INTO owners (
-				owner_id,
-				owner_name,
-				phone_number
-			) VALUES (
-				'${patient.owner.ownerId.getValue()}',
-				'${patient.owner.name}',
-				'${patient.owner.phoneNumber}'
-			)`;
-			this.#db.query(sql1);
+			this.#insertOwner(patient.owner);
 		}
 
-		const sql2 = `INSERT INTO patients (
+		const sql = `INSERT INTO patients (
 			patient_id,
 			name,
 			breed,
@@ -75,96 +65,15 @@ export class SQLitePatientRepository implements PatientRepository {
 			'${patient.status}'
 		)`;
 
-		const sql3 = `INSERT INTO hospitalizations (
-			hospitalization_id,
-			patient_id,
-			weight,
-			entry_date,
-			discharge_date,
-			complaints,
-			diagnostics,
-			status
-		) VALUES (
-			'${hospitalization?.hospitalizationId.getValue()}',
-			'${patient.patientId.getValue()}',
-			${hospitalization?.weight},
-			'${hospitalization?.entryDate}',
-			'${hospitalization?.dischargeDate}',
-			'${JSON.stringify(hospitalization?.complaints.join(","))}',
-			'${JSON.stringify(hospitalization?.diagnostics.join(","))}',
-			'${hospitalization?.status}'
-		)`;
+		this.#db.query(sql);
 
-		const sql4 = `INSERT INTO budgets (
-			budget_id,
-			hospitalization_id,
-			start_on,
-			end_on,
-			status,
-			days
-		) VALUES (
-			'${budget?.budgetId.getValue()}',
-			'${hospitalization?.hospitalizationId.getValue()}',
-			'${budget?.startOn.toISOString()}',
-			'${budget?.endOn.toISOString()}',
-			'${budget?.status}',
-			${budget?.durationInDays}
-		)`;
-
-		this.#db.query(sql2);
-
-		this.#db.query(sql3);
-
-		this.#db.query(sql4);
+		this.#insertHospitalization(patient);
 
 		return Promise.resolve(undefined);
 	}
 
 	update(patient: Patient): Promise<void> {
-		const hospitalization = patient.openHospitalization();
-		const budget = hospitalization?.activeBudget();
-
-		const sql = `
-            INSERT INTO hospitalizations (
-                hospitalization_id,
-                patient_id,
-                weight,
-                entry_date,
-                discharge_date,
-                complaints,
-                diagnostics,
-                status
-            ) VALUES (
-                '${hospitalization?.hospitalizationId.getValue()}',
-                '${patient.patientId.getValue()}',
-                ${hospitalization?.weight},
-                '${hospitalization?.entryDate}',
-                '${hospitalization?.dischargeDate}',
-                '${JSON.stringify(hospitalization?.complaints.join(","))}',
-                '${JSON.stringify(hospitalization?.diagnostics.join(","))}',
-                '${hospitalization?.status}'
-            )
-        `;
-
-		const sql1 = `INSERT INTO budgets (
-			budget_id,
-			hospitalization_id,
-			start_on,
-			end_on,
-			status,
-			days
-		) VALUES (
-			'${budget?.budgetId.getValue()}',
-			'${hospitalization?.hospitalizationId.getValue()}',
-			'${budget?.startOn.toISOString()}',
-			'${budget?.endOn.toISOString()}',
-			'${budget?.status}',
-			${budget?.durationInDays}
-		)`;
-
-		this.#db.query(sql);
-
-		this.#db.query(sql1);
+		this.#insertHospitalization(patient);
 
 		const sql2 = `
             UPDATE patients SET status = '${PatientStatus.HOSPITALIZED}'
@@ -233,6 +142,68 @@ export class SQLitePatientRepository implements PatientRepository {
 		const owner = factory.createOwner(rows[0]);
 
 		return Promise.resolve(right(owner));
+	}
+
+	#insertOwner(owner: Owner) {
+		const sql = `INSERT INTO owners (
+			owner_id,
+			owner_name,
+			phone_number
+		) VALUES (
+			'${owner.ownerId.getValue()}',
+			'${owner.name}',
+			'${owner.phoneNumber}'
+		)`;
+
+		this.#db.query(sql);
+	}
+
+	#insertHospitalization(patient: Patient) {
+		const hospitalization = patient.openHospitalization();
+		const sql = `INSERT INTO hospitalizations (
+			hospitalization_id,
+			patient_id,
+			weight,
+			entry_date,
+			discharge_date,
+			complaints,
+			diagnostics,
+			status
+		) VALUES (
+			'${hospitalization?.hospitalizationId.getValue()}',
+			'${patient.patientId.getValue()}',
+			${hospitalization?.weight},
+			'${hospitalization?.entryDate}',
+			'${hospitalization?.dischargeDate}',
+			'${JSON.stringify(hospitalization?.complaints.join(","))}',
+			'${JSON.stringify(hospitalization?.diagnostics.join(","))}',
+			'${hospitalization?.status}'
+		)`;
+
+		this.#db.query(sql);
+
+		this.#inserBudget(hospitalization!);
+	}
+
+	#inserBudget(hospitalization: Hospitalization) {
+		const budget = hospitalization.activeBudget();
+		const sql = `INSERT INTO budgets (
+			budget_id,
+			hospitalization_id,
+			start_on,
+			end_on,
+			status,
+			days
+		) VALUES (
+			'${budget?.budgetId.getValue()}',
+			'${hospitalization?.hospitalizationId.getValue()}',
+			'${budget?.startOn.toISOString()}',
+			'${budget?.endOn.toISOString()}',
+			'${budget?.status}',
+			${budget?.durationInDays}
+		)`;
+
+		this.#db.query(sql);
 	}
 
 	#buildPatients(patients: Patient[], row: RowObject) {
