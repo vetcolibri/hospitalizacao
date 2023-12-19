@@ -1,12 +1,20 @@
 {
+  "imports": {
+    "application/": "./src/application/",
+    "domain/": "./src/domain/",
+    "infra/": "./src/infra/",
+    "persistence/": "./src/persistence/",
+    "shared/": "./src/shared/",
+
+    "deps": "./deps.ts",
+    "dev_deps": "./dev_deps.ts"
+  },
+
   "fmt": {
     "useTabs": true,
     "indentWidth": 4,
     "lineWidth": 100,
     "singleQuote": false,
     "proseWrap": "preserve"
-  },
-  "tasks": {
-    "initdb": "deno run -A ./adaptors/persistence/init_db.ts"
   }
 }
