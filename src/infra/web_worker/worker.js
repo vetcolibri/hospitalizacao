@@ -1,9 +1,9 @@
 import { CronType } from "./web_worker_alert_notifier.ts";
-import { Cron } from "../../deps.ts";
+import { Cron } from "deps";
 
 const jobs = new Map();
 
-self.onmessage((event) => {
+onmessage = (event) => {
   const { type, alert } = event.data;
 
   if (type === CronType.PUBLISH) {
@@ -36,4 +36,4 @@ self.onmessage((event) => {
       job.stop();
     }
   }
-});
+};

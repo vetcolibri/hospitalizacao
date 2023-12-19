@@ -28,3 +28,4 @@ coverage
 *.sw?
 .vscode
 db.sqlite3
+db.sqlite

@@ -4,3 +4,5 @@
 .REAMDE.md
 .git
 db.sqlite3
+db.sqlite
+deno.lock
