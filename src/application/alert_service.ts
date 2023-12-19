@@ -1,22 +1,26 @@
 import { Alert } from "domain/alerts/alert.ts";
-import { AlertRepository } from "domain/alerts/alert_repository.ts";
+
 import { ID } from "shared/id.ts";
-import { PatientRepository } from "domain/patients/patient_repository.ts";
+
 import { Either, left, right } from "shared/either.ts";
 import { AlertData } from "shared/types.ts";
 import { AlertNotifier } from "./alert_notifier.ts";
-
-interface Dependencies {
-  alertRepository: AlertRepository;
-  patientRepository: PatientRepository;
-  notifier: AlertNotifier;
-}
+import { AlertRepository } from "domain/alerts/alert_repository.ts";
+import { PatientRepository } from "domain/patients/patient_repository.ts";
 
 export class AlertService {
-  private readonly deps: Dependencies;
+  readonly #alertRepository: AlertRepository;
+  readonly #patientRepository: PatientRepository;
+  readonly #notifier: AlertNotifier;
 
-  constructor(deps: Dependencies) {
-    this.deps = deps;
+  constructor(
+    alertRepository: AlertRepository,
+    patientRepository: PatientRepository,
+    notifier: AlertNotifier
+  ) {
+    this.#alertRepository = alertRepository;
+    this.#patientRepository = patientRepository;
+    this.#notifier = notifier;
   }
 
   /**
@@ -29,7 +33,7 @@ export class AlertService {
     patientId: string,
     alertData: AlertData
   ): Promise<Either<Error, void>> {
-    const patientOrError = await this.deps.patientRepository.getById(
+    const patientOrError = await this.#patientRepository.getById(
       ID.New(patientId)
     );
     if (patientOrError.isLeft()) return left(patientOrError.value);
@@ -40,9 +44,9 @@ export class AlertService {
     if (alertOrError.isLeft()) return left(alertOrError.value);
 
     const alert = alertOrError.value;
-    await this.deps.alertRepository.save(alert);
+    await this.#alertRepository.save(alert);
 
-    this.deps.notifier.schedule(alert);
+    this.#notifier.schedule(alert);
 
     return right(undefined);
   }
@@ -53,9 +57,7 @@ export class AlertService {
    * @returns {Promise<Either<Error, void>>}
    */
   async cancel(alertId: string): Promise<Either<Error, void>> {
-    const alertOrError = await this.deps.alertRepository.getById(
-      ID.New(alertId)
-    );
+    const alertOrError = await this.#alertRepository.getById(ID.New(alertId));
     if (alertOrError.isLeft()) return left(alertOrError.value);
 
     const alert = alertOrError.value;
@@ -65,9 +67,9 @@ export class AlertService {
 
     alert.cancel();
 
-    await this.deps.alertRepository.update(alert);
+    await this.#alertRepository.update(alert);
 
-    this.deps.notifier.cancel(alert);
+    this.#notifier.cancel(alert);
 
     return Promise.resolve(right(undefined));
   }

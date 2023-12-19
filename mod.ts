@@ -9,6 +9,7 @@ import { WebWorkerAlertNotifier } from "infra/web_worker/web_worker_alert_notifi
 import { startHttpServer } from "infra/http/http_server.ts";
 
 const DB_PATH = Deno.env.get("DB_PATH") || "./db.sqlite";
+const PORT = Deno.env.get("PORT") || "8000";
 
 // Initialize adapters
 const db = createSQLiteDB(DB_PATH);
@@ -19,26 +20,20 @@ const roundRepository = new SQLiteRoundRepository(db);
 const notifier = new WebWorkerAlertNotifier();
 
 // Initialize application services
-const patientService = new PatientService({
-  patientRepository,
-  alertRepository,
-});
+const patientService = new PatientService(patientRepository, alertRepository);
 
-const alertService = new AlertService({
+const alertService = new AlertService(
   alertRepository,
   patientRepository,
-  notifier,
-});
+  notifier
+);
 
-const roundService = new RoundService({
-  patientRepository,
-  roundRepository,
-});
+const roundService = new RoundService(roundRepository, patientRepository);
 
 startHttpServer({
   alertService,
   patientService,
   roundService,
-  taskManager: notifier,
-  port: 8000,
+  notifier,
+  port: parseInt(PORT),
 });

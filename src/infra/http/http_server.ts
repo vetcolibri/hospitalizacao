@@ -14,13 +14,13 @@ export function startHttpServer(opts: {
   alertService: AlertService;
   patientService: PatientService;
   roundService: RoundService;
-  taskManager: AlertNotifier;
+  notifier: AlertNotifier;
   port: number;
 }) {
   const app = new Application();
 
   const patientRouter = patients_router(opts.patientService);
-  const alertRouter = alerts_router(opts.alertService, opts.taskManager);
+  const alertRouter = alerts_router(opts.alertService, opts.notifier);
   const roundRouter = rounds_router(opts.roundService);
 
   app.use(oakCors());

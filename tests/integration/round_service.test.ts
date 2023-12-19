@@ -508,10 +508,7 @@ function makeService(options?: options) {
     options?.roundRepository ?? new InmemRoundRepository();
   const patientRepository =
     options?.patientRepository ?? new PatientRepositoryStub();
-  const deps = {
-    roundRepository,
-    patientRepository,
-  };
-  const service = new RoundService(deps);
+
+  const service = new RoundService(roundRepository, patientRepository);
   return { service, patientRepository, roundRepository };
 }
