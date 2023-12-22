@@ -6,11 +6,6 @@ import { Parameter } from "domain/parameters/parameter.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
 
-interface Dependencies {
-  roundRepository: RoundRepository;
-  patientRepository: PatientRepository;
-}
-
 export type MeasurementData = {
   value: unknown;
 };
@@ -20,10 +15,15 @@ type ParametersData = {
 };
 
 export class RoundService {
-  private readonly deps: Dependencies;
+  readonly #roundRepository: RoundRepository;
+  readonly #patientRepository: PatientRepository;
 
-  constructor(deps: Dependencies) {
-    this.deps = deps;
+  constructor(
+    roundRepository: RoundRepository,
+    patientRepository: PatientRepository
+  ) {
+    this.#roundRepository = roundRepository;
+    this.#patientRepository = patientRepository;
   }
 
   /**
@@ -37,7 +37,7 @@ export class RoundService {
     patientId: string,
     parameters: ParametersData
   ): Promise<Either<Error, void>> {
-    const patientOrError = await this.deps.patientRepository.getById(
+    const patientOrError = await this.#patientRepository.getById(
       ID.New(patientId)
     );
     if (patientOrError.isLeft()) return left(patientOrError.value);
@@ -70,7 +70,7 @@ export class RoundService {
 
     const round = roundBuilder.value;
 
-    await this.deps.roundRepository.save(round);
+    await this.#roundRepository.save(round);
 
     return right(undefined);
   }
@@ -83,12 +83,12 @@ export class RoundService {
   async latestMeasurements(
     patientId: string
   ): Promise<Either<PatientNotFound, Parameter[]>> {
-    const patientOrError = await this.deps.patientRepository.getById(
+    const patientOrError = await this.#patientRepository.getById(
       ID.New(patientId)
     );
     if (patientOrError.isLeft()) return left(patientOrError.value);
 
-    const measurements = await this.deps.roundRepository.latestMeasurements(
+    const measurements = await this.#roundRepository.latestMeasurements(
       ID.New(patientId)
     );
     return right(measurements);
@@ -102,12 +102,12 @@ export class RoundService {
   async measurements(
     patientId: string
   ): Promise<Either<PatientNotFound, Parameter[]>> {
-    const patientOrError = await this.deps.patientRepository.getById(
+    const patientOrError = await this.#patientRepository.getById(
       ID.New(patientId)
     );
     if (patientOrError.isLeft()) return left(patientOrError.value);
 
-    const measurements = await this.deps.roundRepository.measurements(
+    const measurements = await this.#roundRepository.measurements(
       ID.New(patientId)
     );
     return right(measurements);

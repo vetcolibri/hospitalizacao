@@ -62,7 +62,6 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
     assertEquals(alerts[1].getParameters(), alertData.parameters);
   });
 
-  //await t.step("Deve chamar registerCron para agendar o alerta.", async () => {
   await t.step("Deve agendar o alerta.", async () => {
     const { service, alertRepository, patientRepository, notifier } =
       await makeService();
@@ -76,23 +75,6 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
     assertSpyCall(notifierSpy, 0, { args: [alert] });
     assertSpyCalls(notifierSpy, 1);
   });
-
-  // await t.step(
-  //   "Deve publicar o alerta ao worker para ser registrada.",
-  //   async () => {
-  //     const { service, alertRepository, notifier } = await makeService();
-  //     const workerSpy = spy(taskManager.worker, "postMessage");
-
-  //     await service.schedule("some-patient-id", alertData);
-
-  //     const alert = await alertRepository.last();
-
-  //     assertSpyCall(workerSpy, 0, {
-  //       args: [{ alert, type: CronType.PUBLISH }],
-  //     });
-  //     assertSpyCalls(workerSpy, 1);
-  //   }
-  // );
 
   await t.step(
     "Deve receber a frequência de apresentação do alerta.",
@@ -186,31 +168,14 @@ Deno.test("Alert Service - Cancel Alert", async (t) => {
     async () => {
       const { service, alertRepository, notifier } = await makeService();
       const alert = await alertRepository.last();
-      const taskManagerSpy = spy(notifier, "cancel");
+      const notifierSpy = spy(notifier, "cancel");
 
       await service.cancel(alert.alertId.value);
 
-      assertSpyCall(taskManagerSpy, 0);
-      assertSpyCalls(taskManagerSpy, 1);
+      assertSpyCall(notifierSpy, 0);
+      assertSpyCalls(notifierSpy, 1);
     }
   );
-
-  // await t.step(
-  //   "Deve publicar o alerta ao worker para ser removido.",
-  //   async () => {
-  //     const { service, alertRepository, notifier } = await makeService();
-  //     const alert = await alertRepository.last();
-
-  //     const workerSpy = spy(taskManager.worker, "postMessage");
-
-  //     await service.cancel(alert.alertId.value);
-
-  //     assertSpyCall(workerSpy, 0, {
-  //       args: [{ alert: alert, type: CronType.REMOVE }],
-  //     });
-  //     assertSpyCalls(workerSpy, 1);
-  //   }
-  // );
 
   await t.step(
     "Deve retornar @AlertNotFound se o alerta não existir.",
@@ -252,10 +217,10 @@ async function makeService() {
   await patientRepository.save(patient1);
   const notifier = new AlertNotifierDummy();
 
-  const service = new AlertService({
+  const service = new AlertService(
     alertRepository,
     patientRepository,
-    notifier,
-  });
+    notifier
+  );
   return { alertRepository, patientRepository, notifier, service };
 }

@@ -571,10 +571,7 @@ function makeService(options?: Options) {
   const patientRepository =
     options?.patientRepository ?? new InmemPatientRepository();
   const alertRepository = new InmemAlertRepository();
-  const deps = {
-    alertRepository,
-    patientRepository,
-  };
-  const service = new PatientService(deps);
+
+  const service = new PatientService(patientRepository, alertRepository);
   return { service, patientRepository, alertRepository };
 }
