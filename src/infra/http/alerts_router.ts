@@ -45,7 +45,7 @@ export default function (service: AlertService, notifier: AlertNotifier) {
   const onMessageHandler = (event: MessageEvent) => {
     const data = {
       ...event.data,
-      repeatEvery: event.data.repeatEvery.value,
+      repeatEvery: event.data.rate,
     };
 
     cleanupDeadClients();

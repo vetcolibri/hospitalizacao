@@ -7,5 +7,4 @@ export function initSQLiteDB(db: DB) {
 
   db.execute(schema);
 
-  db.close();
 }

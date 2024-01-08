@@ -4,8 +4,6 @@ WORKDIR /api
 
 COPY . .
 
-RUN deno task initdb
-
 EXPOSE 8000
 
-CMD ["deno", "run", "-A", "./infra/server.ts"]
+CMD ["deno", "run", "-A", "./mod.ts"]

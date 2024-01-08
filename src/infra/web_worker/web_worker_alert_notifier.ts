@@ -4,27 +4,39 @@ import { Alert } from "domain/alerts/alert.ts";
 const WORKER_PATH = "./worker.js";
 
 export enum CronType {
-  PUBLISH = "publish",
-  REMOVE = "remove",
+	PUBLISH = "publish",
+	REMOVE = "remove",
 }
 
 export class WebWorkerAlertNotifier implements AlertNotifier {
-  readonly #worker: Worker;
+	readonly #worker: Worker;
 
-  constructor() {
-    const url = new URL(WORKER_PATH, import.meta.url).href;
-    this.#worker = new Worker(url, { type: "module" });
-  }
+	constructor() {
+		const url = new URL(WORKER_PATH, import.meta.url).href;
+		this.#worker = new Worker(url, { type: "module" });
+	}
 
-  schedule(alert: Alert): void {
-    this.#worker.postMessage({ alert, type: CronType.PUBLISH });
-  }
+	schedule(alert: Alert): void {
+		const payload = {
+			alertId: alert.alertId.value,
+			patient: {
+				name: alert.patient.name,
+				patientId: alert.patient.patientId.value,
+			},
+			comments: alert.comments,
+			time: alert.time,
+			rate: alert.repeatEvery.value,
+		};
 
-  cancel(alert: Alert): void {
-    this.#worker.postMessage({ alert, type: CronType.REMOVE });
-  }
+		this.#worker.postMessage({ payload, type: CronType.PUBLISH });
+	}
 
-  onMessage(cb: (event: MessageEvent) => void): void {
-    this.#worker.onmessage = cb;
-  }
+	cancel(alert: Alert): void {
+		const payload = { alertId: alert.alertId.value };
+		this.#worker.postMessage({ payload, type: CronType.REMOVE });
+	}
+
+	onMessage(cb: (event: MessageEvent) => void): void {
+		this.#worker.onmessage = cb;
+	}
 }

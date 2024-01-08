@@ -3,46 +3,38 @@ import { Cron } from "deps";
 
 const jobs = new Map();
 
-function stopJob(id) {
-	const job = jobs.get(id);
-	if (job) {
-		job.stop();
-	}
-}
-
 onmessage = (event) => {
-	const { type, alert } = event.data;
+  const { type, payload } = event.data;
 
-	if (!type || !alert) {
-		console.error("There's no value for type nor alert");
-		return;
+  if (!type || !payload) {
+	console.error("There's no value for type or payload");
+	return;
 	}
 
-	if (type === CronType.REMOVE) {
-		stopJob(alert.alertId.value);
-		return;
-	}
 
-	const seconds = alert.time.getSeconds();	
-	const job = new Cron(`${seconds} * * * * *`, {
-		interval: alert.repeatEvery.value,
-		timezone: "Africa/Luanda",
-		startAt: alert.time.toISOString(),
-	});
+  if (type === CronType.PUBLISH) { 
+            
+    const seconds = payload.time.getSeconds()
+    
+    const job = new Cron(`${seconds} * * * * *`, {
+      interval: payload.rate,
+      timezone: "Africa/Luanda",
+      startAt: payload.time.toISOString(),
+    });
 
-	const payload = {
-		patient: {
-			patientId: alert.patient.patientId.value,
-			name: alert.patient.name,
-		},
+    job.schedule(() => postMessage(payload));
+    jobs.set(payload.alertId, job);
+  }
 
-		alertId: alert.alertId.value,
-		parameters: alert.parameters,
-		comments: alert.comments,
-		repeatEvery: alert.repeatEvery,
-		time: alert.time,
-	};
+  if (type === CronType.REMOVE) {
+    stopCron(payload.alertId)
+  }
 
-	job.schedule(() => postMessage(payload));
-	jobs.set(alert.alertId.value, job);
 };
+
+function stopCron(alertId) {
+  const job = jobs.get(alertId);
+  if (job) {
+    job.stop();
+  }
+}
