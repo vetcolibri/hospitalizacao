@@ -26,6 +26,7 @@ export class WebWorkerAlertNotifier implements AlertNotifier {
 			comments: alert.comments,
 			time: alert.time,
 			rate: alert.repeatEvery.value,
+			parameters: alert.parameters,
 		};
 
 		this.#worker.postMessage({ payload, type: CronType.PUBLISH });
