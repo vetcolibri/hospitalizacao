@@ -8,7 +8,7 @@ import { RoundService } from "application/round_service.ts";
 import { WebWorkerAlertNotifier } from "infra/web_worker/web_worker_alert_notifier.ts";
 import { startHttpServer } from "infra/http/http_server.ts";
 
-const DB_PATH = Deno.env.get("DB_PATH") || "./db.sqlite";
+const DB_PATH = Deno.env.get("DB_PATH") || "/data/db.sqlite";
 const PORT = Deno.env.get("PORT") || "8000";
 
 // Initialize adapters

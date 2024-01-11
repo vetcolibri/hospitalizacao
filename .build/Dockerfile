@@ -4,6 +4,8 @@ WORKDIR /api
 
 COPY . .
 
+VOLUME /data
+
 EXPOSE 8000
 
 CMD ["deno", "run", "-A", "./mod.ts"]
