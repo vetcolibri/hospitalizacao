@@ -130,7 +130,9 @@ export class SQLitePatientRepository implements PatientRepository {
         `;
     const rows = this.#db.queryEntries(query);
 
-    return Promise.resolve(rows.length > 0);
+    const exists = rows.some((row) => row.patient_id === patientId.value);
+
+    return Promise.resolve(exists);
   }
 
   findOwner(ownerId: ID): Promise<Either<OwnerNotFound, Owner>> {
