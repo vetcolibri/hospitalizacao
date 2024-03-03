@@ -3,63 +3,66 @@ import { AlertNotifier } from "application/alert_notifier.ts";
 import { Context, Router } from "deps";
 import { validate } from "shared/tools.ts";
 import { sendBadRequest, sendOk } from "./responses.ts";
-import {
-  cancelAlertSchema,
-  scheduleAlertSchema,
-} from "./schemas/alert_schema.ts";
+import { cancelAlertSchema, scheduleAlertSchema } from "./schemas/alert_schema.ts";
 
 let websocktClients: WebSocket[] = [];
 
 export default function (service: AlertService, notifier: AlertNotifier) {
-  const scheduleAlertHandler = async (ctx: Context) => {
-    const { patientId, alertData } = ctx.state.validatedData;
-    const resultOrError = await service.schedule(patientId, alertData);
-    if (resultOrError.isLeft()) {
-      sendBadRequest(ctx, resultOrError.value.message);
-      return;
-    }
-    sendOk(ctx);
-  };
+	const scheduleAlertHandler = async (ctx: Context) => {
+		const { patientId, alertData } = ctx.state.validatedData;
 
-  const cancelAlertHandler = async (ctx: Context) => {
-    const { alertId } = ctx.state.validatedData;
-    const resultOrError = await service.cancel(alertId);
-    if (resultOrError.isLeft()) {
-      sendBadRequest(ctx, resultOrError.value.message);
-      return;
-    }
-    sendOk(ctx);
-  };
+		const voidOrErr = await service.schedule(patientId, alertData);
 
-  const notifyClientsHandler = async (ctx: Context) => {
-    cleanupDeadClients();
+		if (voidOrErr.isLeft()) {
+			sendBadRequest(ctx, voidOrErr.value.message);
+			return;
+		}
 
-    const websocket = await ctx.upgrade();
-    websocktClients.push(websocket);
-  };
+		sendOk(ctx);
+	};
 
-  const cleanupDeadClients = () => {
-    websocktClients = websocktClients.filter((wb) => wb.readyState === wb.OPEN);
-  };
+	const cancelAlertHandler = async (ctx: Context) => {
+		const { alertId } = ctx.state.validatedData;
 
-  const onMessageHandler = (event: MessageEvent) => {
-    const data = {
-      ...event.data,
-      repeatEvery: event.data.rate,
-    };
+		const voidOrErr = await service.cancel(alertId);
 
-    cleanupDeadClients();
+		if (voidOrErr.isLeft()) {
+			sendBadRequest(ctx, voidOrErr.value.message);
+			return;
+		}
 
-    for (const wb of websocktClients) {
-      wb.send(JSON.stringify(data));
-    }
-  };
+		sendOk(ctx);
+	};
 
-  notifier.onMessage(onMessageHandler);
+	const notifyClientsHandler = async (ctx: Context) => {
+		cleanupDeadClients();
 
-  const router = new Router({ prefix: "/alerts" });
-  router.post("/schedule", validate(scheduleAlertSchema), scheduleAlertHandler);
-  router.post("/cancel", validate(cancelAlertSchema), cancelAlertHandler);
-  router.get("/notifications", notifyClientsHandler);
-  return router;
+		const websocket = await ctx.upgrade();
+		websocktClients.push(websocket);
+	};
+
+	const cleanupDeadClients = () => {
+		websocktClients = websocktClients.filter((wb) => wb.readyState === wb.OPEN);
+	};
+
+	const onMessageHandler = (event: MessageEvent) => {
+		const data = {
+			...event.data,
+			repeatEvery: event.data.rate,
+		};
+
+		cleanupDeadClients();
+
+		for (const wb of websocktClients) {
+			wb.send(JSON.stringify(data));
+		}
+	};
+
+	notifier.onMessage(onMessageHandler);
+
+	const router = new Router({ prefix: "/alerts" });
+	router.post("/schedule", validate(scheduleAlertSchema), scheduleAlertHandler);
+	router.post("/cancel", validate(cancelAlertSchema), cancelAlertHandler);
+	router.get("/notifications", notifyClientsHandler);
+	return router;
 }

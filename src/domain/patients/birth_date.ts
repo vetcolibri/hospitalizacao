@@ -22,7 +22,7 @@ export class BirthDate {
 		return this.calculateAge().getUTCDate() - 1;
 	}
 
-	getAge(): string {
+	get age(): string {
 		let age = "";
 
 		if (this.getYears() > 1) {

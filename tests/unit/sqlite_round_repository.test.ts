@@ -14,80 +14,77 @@ import { Hct } from "domain/parameters/hct.ts";
 import { BloodPressure } from "domain/parameters/blood_pressure.ts";
 
 Deno.test("SQLite - Round Repository", async (t) => {
-  await t.step(
-    "Deve salvar uma ronda com o parametro da frequência cardiaca",
-    async () => {
-      const db = await init_test_db();
-      populate(db);
-      const persistence = new SQLiteRoundRepository(db);
-      const round = new Round(patient1);
+	await t.step(
+		"Deve salvar uma ronda com o parametro da frequência cardiaca",
+		async () => {
+			const db = await init_test_db();
+			populate(db);
+			const persistence = new SQLiteRoundRepository(db);
+			const round = new Round(patient1);
+			const heartRate = new HeartRate(80);
+			const respiratoryRate = new RespiratoryRate(20);
+			const trc = new Trc(1);
+			const avdn = new Avdn("Alertas");
+			const mucosas = new Mucosas("Rosadas");
+			const temperature = new Temperature(38);
+			const bloodGlucose = new BloodGlucose(67);
+			const hct = new Hct(40);
+			const bloodPressure = new BloodPressure("120/80(60)");
+			round.addParameter(heartRate);
+			round.addParameter(respiratoryRate);
+			round.addParameter(trc);
+			round.addParameter(avdn);
+			round.addParameter(mucosas);
+			round.addParameter(temperature);
+			round.addParameter(bloodGlucose);
+			round.addParameter(hct);
+			round.addParameter(bloodPressure);
+			await persistence.save(round);
 
-      const heartRate = new HeartRate(80);
-      const respiratoryRate = new RespiratoryRate(20);
-      const trc = new Trc(1);
-      const avdn = new Avdn("Alertas");
-      const mucosas = new Mucosas("Rosadas");
-      const temperature = new Temperature(38);
-      const bloodGlucose = new BloodGlucose(67);
-      const hct = new Hct(40);
-      const bloodPressure = new BloodPressure("120/80(60)");
+			const measurements = await persistence.measurements(patient1.systemId);
 
-      round.addParameter(heartRate);
-      round.addParameter(respiratoryRate);
-      round.addParameter(trc);
-      round.addParameter(avdn);
-      round.addParameter(mucosas);
-      round.addParameter(temperature);
-      round.addParameter(bloodGlucose);
-      round.addParameter(hct);
-      round.addParameter(bloodPressure);
+			assertEquals(measurements.length, 9);
+		},
+	);
 
-      await persistence.save(round);
+	await t.step(
+		"Deve recuperar as ultimas medições do paciente para cada parametro",
+		async () => {
+			const db = await init_test_db();
+			populate(db);
+			const persistence = new SQLiteRoundRepository(db);
+			const round = new Round(patient1);
+			const round2 = new Round(patient1);
 
-      const measurements = await persistence.measurements(patient1.patientId);
+			const heartRate = new HeartRate(80);
+			const respiratoryRate = new RespiratoryRate(20);
+			const trc = new Trc(1);
+			const avdn = new Avdn("Alertas");
+			const mucosas = new Mucosas("Rosadas");
+			const temperature = new Temperature(38);
+			const bloodGlucose = new BloodGlucose(67);
+			const hct = new Hct(40);
+			const bloodPressure = new BloodPressure("120/80(60)");
+			const heartRate2 = new HeartRate(89);
+			round.addParameter(heartRate);
+			round.addParameter(respiratoryRate);
+			round.addParameter(trc);
+			round.addParameter(avdn);
+			round.addParameter(mucosas);
+			round.addParameter(temperature);
+			round.addParameter(bloodGlucose);
+			round.addParameter(hct);
+			round.addParameter(bloodPressure);
 
-      assertEquals(measurements.length, 9);
-    }
-  );
+			round2.addParameter(heartRate2);
+			await persistence.save(round);
+			await persistence.save(round2);
 
-  await t.step(
-    "Deve recuperar as ultimas medições do paciente para cada parametro",
-    async () => {
-      const db = await init_test_db();
-      populate(db);
-      const persistence = new SQLiteRoundRepository(db);
-      const round = new Round(patient1);
-      const round2 = new Round(patient1);
+			const measurements = await persistence.latestMeasurements(
+				patient1.systemId,
+			);
 
-      const heartRate = new HeartRate(80);
-      const respiratoryRate = new RespiratoryRate(20);
-      const trc = new Trc(1);
-      const avdn = new Avdn("Alertas");
-      const mucosas = new Mucosas("Rosadas");
-      const temperature = new Temperature(38);
-      const bloodGlucose = new BloodGlucose(67);
-      const hct = new Hct(40);
-      const bloodPressure = new BloodPressure("120/80(60)");
-      const heartRate2 = new HeartRate(89);
-      round.addParameter(heartRate);
-      round.addParameter(respiratoryRate);
-      round.addParameter(trc);
-      round.addParameter(avdn);
-      round.addParameter(mucosas);
-      round.addParameter(temperature);
-      round.addParameter(bloodGlucose);
-      round.addParameter(hct);
-      round.addParameter(bloodPressure);
-
-      round2.addParameter(heartRate2);
-      await persistence.save(round);
-      await persistence.save(round2);
-
-      const measurements = await persistence.latestMeasurements(
-        patient1.patientId
-      );
-
-      assertEquals(measurements.length, 9);
-    }
-  );
+			assertEquals(measurements.length, 9);
+		},
+	);
 });

@@ -4,50 +4,50 @@ import { Round } from "domain/rounds/round.ts";
 import { RoundRepository } from "domain/rounds/round_repository.ts";
 
 export class InmemRoundRepository implements RoundRepository {
-  readonly #rounds: Round[] = [];
+	readonly #rounds: Round[] = [];
 
-  save(round: Round): Promise<void> {
-    this.#rounds.push(round);
-    return Promise.resolve(undefined);
-  }
+	save(round: Round): Promise<void> {
+		this.#rounds.push(round);
+		return Promise.resolve(undefined);
+	}
 
-  last(): Promise<Round> {
-    return Promise.resolve(this.#rounds[this.#rounds.length - 1]);
-  }
+	last(): Promise<Round> {
+		return Promise.resolve(this.#rounds[this.#rounds.length - 1]);
+	}
 
-  measurements(patientId: ID): Promise<Parameter[]> {
-    const rounds = this.#rounds.filter(
-      (round) => round.patient.patientId.value === patientId.value
-    );
-    const parameters: Parameter[] = [];
-    for (const round of rounds) {
-      for (const parameter of round.parameters) {
-        parameters.push(parameter);
-      }
-    }
-    return Promise.resolve(parameters);
-  }
+	measurements(patientId: ID): Promise<Parameter[]> {
+		const rounds = this.#rounds.filter(
+			(round) => round.patient.patientId.value === patientId.value,
+		);
+		const parameters: Parameter[] = [];
+		for (const round of rounds) {
+			for (const parameter of round.parameters) {
+				parameters.push(parameter);
+			}
+		}
+		return Promise.resolve(parameters);
+	}
 
-  latestMeasurements(patientId: ID): Promise<Parameter[]> {
-    const rounds = this.#rounds.filter(
-      (round) => round.patient.patientId.value === patientId.value
-    );
-    const parameters: Parameter[] = [];
-    for (const round of rounds) {
-      for (const parameter of round.parameters) {
-        parameters.push(parameter);
-      }
-    }
-    const result = [];
-    for (const name of Object.values(PARAMETER_NAMES)) {
-      const lastMeasurement = parameters.findLast(
-        (parameter) => parameter.name === name
-      );
-      if (lastMeasurement) {
-        result.push(lastMeasurement);
-      }
-    }
+	latestMeasurements(patientId: ID): Promise<Parameter[]> {
+		const rounds = this.#rounds.filter(
+			(round) => round.patient.patientId.value === patientId.value,
+		);
+		const parameters: Parameter[] = [];
+		for (const round of rounds) {
+			for (const parameter of round.parameters) {
+				parameters.push(parameter);
+			}
+		}
+		const result = [];
+		for (const name of Object.values(PARAMETER_NAMES)) {
+			const lastMeasurement = parameters.findLast(
+				(parameter) => parameter.name === name,
+			);
+			if (lastMeasurement) {
+				result.push(lastMeasurement);
+			}
+		}
 
-    return Promise.resolve(result);
-  }
+		return Promise.resolve(result);
+	}
 }

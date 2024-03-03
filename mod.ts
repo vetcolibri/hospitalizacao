@@ -23,17 +23,17 @@ const notifier = new WebWorkerAlertNotifier();
 const patientService = new PatientService(patientRepository, alertRepository);
 
 const alertService = new AlertService(
-  alertRepository,
-  patientRepository,
-  notifier
+	alertRepository,
+	patientRepository,
+	notifier,
 );
 
 const roundService = new RoundService(roundRepository, patientRepository);
 
 startHttpServer({
-  alertService,
-  patientService,
-  roundService,
-  notifier,
-  port: parseInt(PORT),
+	alertService,
+	patientService,
+	roundService,
+	notifier,
+	port: parseInt(PORT),
 });

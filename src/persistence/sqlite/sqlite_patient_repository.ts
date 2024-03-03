@@ -12,222 +12,188 @@ import { Hospitalization } from "domain/patients/hospitalization.ts";
 const factory = new EntityFactory();
 
 export class SQLitePatientRepository implements PatientRepository {
-  readonly #db: DB;
+	readonly #db: DB;
 
-  constructor(db: DB) {
-    this.#db = db;
-  }
+	constructor(db: DB) {
+		this.#db = db;
+	}
 
-  getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
-    const sql = `
+	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
+		const sql = `
 			SELECT hospitalizations.status as h_status, * FROM hospitalizations
-			JOIN patients ON hospitalizations.patient_id = patients.patient_id
+			JOIN patients ON hospitalizations.system_id = patients.system_id
 			JOIN owners ON patients.owner_id = owners.owner_id
-			WHERE patients.patient_id = '${patientId.value}'
+			WHERE patients.system_id = :systemId
 			LIMIT 1
 		`;
 
-    const rows = this.#db.queryEntries(sql);
+		const rows = this.#db.queryEntries(sql, { systemId: patientId.value });
 
-    if (rows.length === 0) return Promise.resolve(left(new PatientNotFound()));
+		if (rows.length === 0) return Promise.resolve(left(new PatientNotFound()));
 
-    const patient = factory.createPatient(rows[0]);
+		const patient = factory.createPatient(rows[0]);
 
-    for (const row of rows) {
-      const hospitalization = factory.createHospitalization(row);
-      patient.hospitalizations.push(hospitalization);
-    }
+		for (const row of rows) {
+			const hospitalization = factory.createHospitalization(row);
+			patient.hospitalizations.push(hospitalization);
+		}
 
-    return Promise.resolve(right(patient));
-  }
+		return Promise.resolve(right(patient));
+	}
 
-  async save(patient: Patient): Promise<void> {
-    const owner = await this.findOwner(patient.owner.ownerId);
-    if (owner.isLeft()) {
-      this.#insertOwner(patient.owner);
-    }
+	async save(patient: Patient): Promise<void> {
+		const owner = await this.findOwner(patient.owner.ownerId);
+		if (owner.isLeft()) {
+			this.#insertOwner(patient.owner);
+		}
 
-    const sql = `INSERT INTO patients (
-			patient_id,
-			name,
-			breed,
-			specie,
-			birth_date,
-			owner_id,
-			status
-		) VALUES (
-			'${patient.patientId.value}',
-			'${patient.name}',
-			'${patient.breed}',
-			'${patient.specie}',
-			'${patient.birthDate.value.toISOString()}',
-			'${patient.owner.ownerId.value}',
-			'${patient.status}'
-		)`;
+		this.#db.query(
+			"INSERT INTO patients (system_id, patient_id, name, breed, specie, birth_date, owner_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+			[
+				patient.systemId.value,
+				patient.patientId.value,
+				patient.name,
+				patient.breed,
+				patient.specie,
+				patient.birthDate.value.toISOString(),
+				patient.owner.ownerId.value,
+				patient.status,
+			],
+		);
 
-    this.#db.query(sql);
+		this.#insertHospitalization(patient);
 
-    this.#insertHospitalization(patient);
+		return Promise.resolve(undefined);
+	}
 
-    return Promise.resolve(undefined);
-  }
+	update(patient: Patient): Promise<void> {
+		this.#insertHospitalization(patient);
 
-  update(patient: Patient): Promise<void> {
-    this.#insertHospitalization(patient);
-
-    const sql2 = `
+		const sql2 = `
             UPDATE patients SET status = '${PatientStatus.HOSPITALIZED}'
-            WHERE patient_id = '${patient.patientId.value}'
+            WHERE system_id = '${patient.systemId.value}'
         `;
 
-    this.#db.query(sql2);
+		this.#db.query(sql2);
 
-    return Promise.resolve(undefined);
-  }
+		return Promise.resolve(undefined);
+	}
 
-  hospitalized(): Promise<Patient[]> {
-    const sql = `
-			SELECT hospitalizations.status as h_status, budgets.status as b_status, * FROM hospitalizations
-			JOIN budgets ON hospitalizations.hospitalization_id = budgets.hospitalization_id
-			JOIN patients ON hospitalizations.patient_id = patients.patient_id
-			JOIN owners ON patients.owner_id = owners.owner_id
-			WHERE patients.status = '${PatientStatus.HOSPITALIZED}'
-		`;
-    const rows = this.#db.queryEntries(sql);
+	hospitalized(): Promise<Patient[]> {
+		const rows = this.#db.queryEntries(
+			"SELECT hospitalizations.status as h_status, budgets.status as b_status, * FROM hospitalizations JOIN budgets ON hospitalizations.hospitalization_id = budgets.hospitalization_id  JOIN patients ON hospitalizations.system_id = patients.system_id JOIN owners ON patients.owner_id = owners.owner_id WHERE patients.status = :status",
+			{ status: PatientStatus.HOSPITALIZED },
+		);
 
-    const patients: Patient[] = [];
+		const patients: Patient[] = [];
 
-    rows.forEach((row) => {
-      this.#buildPatients(patients, row);
-    });
+		rows.forEach((row) => {
+			this.#buildPatients(patients, row);
+		});
 
-    return Promise.resolve(patients);
-  }
+		return Promise.resolve(patients);
+	}
 
-  nonHospitalized(): Promise<Patient[]> {
-    const sql = `
-			SELECT hospitalizations.status as h_status, * FROM hospitalizations
-			JOIN patients ON hospitalizations.patient_id = patients.patient_id
-			JOIN owners ON patients.owner_id = owners.owner_id
-			WHERE patients.status = '${PatientStatus.DISCHARGED}'
-		`;
+	nonHospitalized(): Promise<Patient[]> {
+		const rows = this.#db.queryEntries(
+			"SELECT hospitalizations.status as h_status, * FROM hospitalizations JOIN patients ON hospitalizations.system_id = patients.system_id JOIN owners ON patients.owner_id = owners.owner_id WHERE patients.status = :status",
+			{ status: PatientStatus.DISCHARGED },
+		);
 
-    const rows = this.#db.queryEntries(sql);
+		const patients: Patient[] = [];
 
-    const patients: Patient[] = [];
+		rows.forEach((row) => {
+			this.#buildPatients(patients, row);
+		});
 
-    rows.forEach((row) => {
-      this.#buildPatients(patients, row);
-    });
+		return Promise.resolve(patients);
+	}
 
-    return Promise.resolve(patients);
-  }
+	exists(patientId: ID): Promise<boolean> {
+		const rows = this.#db.queryEntries(
+			"SELECT patient_id FROM patients WHERE patient_id = :patientId",
+			{ patientId: patientId.value },
+		);
 
-  exists(patientId: ID): Promise<boolean> {
-    const query = `
-            SELECT patient_id FROM patients 
-            WHERE patient_id = '${patientId.value}'
-        `;
-    const rows = this.#db.queryEntries(query);
+		const exists = rows.some((row) => row.patient_id === patientId.value);
 
-    const exists = rows.some((row) => row.patient_id === patientId.value);
+		return Promise.resolve(exists);
+	}
 
-    return Promise.resolve(exists);
-  }
+	findOwner(ownerId: ID): Promise<Either<OwnerNotFound, Owner>> {
+		const rows = this.#db.queryEntries("SELECT * FROM owners WHERE owner_id = :ownerId", {
+			ownerId: ownerId.value,
+		});
 
-  findOwner(ownerId: ID): Promise<Either<OwnerNotFound, Owner>> {
-    const sql = `SELECT * FROM owners WHERE owner_id = '${ownerId.value}' LIMIT 1`;
-    const rows = this.#db.queryEntries(sql);
+		if (rows.length === 0) return Promise.resolve(left(new OwnerNotFound()));
 
-    if (rows.length === 0) return Promise.resolve(left(new OwnerNotFound()));
+		const owner = factory.createOwner(rows[0]);
 
-    const owner = factory.createOwner(rows[0]);
+		return Promise.resolve(right(owner));
+	}
 
-    return Promise.resolve(right(owner));
-  }
+	#insertOwner(owner: Owner) {
+		this.#db.query("INSERT INTO owners (owner_id, owner_name, phone_number) VALUES (?, ?, ?)", [
+			owner.ownerId.value,
+			owner.name,
+			owner.phoneNumber,
+		]);
+	}
 
-  #insertOwner(owner: Owner) {
-    const sql = `INSERT INTO owners (
-			owner_id,
-			owner_name,
-			phone_number
-		) VALUES (
-			'${owner.ownerId.value}',
-			'${owner.name}',
-			'${owner.phoneNumber}'
-		)`;
+	#insertHospitalization(patient: Patient) {
+		const hospitalization = patient.openHospitalization();
+		this.#db.query(
+			"INSERT INTO hospitalizations (hospitalization_id, system_id, weight, entry_date, discharge_date, complaints, diagnostics, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+			[
+				hospitalization?.hospitalizationId.value,
+				patient.systemId.value,
+				hospitalization?.weight,
+				hospitalization?.entryDate.toISOString(),
+				hospitalization?.dischargeDate.toISOString(),
+				JSON.stringify(hospitalization?.complaints.join(",")),
+				JSON.stringify(hospitalization?.diagnostics.join(",")),
+				hospitalization?.status,
+			],
+		);
 
-    this.#db.query(sql);
-  }
+		this.#inserBudget(hospitalization!);
+	}
 
-  #insertHospitalization(patient: Patient) {
-    const hospitalization = patient.openHospitalization();
-    const sql = `INSERT INTO hospitalizations (
-			hospitalization_id,
-			patient_id,
-			weight,
-			entry_date,
-			discharge_date,
-			complaints,
-			diagnostics,
-			status
-		) VALUES (
-			'${hospitalization?.hospitalizationId.value}',
-			'${patient.patientId.value}',
-			${hospitalization?.weight},
-			'${hospitalization?.entryDate}',
-			'${hospitalization?.dischargeDate}',
-			'${JSON.stringify(hospitalization?.complaints.join(","))}',
-			'${JSON.stringify(hospitalization?.diagnostics.join(","))}',
-			'${hospitalization?.status}'
-		)`;
+	#inserBudget(hospitalization: Hospitalization) {
+		const budget = hospitalization.activeBudget();
 
-    this.#db.query(sql);
+		this.#db.query(
+			"INSERT INTO budgets (budget_id, hospitalization_id, start_on, end_on, status, days) VALUES (?, ?, ?, ?, ?, ?)",
+			[
+				budget?.budgetId.value,
+				hospitalization?.hospitalizationId.value,
+				budget?.startOn.toISOString(),
+				budget?.endOn.toISOString(),
+				budget?.status,
+				budget?.durationInDays,
+			],
+		);
+	}
 
-    this.#inserBudget(hospitalization!);
-  }
+	#buildPatients(patients: Patient[], row: RowObject) {
+		const patient = patients.find((patient) => patient.systemId.value === row.system_id);
 
-  #inserBudget(hospitalization: Hospitalization) {
-    const budget = hospitalization.activeBudget();
-    const sql = `INSERT INTO budgets (
-			budget_id,
-			hospitalization_id,
-			start_on,
-			end_on,
-			status,
-			days
-		) VALUES (
-			'${budget?.budgetId.value}',
-			'${hospitalization?.hospitalizationId.value}',
-			'${budget?.startOn.toISOString()}',
-			'${budget?.endOn.toISOString()}',
-			'${budget?.status}',
-			${budget?.durationInDays}
-		)`;
+		if (patient) {
+			const hospitalization = factory.createHospitalization(row);
+			const budgetData = factory.createBudgetData(row);
+			patient.hospitalizations.push(hospitalization);
+			hospitalization.addBudget(budgetData);
+			return;
+		}
 
-    this.#db.query(sql);
-  }
+		if (!patient) {
+			const patient = factory.createPatient(row);
+			const budgetData = factory.createBudgetData(row);
+			const hospitalization = factory.createHospitalization(row);
 
-  #buildPatients(patients: Patient[], row: RowObject) {
-    const patient = patients.find(
-      (patient) => patient.patientId.value === row.patient_id
-    );
-
-    if (patient) {
-      const hospitalization = factory.createHospitalization(row);
-      const budgetData = factory.createBudgetData(row);
-      patient.hospitalizations.push(hospitalization);
-      hospitalization.addBudget(budgetData);
-      return;
-    }
-
-    if (!patient) {
-      const patient = factory.createPatient(row);
-      const budgetData = factory.createBudgetData(row);
-      const hospitalization = factory.createHospitalization(row);
-      hospitalization.addBudget(budgetData);
-      patient.hospitalizations.push(hospitalization);
-      patients.push(patient);
-    }
-  }
+			hospitalization.addBudget(budgetData);
+			patient.hospitalizations.push(hospitalization);
+			patients.push(patient);
+		}
+	}
 }

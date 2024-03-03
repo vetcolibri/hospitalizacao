@@ -9,68 +9,67 @@ import { AlertRepository } from "domain/alerts/alert_repository.ts";
 import { PatientRepository } from "domain/patients/patient_repository.ts";
 
 export class AlertService {
-  readonly #alertRepository: AlertRepository;
-  readonly #patientRepository: PatientRepository;
-  readonly #notifier: AlertNotifier;
+	readonly #alertRepository: AlertRepository;
+	readonly #patientRepository: PatientRepository;
+	readonly #notifier: AlertNotifier;
 
-  constructor(
-    alertRepository: AlertRepository,
-    patientRepository: PatientRepository,
-    notifier: AlertNotifier
-  ) {
-    this.#alertRepository = alertRepository;
-    this.#patientRepository = patientRepository;
-    this.#notifier = notifier;
-  }
+	constructor(
+		alertRepository: AlertRepository,
+		patientRepository: PatientRepository,
+		notifier: AlertNotifier,
+	) {
+		this.#alertRepository = alertRepository;
+		this.#patientRepository = patientRepository;
+		this.#notifier = notifier;
+	}
 
-  /**
-   * Cria um novo alerta
-   * @param patientId
-   * @param alertData
-   * @returns {Promise<Either<Error, void>>}
-   */
-  async schedule(
-    patientId: string,
-    alertData: AlertData
-  ): Promise<Either<Error, void>> {
-    const patientOrError = await this.#patientRepository.getById(
-      ID.New(patientId)
-    );
-    if (patientOrError.isLeft()) return left(patientOrError.value);
+	/**
+	 * Cria um novo alerta
+	 * @param patientId
+	 * @param alertData
+	 * @returns {Promise<Either<Error, void>>}
+	 */
+	async schedule(
+		patientId: string,
+		alertData: AlertData,
+	): Promise<Either<Error, void>> {
+		const patientOrErr = await this.#patientRepository.getById(
+			ID.fromString(patientId),
+		);
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-    const patient = patientOrError.value;
+		const patient = patientOrErr.value;
 
-    const alertOrError = Alert.create(patient, alertData);
-    if (alertOrError.isLeft()) return left(alertOrError.value);
+		const alertOrErr = Alert.create(patient, alertData);
+		if (alertOrErr.isLeft()) return left(alertOrErr.value);
 
-    const alert = alertOrError.value;
-    await this.#alertRepository.save(alert);
+		const alert = alertOrErr.value;
 
-    this.#notifier.schedule(alert);
+		await this.#alertRepository.save(alert);
 
-    return right(undefined);
-  }
+		this.#notifier.schedule(alert);
 
-  /**
-   * Cancela um alerta
-   * @param alertId
-   * @returns {Promise<Either<Error, void>>}
-   */
-  async cancel(alertId: string): Promise<Either<Error, void>> {
-    const alertOrError = await this.#alertRepository.getById(ID.New(alertId));
-    if (alertOrError.isLeft()) return left(alertOrError.value);
+		return right(undefined);
+	}
 
-    const alert = alertOrError.value;
-    if (alert.isDisabled()) {
-      return left(new Error("Alert is already disabled"));
-    }
+	/**
+	 * Cancela um alerta
+	 * @param alertId
+	 * @returns {Promise<Either<Error, void>>}
+	 */
+	async cancel(alertId: string): Promise<Either<Error, void>> {
+		const alertOrErr = await this.#alertRepository.getById(ID.fromString(alertId));
+		if (alertOrErr.isLeft()) return left(alertOrErr.value);
 
-    alert.cancel();
+		const alert = alertOrErr.value;
+		if (alert.isDisabled()) return left(new Error("Alert is already disabled"));
 
-    await this.#alertRepository.update(alert);
+		alert.cancel();
 
-    this.#notifier.cancel(alert);
+		await this.#alertRepository.update(alert);
 
-    return Promise.resolve(right(undefined));
-  }
+		this.#notifier.cancel(alert);
+
+		return right(undefined);
+	}
 }
