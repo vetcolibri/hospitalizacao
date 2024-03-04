@@ -23,12 +23,12 @@ interface HospitalizationDTO {
 }
 
 interface OwnerDTO {
-	ownerName: string;
 	ownerId: string;
-	ownerPhoneNumber: string;
+	name: string;
+	phoneNumber: string;
 }
 
-interface PatientDTO extends OwnerDTO {
+interface PatientDTO {
 	systemId: string;
 	patientId: string;
 	name: string;
@@ -36,6 +36,7 @@ interface PatientDTO extends OwnerDTO {
 	breed: string;
 	hasAlert: boolean;
 	birthDate: string;
+	owner: OwnerDTO;
 }
 
 interface PatientHospitalizedDTO extends PatientDTO {
@@ -71,9 +72,11 @@ function toPatientHospitalizedDTO(patient: Patient): PatientHospitalizedDTO {
 		specie: patient.specie.toString(),
 		breed: patient.breed,
 		hasAlert: patient.hasAlert,
-		ownerName: patient.owner.name,
-		ownerId: patient.owner.ownerId.value,
-		ownerPhoneNumber: patient.owner.phoneNumber,
+		owner: {
+			ownerId: patient.owner.ownerId.value,
+			name: patient.owner.name,
+			phoneNumber: patient.owner.phoneNumber,
+		},
 		birthDate: patient.birthDate.age,
 		hospitalization: toHospitalizationDTO(hospitalization),
 	};
@@ -88,9 +91,11 @@ function toPatientNonHospitalizedDTO(patient: Patient): PatientNonHospitalizedDT
 		specie: patient.specie.toString(),
 		breed: patient.breed,
 		hasAlert: patient.hasAlert,
-		ownerName: patient.owner.name,
-		ownerId: patient.owner.ownerId.value,
-		ownerPhoneNumber: patient.owner.phoneNumber,
+		owner: {
+			ownerId: patient.owner.ownerId.value,
+			name: patient.owner.name,
+			phoneNumber: patient.owner.phoneNumber,
+		},
 		birthDate: patient.birthDate.age,
 		hospitalizations,
 	};
