@@ -20,10 +20,10 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			const db = await init_test_db();
 			populate(db);
 			const persistence = new SQLiteRoundRepository(db);
-			const round = new Round(patient1);
+			const round = new Round(patient1.systemId);
 			const heartRate = new HeartRate(80);
 			const respiratoryRate = new RespiratoryRate(20);
-			const trc = new Trc(1);
+			const trc = new Trc("Maior que 2'");
 			const avdn = new Avdn("Alertas");
 			const mucosas = new Mucosas("Rosadas");
 			const temperature = new Temperature(38);
@@ -53,12 +53,12 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			const db = await init_test_db();
 			populate(db);
 			const persistence = new SQLiteRoundRepository(db);
-			const round = new Round(patient1);
-			const round2 = new Round(patient1);
+			const round = new Round(patient1.systemId);
+			const round2 = new Round(patient1.systemId);
 
 			const heartRate = new HeartRate(80);
 			const respiratoryRate = new RespiratoryRate(20);
-			const trc = new Trc(1);
+			const trc = new Trc("Maior que 2'");
 			const avdn = new Avdn("Alertas");
 			const mucosas = new Mucosas("Rosadas");
 			const temperature = new Temperature(38);

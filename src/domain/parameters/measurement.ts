@@ -1,19 +1,23 @@
 export class Measurement {
-	readonly value: unknown;
+	#value: string | number;
 
-	private constructor(value: unknown) {
-		this.value = value;
+	private constructor(value: string | number) {
+		this.#value = value;
 	}
 
-	static new(value: unknown) {
+	static fromString(value: string) {
 		return new Measurement(value);
 	}
 
-	withString(): string {
-		return String(this.value);
+	static fromNumber(value: number) {
+		return new Measurement(value);
 	}
 
-	withNumber(): number {
-		return Number(this.value);
+	toString(): string {
+		return String(this.#value);
+	}
+
+	toNumber(): number {
+		return Number(this.#value);
 	}
 }

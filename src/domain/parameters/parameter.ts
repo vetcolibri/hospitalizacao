@@ -1,22 +1,22 @@
 import { Measurement } from "domain/parameters/measurement.ts";
 
 export interface Parameter {
-  readonly name: string;
-  readonly measurement: Measurement;
-  readonly issuedAt: Date;
+	name: string;
+	measurement: Measurement;
+	issuedAt: Date;
+	value: unknown;
 
-  value: unknown;
-  isValid(): boolean;
+	isValid(): boolean;
 }
 
-export enum PARAMETER_NAMES {
-  HEART_RATE = "heartRate",
-  RESPIRATORY_RATE = "respiratoryRate",
-  TRC = "trc",
-  AVDN = "avdn",
-  TEMPERATURE = "temperature",
-  MUCOSAS = "mucosas",
-  BLOOD_GLUCOSE = "bloodGlucose",
-  HCT = "hct",
-  BLOOD_PRESSURE = "bloodPressure",
+export enum ParameterName {
+	Avdn = "avdn",
+	BloodGlucose = "bloodGlucose",
+	BloodPressure = "bloodPressure",
+	Hct = "hct",
+	HeartRate = "heartRate",
+	Mucosas = "mucosas",
+	RespiratoryRate = "respiratoryRate",
+	Trc = "trc",
+	Temperature = "temperature",
 }

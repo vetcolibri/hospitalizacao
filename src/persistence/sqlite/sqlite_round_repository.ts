@@ -1,5 +1,5 @@
 import { RoundRepository } from "domain/rounds/round_repository.ts";
-import { Parameter, PARAMETER_NAMES } from "domain/parameters/parameter.ts";
+import { Parameter, ParameterName } from "domain/parameters/parameter.ts";
 import { Round } from "domain/rounds/round.ts";
 import { ID } from "shared/id.ts";
 import { DB } from "deps";
@@ -14,7 +14,7 @@ export class SQLiteRoundRepository implements RoundRepository {
 
 	save(round: Round): Promise<void> {
 		this.#db.query("INSERT INTO rounds (system_id, round_id) VALUES (?, ?)", [
-			round.patient.systemId.value,
+			round.patientId.value,
 			round.roundId.value,
 		]);
 
@@ -24,7 +24,7 @@ export class SQLiteRoundRepository implements RoundRepository {
 				[
 					round.roundId.value,
 					parameter.name,
-					String(parameter.measurement.value),
+					parameter.measurement.toString(),
 					parameter.issuedAt.toISOString(),
 				],
 			);
@@ -49,7 +49,7 @@ export class SQLiteRoundRepository implements RoundRepository {
 		let parameters: Parameter[] = [];
 		const builder = new ParametersBuilder();
 
-		for (const name of Object.values(PARAMETER_NAMES)) {
+		for (const name of Object.values(ParameterName)) {
 			const row = rows.findLast((row) => row.name === name) ?? {};
 			const parametersBuilder = builder
 				.withHeartRate(row)

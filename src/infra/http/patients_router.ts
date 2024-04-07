@@ -14,7 +14,7 @@ interface HospitalizationDTO {
 	diagnostics: string[];
 	status: string;
 	entryDate: string;
-	dischargeDate: string;
+	dischargeDate?: string;
 	budget: {
 		startOn: string;
 		endOn: string;
@@ -53,7 +53,7 @@ function toHospitalizationDTO(hospitalization: Hospitalization): Hospitalization
 		complaints: hospitalization.complaints,
 		diagnostics: hospitalization.diagnostics,
 		entryDate: hospitalization.entryDate.toISOString(),
-		dischargeDate: hospitalization.dischargeDate.toISOString(),
+		// dischargeDate: hospitalization.dischargeDate?.toISOString(),
 		status: hospitalization.status,
 		budget: {
 			startOn: hospitalization.activeBudget().startOn.toISOString(),

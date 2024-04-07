@@ -17,7 +17,7 @@ export class Hospitalization {
 	readonly complaints: string[];
 	readonly diagnostics: string[];
 	readonly entryDate: Date;
-	readonly dischargeDate: Date;
+	dischargeDate?: Date;
 	budgets: Budget[] = [];
 	status: HospitalizationStatus = HospitalizationStatus.OPEN;
 
@@ -26,7 +26,7 @@ export class Hospitalization {
 		complaints: string[],
 		diagnostics: string[],
 		entryDate: Date,
-		dischargeDate: Date,
+		dischargeDate?: Date,
 	) {
 		this.hospitalizationId = ID.random();
 		this.weight = weight;
@@ -37,51 +37,45 @@ export class Hospitalization {
 	}
 
 	static create(
-		hospitalizationData: HospitalizationData,
+		data: HospitalizationData,
 	): Either<Error, Hospitalization> {
-		const {
-			entryDate,
-			dischargeDate,
-			complaints,
-			diagnostics,
-			weight,
-			budgetData,
-		} = hospitalizationData;
-
-		if (this.isInvalidDate(entryDate)) {
+		if (this.isInvalidDate(data.entryDate)) {
 			return left(new InvalidDate(ERROR_MESSAGES.INVALID_ENTRY_DATE));
 		}
 
-		if (this.isInvalidDate(dischargeDate)) {
+		if (this.isInvalidDate(data.dischargeDate)) {
 			return left(new InvalidDate(ERROR_MESSAGES.INVALID_DISCHARGE_DATE));
 		}
 
-		if (this.isInvalidNumber(complaints, 10)) {
+		if (this.isInvalidNumber(data.complaints, 10)) {
 			return left(new InvalidNumber(ERROR_MESSAGES.INVALID_COMPLAINTS_NUMBER));
 		}
 
-		if (this.isInvalidNumber(diagnostics, 5)) {
+		if (this.isInvalidNumber(data.diagnostics, 5)) {
 			return left(new InvalidNumber(ERROR_MESSAGES.INVALID_DIAGNOSTICS_NUMBER));
 		}
 
 		const hospitalization = new Hospitalization(
-			weight,
-			complaints,
-			diagnostics,
-			new Date(entryDate),
-			new Date(dischargeDate),
+			data.weight,
+			data.complaints,
+			data.diagnostics,
+			new Date(data.entryDate),
 		);
 
-		hospitalization.addBudget(budgetData);
+		if (data.dischargeDate) {
+			hospitalization.dischargeDate = new Date(data.dischargeDate);
+		}
+
+		hospitalization.addBudget(data.budgetData);
 
 		return right(hospitalization);
 	}
 
-	addBudget(budgetData: BudgetData) {
+	addBudget(data: BudgetData) {
 		const budget = new Budget(
-			budgetData.startOn,
-			budgetData.endOn,
-			budgetData.status,
+			data.startOn,
+			data.endOn,
+			data.status,
 		);
 		this.budgets.push(budget);
 	}

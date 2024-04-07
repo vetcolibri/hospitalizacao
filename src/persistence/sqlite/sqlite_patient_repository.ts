@@ -149,7 +149,7 @@ export class SQLitePatientRepository implements PatientRepository {
 				patient.systemId.value,
 				hospitalization?.weight,
 				hospitalization?.entryDate.toISOString(),
-				hospitalization?.dischargeDate.toISOString(),
+				hospitalization?.dischargeDate?.toISOString() ?? null,
 				JSON.stringify(hospitalization?.complaints.join(",")),
 				JSON.stringify(hospitalization?.diagnostics.join(",")),
 				hospitalization?.status,

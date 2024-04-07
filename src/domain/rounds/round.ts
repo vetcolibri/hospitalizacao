@@ -1,31 +1,34 @@
 import { ID } from "shared/id.ts";
 import { Parameter } from "domain/parameters/parameter.ts";
-import { Patient } from "domain/patients/patient.ts";
 
 export class Round {
-	roundId: ID;
-	readonly patient: Patient;
+	readonly #roundId: ID;
+	readonly #patientId: ID;
 	readonly parameters: Parameter[];
 
-	constructor(patient: Patient) {
-		this.roundId = ID.random();
-		this.patient = patient;
+	constructor(patientId: ID) {
+		this.#roundId = ID.random();
+		this.#patientId = patientId;
 		this.parameters = [];
-	}
-
-	getPatient(): Patient {
-		return this.patient;
-	}
-
-	getParameter(name: string) {
-		return this.parameters.find((parameter) => parameter.name === name);
 	}
 
 	addParameter(parameter: Parameter): void {
 		this.parameters.push(parameter);
 	}
 
+	getParameter(name: string) {
+		return this.parameters.find((parameter) => parameter.name === name);
+	}
+
 	totalParameters(): number {
 		return this.parameters.length;
+	}
+
+	get roundId(): ID {
+		return this.#roundId;
+	}
+
+	get patientId(): ID {
+		return this.#patientId;
 	}
 }

@@ -55,8 +55,8 @@ export class PatientService {
 			return left(new PatientAlreadyHospitalized(patient.name));
 		}
 
-		const voidOrError = patient.hospitalize(hospitalizationData);
-		if (voidOrError.isLeft()) return left(voidOrError.value);
+		const voidOrErr = patient.hospitalize(hospitalizationData);
+		if (voidOrErr.isLeft()) return left(voidOrErr.value);
 
 		await this.#patientRepository.update(patient);
 		return right(undefined);

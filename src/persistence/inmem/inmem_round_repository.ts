@@ -1,7 +1,7 @@
-import { ID } from "shared/id.ts";
-import { Parameter, PARAMETER_NAMES } from "domain/parameters/parameter.ts";
-import { Round } from "domain/rounds/round.ts";
+import { Parameter, ParameterName } from "domain/parameters/parameter.ts";
 import { RoundRepository } from "domain/rounds/round_repository.ts";
+import { Round } from "domain/rounds/round.ts";
+import { ID } from "shared/id.ts";
 
 export class InmemRoundRepository implements RoundRepository {
 	readonly #rounds: Round[] = [];
@@ -17,7 +17,7 @@ export class InmemRoundRepository implements RoundRepository {
 
 	measurements(patientId: ID): Promise<Parameter[]> {
 		const rounds = this.#rounds.filter(
-			(round) => round.patient.patientId.value === patientId.value,
+			(round) => round.patientId.value === patientId.value,
 		);
 		const parameters: Parameter[] = [];
 		for (const round of rounds) {
@@ -30,7 +30,7 @@ export class InmemRoundRepository implements RoundRepository {
 
 	latestMeasurements(patientId: ID): Promise<Parameter[]> {
 		const rounds = this.#rounds.filter(
-			(round) => round.patient.patientId.value === patientId.value,
+			(round) => round.patientId.value === patientId.value,
 		);
 		const parameters: Parameter[] = [];
 		for (const round of rounds) {
@@ -39,7 +39,7 @@ export class InmemRoundRepository implements RoundRepository {
 			}
 		}
 		const result = [];
-		for (const name of Object.values(PARAMETER_NAMES)) {
+		for (const name of Object.values(ParameterName)) {
 			const lastMeasurement = parameters.findLast(
 				(parameter) => parameter.name === name,
 			);

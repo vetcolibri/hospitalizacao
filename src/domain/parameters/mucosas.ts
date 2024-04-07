@@ -1,37 +1,35 @@
 import { Measurement } from "domain/parameters/measurement.ts";
-import { Parameter, PARAMETER_NAMES } from "./parameter.ts";
+import { Parameter, ParameterName } from "./parameter.ts";
 
 export class Mucosas implements Parameter {
-  readonly name: PARAMETER_NAMES;
-  readonly measurement: Measurement;
-  issuedAt: Date;
+	name = ParameterName.Mucosas;
+	measurement: Measurement;
+	issuedAt: Date;
 
-  constructor(value: string) {
-    this.name = PARAMETER_NAMES.MUCOSAS;
-    this.measurement = Measurement.new(value);
-    this.issuedAt = new Date();
-  }
+	constructor(value: string) {
+		this.measurement = Measurement.fromString(value);
+		this.issuedAt = new Date();
+	}
 
-  static compose(value: string, issuedAt: string) {
-    const mucosas = new Mucosas(value);
-    mucosas.issuedAt = new Date(issuedAt);
-    return mucosas;
-  }
+	static compose(value: string, issuedAt: string) {
+		const mucosas = new Mucosas(value);
+		mucosas.issuedAt = new Date(issuedAt);
+		return mucosas;
+	}
 
-  get value(): string {
-    return this.measurement.withString();
-  }
+	isValid(): boolean {
+		return MUCOSAS_OPTIONS.includes(this.value);
+	}
 
-  isValid(): boolean {
-    const value = this.value;
-    return mucosasOptions.includes(value);
-  }
+	get value(): string {
+		return this.measurement.toString();
+	}
 }
 
-const mucosasOptions = [
-  "Cianoticas",
-  "Congestivas",
-  "Ictericas",
-  "Pálidas",
-  "Rosadas",
+const MUCOSAS_OPTIONS = [
+	"Cianoticas",
+	"Congestivas",
+	"Ictericas",
+	"Pálidas",
+	"Rosadas",
 ];

@@ -37,38 +37,27 @@ export class RoundService {
 		patientId: string,
 		parameters: ParametersData,
 	): Promise<Either<Error, void>> {
-		const patientOrError = await this.#patientRepository.getById(
+		const patientOrErr = await this.#patientRepository.getById(
 			ID.fromString(patientId),
 		);
-		if (patientOrError.isLeft()) return left(patientOrError.value);
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const patient = patientOrError.value;
-		const {
-			heartRate,
-			respiratoryRate,
-			trc,
-			avdn,
-			mucosas,
-			temperature,
-			bloodGlucose,
-			hct,
-			bloodPressure,
-		} = parameters;
-		const roundBuilder = new RoundBuilder(patient)
-			.withHeartRate(heartRate)
-			.withRespiratoryRate(respiratoryRate)
-			.withTrc(trc)
-			.withAvdn(avdn)
-			.withMucosas(mucosas)
-			.withTemperature(temperature)
-			.withBloodGlucose(bloodGlucose)
-			.withHct(hct)
-			.withBloodPressure(bloodPressure)
+		const patient = patientOrErr.value;
+		const roundBuilderOrErr = new RoundBuilder(patient.systemId)
+			.withHeartRate(parameters.heartRate)
+			.withRespiratoryRate(parameters.respiratoryRate)
+			.withTrc(parameters.trc)
+			.withAvdn(parameters.avdn)
+			.withMucosas(parameters.mucosas)
+			.withTemperature(parameters.temperature)
+			.withBloodGlucose(parameters.bloodGlucose)
+			.withHct(parameters.hct)
+			.withBloodPressure(parameters.bloodPressure)
 			.build();
 
-		if (roundBuilder.isLeft()) return left(roundBuilder.value);
+		if (roundBuilderOrErr.isLeft()) return left(roundBuilderOrErr.value);
 
-		const round = roundBuilder.value;
+		const round = roundBuilderOrErr.value;
 
 		await this.#roundRepository.save(round);
 
@@ -80,17 +69,13 @@ export class RoundService {
 	 * @param patientId
 	 * @returns {Promise<Either<PatientNotFound, Parameter[]>>}
 	 */
-	async latestMeasurements(
-		patientId: string,
-	): Promise<Either<PatientNotFound, Parameter[]>> {
-		const patientOrError = await this.#patientRepository.getById(
-			ID.fromString(patientId),
-		);
-		if (patientOrError.isLeft()) return left(patientOrError.value);
+	async latestMeasurements(id: string): Promise<Either<PatientNotFound, Parameter[]>> {
+		const patientId = this.#buildPatientId(id);
 
-		const measurements = await this.#roundRepository.latestMeasurements(
-			ID.fromString(patientId),
-		);
+		const patientOrErr = await this.#patientRepository.getById(patientId);
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+
+		const measurements = await this.#roundRepository.latestMeasurements(patientId);
 		return right(measurements);
 	}
 
@@ -99,17 +84,17 @@ export class RoundService {
 	 * @param patientId
 	 * @returns {Promise<Either<PatientNotFound, Parameter[]>>}
 	 */
-	async measurements(
-		patientId: string,
-	): Promise<Either<PatientNotFound, Parameter[]>> {
-		const patientOrError = await this.#patientRepository.getById(
-			ID.fromString(patientId),
-		);
-		if (patientOrError.isLeft()) return left(patientOrError.value);
+	async measurements(id: string): Promise<Either<PatientNotFound, Parameter[]>> {
+		const patientId = this.#buildPatientId(id);
 
-		const measurements = await this.#roundRepository.measurements(
-			ID.fromString(patientId),
-		);
+		const patientOrErr = await this.#patientRepository.getById(patientId);
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+
+		const measurements = await this.#roundRepository.measurements(patientId);
 		return right(measurements);
+	}
+
+	#buildPatientId(patientId: string): ID {
+		return ID.fromString(patientId);
 	}
 }

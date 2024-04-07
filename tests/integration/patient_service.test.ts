@@ -182,6 +182,8 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const patient = <Patient> patientOrErr.value;
 			const hospitalization = patient.openHospitalization()!;
 
+			console.log(hospitalization, hospitalizationData);
+
 			assertEquals(
 				hospitalization.dischargeDate,
 				new Date(hospitalizationData.dischargeDate),
