@@ -1,17 +1,17 @@
 import { SQLiteRoundRepository } from "persistence/sqlite/sqlite_round_repository.ts";
-import { HeartRate } from "domain/parameters/heart_rate.ts";
-import { Round } from "domain/rounds/round.ts";
+import { HeartRate } from "../../src/domain/exams/parameters/heart_rate.ts";
+import { Round } from "../../src/domain/exams/rounds/round.ts";
 import { assertEquals } from "dev_deps";
 import { init_test_db, populate } from "./test_db.ts";
 import { patient1 } from "../fake_data.ts";
-import { RespiratoryRate } from "domain/parameters/respiratore_rate.ts";
-import { Trc } from "domain/parameters/trc.ts";
-import { Avdn } from "domain/parameters/avdn.ts";
-import { Mucosas } from "domain/parameters/mucosas.ts";
-import { Temperature } from "domain/parameters/temperature.ts";
-import { BloodGlucose } from "domain/parameters/blood_glucose.ts";
-import { Hct } from "domain/parameters/hct.ts";
-import { BloodPressure } from "domain/parameters/blood_pressure.ts";
+import { RespiratoryRate } from "../../src/domain/exams/parameters/respiratore_rate.ts";
+import { Trc } from "../../src/domain/exams/parameters/trc.ts";
+import { Avdn } from "../../src/domain/exams/parameters/avdn.ts";
+import { Mucosas } from "../../src/domain/exams/parameters/mucosas.ts";
+import { Temperature } from "../../src/domain/exams/parameters/temperature.ts";
+import { BloodGlucose } from "../../src/domain/exams/parameters/blood_glucose.ts";
+import { Hct } from "../../src/domain/exams/parameters/hct.ts";
+import { BloodPressure } from "../../src/domain/exams/parameters/blood_pressure.ts";
 
 Deno.test("SQLite - Round Repository", async (t) => {
 	await t.step(

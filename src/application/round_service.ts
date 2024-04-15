@@ -1,18 +1,10 @@
 import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "domain/patients/patient_repository.ts";
-import { RoundRepository } from "domain/rounds/round_repository.ts";
-import { RoundBuilder } from "domain/rounds/round_builder.ts";
-import { Parameter } from "domain/parameters/parameter.ts";
+import { RoundRepository } from "../domain/exams/rounds/round_repository.ts";
+import { RoundBuilder } from "../domain/exams/rounds/round_builder.ts";
+import { Parameter } from "../domain/exams/parameters/parameter.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
-
-export type MeasurementData = {
-	value: unknown;
-};
-
-type ParametersData = {
-	[key: string]: MeasurementData;
-};
 
 export class RoundService {
 	readonly #roundRepository: RoundRepository;
@@ -30,12 +22,12 @@ export class RoundService {
 	 * Registra medições de um paciente
 	 * @param patientId
 	 * @param userId
-	 * @param parameters
+	 * @param data
 	 * @returns {Promise<Either<Error, void>>}
 	 */
 	async new(
 		patientId: string,
-		parameters: ParametersData,
+		data: ParametersData,
 	): Promise<Either<Error, void>> {
 		const patientOrErr = await this.#patientRepository.getById(
 			ID.fromString(patientId),
@@ -44,15 +36,15 @@ export class RoundService {
 
 		const patient = patientOrErr.value;
 		const roundBuilderOrErr = new RoundBuilder(patient.systemId)
-			.withHeartRate(parameters.heartRate)
-			.withRespiratoryRate(parameters.respiratoryRate)
-			.withTrc(parameters.trc)
-			.withAvdn(parameters.avdn)
-			.withMucosas(parameters.mucosas)
-			.withTemperature(parameters.temperature)
-			.withBloodGlucose(parameters.bloodGlucose)
-			.withHct(parameters.hct)
-			.withBloodPressure(parameters.bloodPressure)
+			.withHeartRate(data.heartRate)
+			.withRespiratoryRate(data.respiratoryRate)
+			.withTrc(data.trc)
+			.withAvdn(data.avdn)
+			.withMucosas(data.mucosas)
+			.withTemperature(data.temperature)
+			.withBloodGlucose(data.bloodGlucose)
+			.withHct(data.hct)
+			.withBloodPressure(data.bloodPressure)
 			.build();
 
 		if (roundBuilderOrErr.isLeft()) return left(roundBuilderOrErr.value);
@@ -98,3 +90,11 @@ export class RoundService {
 		return ID.fromString(patientId);
 	}
 }
+
+export type MeasurementData = {
+	value: unknown;
+};
+
+type ParametersData = {
+	[key: string]: MeasurementData;
+};

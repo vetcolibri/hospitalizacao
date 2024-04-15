@@ -1,16 +1,5 @@
 import { z } from "deps";
 
-const budgetSchema = z.object({
-	startOn: z.string(),
-	endOn: z.string(),
-	status: z.enum([
-		"PENDENTE",
-		"PAGO",
-		"NÃO PAGO",
-		"PENDENTE (ORÇAMENTO ENVIADO)",
-	]),
-});
-
 const patientSchema = z.object({
 	patientId: z.string(),
 	name: z.string(),
@@ -31,10 +20,20 @@ const hospitalizationSchema = z.object({
 	dischargeDate: z.string().optional(),
 	complaints: z.string().array(),
 	diagnostics: z.string().array(),
-	budgetData: budgetSchema,
 });
 
-export const recuringHospitalizationSchema = z.object({
+const budgetSchema = z.object({
+	startOn: z.string(),
+	endOn: z.string(),
+	status: z.enum([
+		"PENDENTE",
+		"PAGO",
+		"NÃO PAGO",
+		"PENDENTE (ORÇAMENTO ENVIADO)",
+	]),
+});
+
+export const newHospitalizationSchema = z.object({
 	patientId: z.string(),
 	hospitalizationData: hospitalizationSchema,
 });
@@ -43,4 +42,5 @@ export const newPatientSchema = z.object({
 	patientData: patientSchema,
 	hospitalizationData: hospitalizationSchema,
 	ownerData: ownerSchema,
+	budgetData: budgetSchema,
 });

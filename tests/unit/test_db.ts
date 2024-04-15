@@ -1,8 +1,6 @@
-import { HospitalizationStatus } from "domain/patients/hospitalization.ts";
-import { Alert } from "domain/alerts/alert.ts";
-import { alert1, patient1 } from "../fake_data.ts";
+import { HospitalizationStatus } from "../../src/domain/patients/hospitalizations/hospitalization.ts";
+import { alert1, owner, patient1, patient2 } from "../fake_data.ts";
 import { DB } from "deps";
-import { patient2 } from "../fake_data.ts";
 
 export async function init_test_db(): Promise<DB> {
 	const path = new URL(
@@ -20,17 +18,15 @@ export async function init_test_db(): Promise<DB> {
 }
 
 export function populate(db: DB) {
-	const testAlert = <Alert> alert1.value;
-
 	const insert_owner = `INSERT INTO owners (
 			owner_id,
 			owner_name,
 			phone_number
 		)
 		VALUES (
-			'${patient1.owner.ownerId.value}',
-			'${patient1.owner.name}',
-			'${patient1.owner.phoneNumber}'
+			'${owner.ownerId.value}',
+			'${owner.name}',
+			'${owner.phoneNumber}'
 		)`;
 
 	const insert_patient = `INSERT INTO patients (
@@ -51,7 +47,7 @@ export function populate(db: DB) {
 			'${patient1.breed}',
 			'${patient1.status}',
 			'${patient1.birthDate.value.toISOString()}',
-			'${patient1.owner.ownerId.value}'
+			'${patient1.ownerId.value}'
 		)
 	`;
 
@@ -73,7 +69,7 @@ export function populate(db: DB) {
 			'${patient1.breed}',
 			'${patient1.status}',
 			'${patient1.birthDate.value.toISOString()}',
-			'${patient1.owner.ownerId.value}'
+			'${patient1.ownerId.value}'
 		)
 	`;
 
@@ -86,7 +82,7 @@ export function populate(db: DB) {
 			status,
 			birth_date,
 			owner_id
-		) 
+		)
 		VALUES (
 			'${"some-id"}',
 			'${"some-fake-patient-id"}',
@@ -95,7 +91,7 @@ export function populate(db: DB) {
 			'${patient1.breed}',
 			'${"ALTA MEDICA"}',
 			'${patient1.birthDate.value.toISOString()}',
-			'${patient1.owner.ownerId.value}'
+			'${patient1.ownerId.value}'
 		)
 	`;
 
@@ -114,83 +110,9 @@ export function populate(db: DB) {
 			'${new Date().toISOString()}',
 			'${JSON.stringify(["some-complaints"].join(","))}',
 			'${JSON.stringify(["some-diagnostics"].join(","))}',
-			'${HospitalizationStatus.OPEN}',
+			'${HospitalizationStatus.Open}',
 			'${"some-hospitalization-id"}',
 			'${patient1.systemId.value}'
-		)
-	`;
-
-	const insert_budget = `INSERT INTO budgets (
-			budget_id,
-			hospitalization_id,
-			start_on,
-			end_on,
-			status,
-			days
-		)  VALUES (
-			'${"some-budget-id"}',
-			'${"some-dummy-id"}',
-			'${new Date().toISOString()}',
-			'${new Date().toISOString()}',
-			'${"some-status"}',
-			${1}
-		)`;
-
-	const insert_budget_1 = `INSERT INTO budgets (
-			budget_id,
-			hospitalization_id,
-			start_on,
-			end_on,
-			status,
-			days
-		)  VALUES (
-			'${"some-fake-budget-id"}',
-			'${"some-hospitalization-id"}',
-			'${new Date().toISOString()}',
-			'${new Date().toISOString()}',
-			'${"some-status"}',
-			${1}
-		)`;
-
-	const insert_hospitalization_1 = `INSERT INTO hospitalizations (
-			weight,
-			entry_date,
-			discharge_date,
-			complaints,
-			diagnostics,
-			status,
-			hospitalization_id,
-			system_id
-		)  VALUES (
-			'${19.5}',
-			'${new Date().toISOString()}',
-			'${new Date().toISOString()}',
-			'${JSON.stringify(["some-complaints"].join(","))}',
-			'${JSON.stringify(["some-diagnostics"].join(","))}',
-			'${HospitalizationStatus.CLOSE}',
-			'${"some-dummy-id"}',
-			'${patient1.systemId.value}'
-		)
-	`;
-
-	const insert_hospitalization_2 = `INSERT INTO hospitalizations (
-			weight,
-			entry_date,
-			discharge_date,
-			complaints,
-			diagnostics,
-			status,
-			hospitalization_id,
-			system_id
-		)  VALUES (
-			'${9.5}',
-			'${new Date().toISOString()}',
-			'${new Date().toISOString()}',
-			'${JSON.stringify(["some-complaints"].join(","))}',
-			'${JSON.stringify(["some-diagnostics"].join(","))}',
-			'${HospitalizationStatus.OPEN}',
-			'${"some-xpto-id"}',
-			'${"some-id"}'
 		)
 	`;
 
@@ -203,13 +125,13 @@ export function populate(db: DB) {
 			comments,
 			status
 		)  VALUES (
-			'${testAlert.alertId.value}',
-			'${testAlert.patient.systemId.value}',
-			'${JSON.stringify(testAlert.parameters.join(","))}',
-			'${testAlert.repeatEvery.value}',
-			'${testAlert.time.toISOString()}',
-			'${testAlert.comments}',
-			'${testAlert.status}'
+			'${alert1.alertId.value}',
+			'${alert1.patientId.value}',
+			'${JSON.stringify(alert1.parameters.join(","))}',
+			'${alert1.repeatEvery}',
+			'${alert1.time}',
+			'${alert1.comments}',
+			'${alert1.status}'
 		)
 	`;
 
@@ -222,14 +144,6 @@ export function populate(db: DB) {
 	db.execute(insert_patient_2);
 
 	db.execute(insert_hospitalization);
-
-	db.execute(insert_hospitalization_1);
-
-	db.execute(insert_hospitalization_2);
-
-	db.execute(insert_budget);
-
-	db.execute(insert_budget_1);
 
 	db.execute(insert_alert);
 }

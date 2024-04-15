@@ -9,111 +9,102 @@ import { EntityFactory } from "shared/factory.ts";
 const factory = new EntityFactory();
 
 export class SQLiteAlertRepository implements AlertRepository {
-	readonly #db: DB;
+	#db: DB;
 
 	constructor(db: DB) {
 		this.#db = db;
 	}
 
+	getActiveAlerts(): Promise<Alert[]> {
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM alerts WHERE status = :status",
+			{ status: AlertStatus.Enabled },
+		);
+
+		const alerts = rows.map((row) => factory.createAlert(row));
+
+		return Promise.resolve(alerts);
+	}
+
 	findAll(patientId: ID): Promise<Alert[]> {
-		const sql = `
-			SELECT alerts.status as alert_status, * FROM alerts 
-			JOIN patients ON alerts.system_id = patients.system_id 
-			JOIN owners ON patients.owner_id = owners.owner_id
-			WHERE alerts.system_id = '${patientId.value}'
-		`;
-		const rows = this.#db.queryEntries(sql);
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM alerts WHERE system_id = :systemId",
+			{ systemId: patientId.value },
+		);
 
-		const alerts: Alert[] = [];
-
-		if (rows.length === 0) return Promise.resolve(alerts);
-
-		rows.forEach((row) => {
-			const alert = factory.createAlert(row);
-
-			alerts.push(alert);
-		});
+		const alerts = rows.map((row) => factory.createAlert(row));
 
 		return Promise.resolve(alerts);
 	}
 
 	verify(patientId: ID): Promise<boolean> {
-		const sql = `
-			SELECT * FROM alerts 
-			WHERE system_id = ? AND status = ?
-			LIMIT 1
-		`;
-		const rows = this.#db.queryEntries(sql, [
-			patientId.value,
-			AlertStatus.ENABLED,
-		]);
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM alerts WHERE system_id = :systemId AND status = :status LIMIT 1",
+			{ systemId: patientId.value, status: AlertStatus.Enabled },
+		);
 
 		return Promise.resolve(rows.length > 0);
 	}
 
 	save(alert: Alert): Promise<void> {
-		const sql = `INSERT INTO alerts (
-			alert_id,
-			system_id,
-			parameters,
-			repeat_every,
-			time,
-			comments,
-			status
-		)  VALUES (
-			'${alert.alertId.value}',
-			'${alert.patient.systemId.value}',
-			'${JSON.stringify(alert.parameters.join(","))}',
-			'${alert.repeatEvery.value}',
-			'${alert.time.toISOString()}',
-			'${alert.comments}',
-			'${alert.status}'
-		)`;
-
-		this.#db.query(sql);
+		this.#db.queryEntries(
+			`INSERT INTO alerts (
+				alert_id, 
+				system_id, 
+				parameters, 
+				repeat_every, 
+				time, 
+				comments, 
+				status
+			) VALUES (
+				:alertId, 
+				:systemId, 
+				:parameters, 
+				:repeatEvery, 
+				:time, 
+				:comments, 
+				:status
+			)`,
+			{
+				alertId: alert.alertId.value,
+				systemId: alert.patientId.value,
+				parameters: JSON.stringify(alert.parameters.join(",")),
+				repeatEvery: alert.repeatEvery,
+				time: alert.time,
+				comments: alert.comments,
+				status: alert.status,
+			},
+		);
 
 		return Promise.resolve(undefined);
 	}
 
 	last(): Promise<Alert> {
-		const sql = `
-			SELECT alerts.status as alert_status, * FROM alerts
-			JOIN patients ON alerts.system_id = patients.system_id
-			JOIN owners ON patients.owner_id = owners.owner_id 
-			ORDER BY alert_id DESC LIMIT 1
-		`;
-		const rows = this.#db.queryEntries(sql);
+		const rows = this.#db.queryEntries("SELECT * FROM alerts ORDER BY alert_id DESC LIMIT 1");
 
-		const row = rows[0];
-
-		const alert = factory.createAlert(row);
+		const alert = factory.createAlert(rows[0]);
 
 		return Promise.resolve(alert);
 	}
 
-	getById(alertId: ID): Promise<Either<AlertNotFound, Alert>> {
-		const sql = `
-			SELECT alerts.status as alert_status, * FROM alerts 
-			JOIN patients ON alerts.system_id = patients.system_id 
-			JOIN owners ON patients.owner_id = owners.owner_id
-			WHERE alerts.alert_id = ? LIMIT 1`;
-		const rows = this.#db.queryEntries(sql, [alertId.value]);
+	active(alertId: ID): Promise<Either<AlertNotFound, Alert>> {
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM alerts WHERE alert_id = :alertId AND status = :status LIMIT 1",
+			{ alertId: alertId.value, status: AlertStatus.Enabled },
+		);
 
 		if (rows.length === 0) return Promise.resolve(left(new AlertNotFound()));
 
-		const row = rows[0];
-
-		const alert = factory.createAlert(row);
+		const alert = factory.createAlert(rows[0]);
 
 		return Promise.resolve(right(alert));
 	}
 
 	update(alert: Alert): Promise<void> {
-		const alertId = alert.alertId.value;
-
-		const sql = "UPDATE alerts SET status = ? WHERE alert_id = ?";
-
-		this.#db.query(sql, [AlertStatus.DISABLED, alertId]);
+		this.#db.queryEntries("UPDATE alerts SET status = :status WHERE alert_id = :alertId", {
+			alertId: alert.alertId.value,
+			status: AlertStatus.Disabled,
+		});
 
 		return Promise.resolve(undefined);
 	}

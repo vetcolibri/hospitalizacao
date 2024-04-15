@@ -1,4 +1,4 @@
-import { Measurement } from "domain/parameters/measurement.ts";
+import { Measurement } from "./measurement.ts";
 
 export interface Parameter {
 	name: string;

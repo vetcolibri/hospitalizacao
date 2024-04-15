@@ -14,6 +14,10 @@ export class ID {
 		return new ID(value);
 	}
 
+	equals(id: ID): boolean {
+		return this.value === id.value;
+	}
+
 	get value(): string {
 		return this.#value.toString();
 	}

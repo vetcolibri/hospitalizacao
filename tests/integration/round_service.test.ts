@@ -4,11 +4,12 @@ import { assertEquals, assertInstanceOf, assertNotEquals } from "dev_deps";
 import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.ts";
 import { PatientRepository } from "domain/patients/patient_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
-import { RoundRepository } from "domain/rounds/round_repository.ts";
+import { RoundRepository } from "../../src/domain/exams/rounds/round_repository.ts";
 import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
 import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
-import { Parameter } from "domain/parameters/parameter.ts";
-import { InvalidParameter } from "domain/parameters/parameter_error.ts";
+import { Parameter } from "../../src/domain/exams/parameters/parameter.ts";
+import { InvalidParameter } from "../../src/domain/exams/parameters/parameter_error.ts";
+import { patient1 } from "../fake_data.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step(
@@ -203,7 +204,7 @@ Deno.test("Round Service - Latest Measurements", async (t) => {
 		const roundRepository = new RoundRepositoryStub();
 		const { service } = makeService({ roundRepository });
 
-		const paramsOrErr = await service.latestMeasurements("some-patient-id");
+		const paramsOrErr = await service.latestMeasurements(patient1.systemId.value);
 
 		const parameters = <Parameter[]> paramsOrErr.value;
 
@@ -216,7 +217,7 @@ Deno.test("Round Service - List Measurements", async (t) => {
 		const roundRepository = new RoundRepositoryStub();
 		const { service } = makeService({ roundRepository });
 
-		const paramsOrErr = await service.measurements("some-patient-id");
+		const paramsOrErr = await service.measurements(patient1.systemId.value);
 
 		const parameters = <Parameter[]> paramsOrErr.value;
 
@@ -254,7 +255,7 @@ Deno.test("Round Service - Errors", async (t) => {
 			};
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -272,7 +273,7 @@ Deno.test("Round Service - Errors", async (t) => {
 			};
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -290,7 +291,7 @@ Deno.test("Round Service - Errors", async (t) => {
 			};
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -309,7 +310,7 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -328,7 +329,7 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -347,7 +348,7 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -360,13 +361,13 @@ Deno.test("Round Service - Errors", async (t) => {
 			const parameters = {
 				bloodGlucose: {
 					name: "bloodGlucose",
-					value: 301,
+					value: 1001,
 				},
 			};
 
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -385,7 +386,7 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -404,7 +405,7 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patient1.systemId.value, parameters);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -438,7 +439,7 @@ Deno.test("Round Service - Errors", async (t) => {
 	);
 });
 
-const patientId = "some-id";
+const patientId = patient1.systemId.value;
 
 interface options {
 	roundRepository?: RoundRepository;

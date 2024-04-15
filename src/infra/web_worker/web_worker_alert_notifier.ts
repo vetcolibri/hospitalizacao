@@ -1,5 +1,4 @@
-import { AlertNotifier } from "application/alert_notifier.ts";
-import { Alert } from "domain/alerts/alert.ts";
+import { AlertNotifier, AlertPayload } from "application/alert_notifier.ts";
 
 const WORKER_PATH = "./worker.js";
 
@@ -16,24 +15,12 @@ export class WebWorkerAlertNotifier implements AlertNotifier {
 		this.#worker = new Worker(url, { type: "module" });
 	}
 
-	schedule(alert: Alert): void {
-		const payload = {
-			alertId: alert.alertId.value,
-			patient: {
-				name: alert.patient.name,
-				patientId: alert.patient.patientId.value,
-			},
-			comments: alert.comments,
-			time: alert.time,
-			rate: alert.repeatEvery.value,
-			parameters: alert.parameters,
-		};
-
+	schedule(payload: AlertPayload): void {
 		this.#worker.postMessage({ payload, type: CronType.PUBLISH });
 	}
 
-	cancel(alert: Alert): void {
-		const payload = { alertId: alert.alertId.value };
+	cancel(alertId: string): void {
+		const payload = { alertId };
 		this.#worker.postMessage({ payload, type: CronType.REMOVE });
 	}
 

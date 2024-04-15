@@ -1,16 +1,16 @@
-import { Round } from "./round.ts";
-import { HeartRate } from "domain/parameters/heart_rate.ts";
+import { Round } from "../rounds/round.ts";
+import { HeartRate } from "../parameters/heart_rate.ts";
 import { Either, left, right } from "shared/either.ts";
-import { RespiratoryRate } from "domain/parameters/respiratore_rate.ts";
-import { Trc } from "domain/parameters/trc.ts";
-import { Temperature } from "domain/parameters/temperature.ts";
-import { Avdn } from "domain/parameters/avdn.ts";
-import { Mucosas } from "domain/parameters/mucosas.ts";
-import { BloodGlucose } from "domain/parameters/blood_glucose.ts";
-import { Hct } from "domain/parameters/hct.ts";
-import { BloodPressure } from "domain/parameters/blood_pressure.ts";
-import { InvalidParameter } from "domain/parameters/parameter_error.ts";
-import { ERROR_MESSAGES } from "shared/error_messages.ts";
+import { RespiratoryRate } from "../parameters/respiratore_rate.ts";
+import { Trc } from "../parameters/trc.ts";
+import { Temperature } from "../parameters/temperature.ts";
+import { Avdn } from "../parameters/avdn.ts";
+import { Mucosas } from "../parameters/mucosas.ts";
+import { BloodGlucose } from "../parameters/blood_glucose.ts";
+import { Hct } from "../parameters/hct.ts";
+import { BloodPressure } from "../parameters/blood_pressure.ts";
+import { InvalidParameter } from "../parameters/parameter_error.ts";
+import { ErrorMessage } from "shared/error_messages.ts";
 import { MeasurementData } from "application/round_service.ts";
 import { ID } from "shared/id.ts";
 
@@ -99,23 +99,23 @@ export class RoundBuilder {
 	private findError(name: string): string {
 		switch (name) {
 			case "heart_rate":
-				return ERROR_MESSAGES.INVALID_HEART_RATE;
+				return ErrorMessage.InvalidHeartRate;
 			case "respiratory_rate":
-				return ERROR_MESSAGES.INVALID_RESPIRATORY_RATE;
+				return ErrorMessage.InvalidRespiratoryRate;
 			case "trc":
-				return ERROR_MESSAGES.INVALID_TRC;
+				return ErrorMessage.InvalidTrc;
 			case "avdn":
-				return ERROR_MESSAGES.INVALID_AVDN;
+				return ErrorMessage.InvalidAvdn;
 			case "mucosas":
-				return ERROR_MESSAGES.INVALID_MUCOSAS;
+				return ErrorMessage.InvalidMucosas;
 			case "temperature":
-				return ERROR_MESSAGES.INVALID_TEMPERATURE;
+				return ErrorMessage.InvalidTemperature;
 			case "blood_glucose":
-				return ERROR_MESSAGES.INVALID_BLOOD_GLUCOSE;
+				return ErrorMessage.InvalidBloodGlucose;
 			case "hct":
-				return ERROR_MESSAGES.INVALID_HCT;
+				return ErrorMessage.InvalidHct;
 			case "blood_pressure":
-				return ERROR_MESSAGES.INVALID_BLOOD_PRESSURE;
+				return ErrorMessage.InvalidBloodPressure;
 			default:
 				return "";
 		}

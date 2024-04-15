@@ -1,15 +1,15 @@
 export class RepeatEvery {
-  private _value: number;
+	#value: number;
 
-  constructor(value: number) {
-    this._value = value;
-  }
+	constructor(seconds: number) {
+		this.#value = seconds;
+	}
 
-  isValid() {
-    return this._value > 1;
-  }
+	isValid() {
+		return this.#value > 1;
+	}
 
-  get value(): number {
-    return this._value;
-  }
+	get value(): number {
+		return this.#value;
+	}
 }

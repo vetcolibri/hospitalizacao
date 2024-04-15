@@ -1,12 +1,12 @@
-import { RoundRepository } from "domain/rounds/round_repository.ts";
-import { Parameter, ParameterName } from "domain/parameters/parameter.ts";
-import { Round } from "domain/rounds/round.ts";
+import { RoundRepository } from "../../domain/exams/rounds/round_repository.ts";
+import { Parameter, ParameterName } from "../../domain/exams/parameters/parameter.ts";
+import { Round } from "../../domain/exams/rounds/round.ts";
 import { ID } from "shared/id.ts";
 import { DB } from "deps";
 import { ParametersBuilder } from "./parameters_builder.ts";
 
 export class SQLiteRoundRepository implements RoundRepository {
-	readonly #db: DB;
+	#db: DB;
 
 	constructor(db: DB) {
 		this.#db = db;

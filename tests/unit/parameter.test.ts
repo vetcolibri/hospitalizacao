@@ -1,13 +1,13 @@
 import { assertEquals } from "dev_deps";
-import { Avdn } from "domain/parameters/avdn.ts";
-import { BloodPressure } from "domain/parameters/blood_pressure.ts";
-import { BloodGlucose } from "domain/parameters/blood_glucose.ts";
-import { Hct } from "domain/parameters/hct.ts";
-import { HeartRate } from "domain/parameters/heart_rate.ts";
-import { Mucosas } from "domain/parameters/mucosas.ts";
-import { RespiratoryRate } from "domain/parameters/respiratore_rate.ts";
-import { Temperature } from "domain/parameters/temperature.ts";
-import { Trc } from "domain/parameters/trc.ts";
+import { Avdn } from "../../src/domain/exams/parameters/avdn.ts";
+import { BloodPressure } from "../../src/domain/exams/parameters/blood_pressure.ts";
+import { BloodGlucose } from "../../src/domain/exams/parameters/blood_glucose.ts";
+import { Hct } from "../../src/domain/exams/parameters/hct.ts";
+import { HeartRate } from "../../src/domain/exams/parameters/heart_rate.ts";
+import { Mucosas } from "../../src/domain/exams/parameters/mucosas.ts";
+import { RespiratoryRate } from "../../src/domain/exams/parameters/respiratore_rate.ts";
+import { Temperature } from "../../src/domain/exams/parameters/temperature.ts";
+import { Trc } from "../../src/domain/exams/parameters/trc.ts";
 
 Deno.test("Parameters", async (t) => {
 	await t.step("Deve criar o parâmtero Frequência cardiaca válido.", () => {
@@ -137,7 +137,7 @@ Deno.test("Parameters", async (t) => {
 	});
 
 	await t.step("Deve ser inválido o Glicemia acima de 300mg/dl.", () => {
-		const glicemia = new BloodGlucose(450);
+		const glicemia = new BloodGlucose(1450);
 
 		const valid = glicemia.isValid();
 

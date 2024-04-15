@@ -5,7 +5,7 @@ import { ContextWithParams } from "./context_with_params.ts";
 import { sendOk } from "./responses.ts";
 import { sendBadRequest } from "./responses.ts";
 import { roundSchema } from "./schemas/round_schema.ts";
-import { Parameter } from "domain/parameters/parameter.ts";
+import { Parameter } from "../../domain/exams/parameters/parameter.ts";
 
 interface ParameterDTO {
 	name: string;

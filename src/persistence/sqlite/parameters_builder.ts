@@ -1,14 +1,14 @@
-import { Parameter } from "domain/parameters/parameter.ts";
+import { Parameter } from "../../domain/exams/parameters/parameter.ts";
 import { RowObject } from "deps";
-import { HeartRate } from "domain/parameters/heart_rate.ts";
-import { RespiratoryRate } from "domain/parameters/respiratore_rate.ts";
-import { Trc } from "domain/parameters/trc.ts";
-import { Mucosas } from "domain/parameters/mucosas.ts";
-import { Avdn } from "domain/parameters/avdn.ts";
-import { Temperature } from "domain/parameters/temperature.ts";
-import { BloodGlucose } from "domain/parameters/blood_glucose.ts";
-import { Hct } from "domain/parameters/hct.ts";
-import { BloodPressure } from "domain/parameters/blood_pressure.ts";
+import { HeartRate } from "../../domain/exams/parameters/heart_rate.ts";
+import { RespiratoryRate } from "../../domain/exams/parameters/respiratore_rate.ts";
+import { Trc } from "../../domain/exams/parameters/trc.ts";
+import { Mucosas } from "../../domain/exams/parameters/mucosas.ts";
+import { Avdn } from "../../domain/exams/parameters/avdn.ts";
+import { Temperature } from "../../domain/exams/parameters/temperature.ts";
+import { BloodGlucose } from "../../domain/exams/parameters/blood_glucose.ts";
+import { Hct } from "../../domain/exams/parameters/hct.ts";
+import { BloodPressure } from "../../domain/exams/parameters/blood_pressure.ts";
 
 export class ParametersBuilder {
 	private readonly parameters: Parameter[] = [];
@@ -117,67 +117,6 @@ export class ParametersBuilder {
 		if (result) return data;
 	}
 }
-
-// export function composeParameter(row: RowObject) {
-// 	const measurementData = {
-// 		name: String(row.name),
-// 		value: row.value,
-// 		issuedAt: String(row.issued_at),
-// 	};
-
-// 	if (measurementData.name === PARAMETER_NAMES.HEART_RATE) {
-// 		const heartRate = HeartRate.compose(
-// 			Number(measurementData.value),
-// 			measurementData.issuedAt,
-// 		);
-// 		return heartRate;
-// 	}
-
-// 	if (measurementData.name === PARAMETER_NAMES.RESPIRATORY_RATE) {
-// 		const respiratoryRate = RespiratoryRate.compose(
-// 			Number(measurementData.value),
-// 			measurementData.issuedAt,
-// 		);
-// 		return respiratoryRate;
-// 	}
-// 	if (measurementData.name === PARAMETER_NAMES.TRC) {
-// 		const trc = Trc.compose(Number(measurementData.value), measurementData.issuedAt);
-// 		return trc;
-// 	}
-// 	if (measurementData.name === PARAMETER_NAMES.AVDN) {
-// 		const avdn = Avdn.compose(String(measurementData.value), measurementData.issuedAt);
-// 		return avdn;
-// 	}
-// 	if (measurementData.name === PARAMETER_NAMES.MUCOSAS) {
-// 		const mucosas = Mucosas.compose(String(measurementData.value), measurementData.issuedAt);
-// 		return mucosas;
-// 	}
-// 	if (measurementData.name === PARAMETER_NAMES.TEMPERATURE) {
-// 		const temperature = Temperature.compose(
-// 			Number(measurementData.value),
-// 			measurementData.issuedAt,
-// 		);
-// 		return temperature;
-// 	}
-// 	if (measurementData.name === PARAMETER_NAMES.BLOOD_GLUCOSE) {
-// 		const bloodGlucose = BloodGlucose.compose(
-// 			Number(measurementData.value),
-// 			measurementData.issuedAt,
-// 		);
-// 		return bloodGlucose;
-// 	}
-// 	if (measurementData.name === PARAMETER_NAMES.HCT) {
-// 		const hct = Hct.compose(Number(measurementData.value), measurementData.issuedAt);
-// 		return hct;
-// 	}
-// 	if (measurementData.name === PARAMETER_NAMES.BLOOD_PRESSURE) {
-// 		const bloodPressure = BloodPressure.compose(
-// 			String(measurementData.value),
-// 			measurementData.issuedAt,
-// 		);
-// 		return bloodPressure;
-// 	}
-// }
 
 type PARAMETERS =
 	| "heartRate"

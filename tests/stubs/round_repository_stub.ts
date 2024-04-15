@@ -1,9 +1,9 @@
 import { ID } from "shared/id.ts";
-import { HeartRate } from "domain/parameters/heart_rate.ts";
-import { Parameter, ParameterName } from "domain/parameters/parameter.ts";
-import { Trc } from "domain/parameters/trc.ts";
-import { Round } from "domain/rounds/round.ts";
-import { RoundRepository } from "domain/rounds/round_repository.ts";
+import { HeartRate } from "../../src/domain/exams/parameters/heart_rate.ts";
+import { Parameter, ParameterName } from "../../src/domain/exams/parameters/parameter.ts";
+import { Trc } from "../../src/domain/exams/parameters/trc.ts";
+import { Round } from "../../src/domain/exams/rounds/round.ts";
+import { RoundRepository } from "../../src/domain/exams/rounds/round_repository.ts";
 import { patient1 } from "../fake_data.ts";
 
 export class RoundRepositoryStub implements RoundRepository {
@@ -61,9 +61,9 @@ export class RoundRepositoryStub implements RoundRepository {
 	#populate() {
 		const heartRate = new HeartRate(78);
 		const trc = new Trc("Maior que 2'");
-		const round1 = new Round(patient1.patientId);
-		const round2 = new Round(patient1.patientId);
-		const round3 = new Round(patient1.patientId);
+		const round1 = new Round(patient1.systemId);
+		const round2 = new Round(patient1.systemId);
+		const round3 = new Round(patient1.systemId);
 		round1.addParameter(heartRate);
 		round2.addParameter(heartRate);
 		round3.addParameter(trc);

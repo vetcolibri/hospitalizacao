@@ -1,6 +1,6 @@
-import { Parameter, ParameterName } from "domain/parameters/parameter.ts";
-import { RoundRepository } from "domain/rounds/round_repository.ts";
-import { Round } from "domain/rounds/round.ts";
+import { Parameter, ParameterName } from "../../domain/exams/parameters/parameter.ts";
+import { RoundRepository } from "../../domain/exams/rounds/round_repository.ts";
+import { Round } from "../../domain/exams/rounds/round.ts";
 import { ID } from "shared/id.ts";
 
 export class InmemRoundRepository implements RoundRepository {

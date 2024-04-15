@@ -1,14 +1,13 @@
-import { AlertNotifier } from "application/alert_notifier.ts";
-import { Alert } from "domain/alerts/alert.ts";
+import { AlertNotifier, AlertPayload } from "application/alert_notifier.ts";
 
 export class AlertNotifierDummy implements AlertNotifier {
-  constructor() {}
+	constructor() {}
 
-  schedule(_alert: Alert): void {}
+	schedule(_payload: AlertPayload): void {}
 
-  cancel(_alert: Alert): void {}
+	cancel(_alertId: string): void {}
 
-  onMessage(_cb: (event: MessageEvent) => void): void {
-    return;
-  }
+	onMessage(_cb: (event: MessageEvent) => void): void {
+		return;
+	}
 }

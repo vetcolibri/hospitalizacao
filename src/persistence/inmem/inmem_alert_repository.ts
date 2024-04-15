@@ -5,48 +5,53 @@ import { ID } from "shared/id.ts";
 import { Either, left, right } from "shared/either.ts";
 
 export class InmemAlertRepository implements AlertRepository {
-  readonly #data: Record<string, Alert> = {};
+	#data: Record<string, Alert> = {};
 
-  getById(AlertId: ID): Promise<Either<AlertNotFound, Alert>> {
-    const alert = this.records.find(
-      (alert) => alert.alertId.value === AlertId.value
-    );
-    if (!alert) return Promise.resolve(left(new AlertNotFound()));
-    return Promise.resolve(right(alert));
-  }
+	getActiveAlerts(): Promise<Alert[]> {
+		const alerts = this.records.filter((a) => !a.isDisabled());
+		return Promise.resolve(alerts);
+	}
 
-  verify(patientId: ID): Promise<boolean> {
-    const hasAlert = this.records.some(
-      (alert) =>
-        alert.patient.patientId.value === patientId.value &&
-        alert.status === AlertStatus.ENABLED
-    );
-    return Promise.resolve(hasAlert);
-  }
+	active(AlertId: ID): Promise<Either<AlertNotFound, Alert>> {
+		const alert = this.records.find(
+			(alert) => alert.alertId.value === AlertId.value,
+		);
+		if (!alert) return Promise.resolve(left(new AlertNotFound()));
+		return Promise.resolve(right(alert));
+	}
 
-  save(alert: Alert): Promise<void> {
-    this.#data[alert.alertId.value] = alert;
-    return Promise.resolve(undefined);
-  }
+	verify(patientId: ID): Promise<boolean> {
+		const hasAlert = this.records.some(
+			(alert) =>
+				alert.patientId.value === patientId.value &&
+				alert.status === AlertStatus.Enabled,
+		);
+		return Promise.resolve(hasAlert);
+	}
 
-  findAll(patientId: ID): Promise<Alert[]> {
-    const alerts = this.records.filter(
-      (alert) => alert.patient.patientId.value === patientId.value
-    );
-    return Promise.resolve(alerts);
-  }
+	save(alert: Alert): Promise<void> {
+		this.#data[alert.alertId.value] = alert;
+		return Promise.resolve(undefined);
+	}
 
-  last(): Promise<Alert> {
-    const last = this.records[this.records.length - 1];
-    return Promise.resolve(last);
-  }
+	findAll(patientId: ID): Promise<Alert[]> {
+		const alerts = this.records.filter(
+			(alert) => alert.patientId.value === patientId.value,
+		);
+		return Promise.resolve(alerts);
+	}
 
-  update(alert: Alert): Promise<void> {
-    this.#data[alert.alertId.value] = alert;
-    return Promise.resolve(undefined);
-  }
+	last(): Promise<Alert> {
+		const last = this.records[this.records.length - 1];
+		return Promise.resolve(last);
+	}
 
-  get records() {
-    return Object.values(this.#data);
-  }
+	update(alert: Alert): Promise<void> {
+		this.#data[alert.alertId.value] = alert;
+		return Promise.resolve(undefined);
+	}
+
+	get records() {
+		return Object.values(this.#data);
+	}
 }

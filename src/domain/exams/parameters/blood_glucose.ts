@@ -18,7 +18,7 @@ export class BloodGlucose implements Parameter {
 	}
 
 	isValid(): boolean {
-		return this.value >= 1 && this.value <= 300;
+		return this.value >= 1 && this.value <= 1000;
 	}
 
 	get value(): number {

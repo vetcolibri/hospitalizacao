@@ -1,5 +1,6 @@
 import { SQLiteAlertRepository } from "persistence/sqlite/sqlite_alert_repository.ts";
 import { Alert, AlertStatus } from "domain/alerts/alert.ts";
+import { RepeatEvery } from "domain/alerts/repeat_every.ts";
 import { alert1, patient1 } from "../fake_data.ts";
 import { assertEquals } from "dev_deps";
 import { init_test_db, populate } from "./test_db.ts";
@@ -8,7 +9,9 @@ import { ID } from "shared/id.ts";
 Deno.test("SQLite - Alert Repository", async (t) => {
 	await t.step("Deve recuperar os alertas de um paciente", async () => {
 		const db = await init_test_db();
+
 		populate(db);
+
 		const repository = new SQLiteAlertRepository(db);
 
 		const alerts = await repository.findAll(patient1.systemId);
@@ -19,7 +22,9 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 
 	await t.step("Deve retornar um array vazio se não existir alertas", async () => {
 		const db = await init_test_db();
+
 		populate(db);
+
 		const repository = new SQLiteAlertRepository(db);
 
 		const alerts = await repository.findAll(ID.fromString("some-id"));
@@ -29,7 +34,9 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 
 	await t.step("Deve verificar se um paciente possui alertas", async () => {
 		const db = await init_test_db();
+
 		populate(db);
+
 		const repository = new SQLiteAlertRepository(db);
 
 		const hasAlerts = await repository.verify(patient1.systemId);
@@ -39,7 +46,9 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 
 	await t.step("Deve retornar false se o paciente não possuir alertas", async () => {
 		const db = await init_test_db();
+
 		populate(db);
+
 		const repository = new SQLiteAlertRepository(db);
 
 		const hasAlerts = await repository.verify(ID.fromString("some-id"));
@@ -47,73 +56,110 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 		assertEquals(hasAlerts, false);
 	});
 
-	await t.step("Deve recuperar o alerta pelo seu ID", async () => {
+	await t.step("Deve recuperar o alerta activo pelo seu ID", async () => {
 		const db = await init_test_db();
+
 		populate(db);
-		const alert = <Alert> alert1.value;
+
 		const repository = new SQLiteAlertRepository(db);
 
-		const alertOrError = await repository.getById(alert.alertId);
+		const alertOrErr = await repository.active(alert1.alertId);
+		const alert = <Alert> alertOrErr.value;
 
-		assertEquals(alertOrError.isRight(), true);
+		assertEquals(alertOrErr.isRight(), true);
+		assertEquals(alert.status, AlertStatus.Enabled);
+		assertEquals(alert.alertId.value, alert1.alertId.value);
 	});
 
-	await t.step("Deve retornar um erro se o alerta não existir", async () => {
+	await t.step("Deve retornar um erro se o alerta activo não existir", async () => {
 		const db = await init_test_db();
+
 		populate(db);
+
 		const repository = new SQLiteAlertRepository(db);
 
-		const alertOrError = await repository.getById(ID.fromString("fake-alert-id"));
+		const alertOrErr = await repository.active(ID.fromString("fake-alert-id"));
 
-		assertEquals(alertOrError.isLeft(), true);
+		assertEquals(alertOrErr.isLeft(), true);
 	});
 
 	await t.step("Deve atualizar o estado do alerta", async () => {
 		const db = await init_test_db();
 		populate(db);
-		const fakeAlert = <Alert> alert1.value;
+
 		const repository = new SQLiteAlertRepository(db);
 
-		await repository.update(fakeAlert);
+		await repository.update(alert1);
 
-		const alertOrError = await repository.getById(fakeAlert.alertId);
+		const isDisabled = await repository.verify(alert1.alertId);
 
-		const alert = <Alert> alertOrError.value;
-
-		assertEquals(alertOrError.isRight(), true);
-		assertEquals(alert.status, AlertStatus.DISABLED);
+		assertEquals(isDisabled, false);
 	});
 
 	await t.step("Deve recuperar o ultimo alerta", async () => {
 		const db = await init_test_db();
+
 		populate(db);
+
 		const repository = new SQLiteAlertRepository(db);
 
 		const alert = await repository.last();
 
-		assertEquals(alert.status, AlertStatus.ENABLED);
+		assertEquals(alert.status, AlertStatus.Enabled);
 	});
 
 	await t.step("Deve salvar o alerta", async () => {
-		const time = new Date().toISOString();
-		const alertData = {
-			parameters: ["some-param"],
-			rate: 1000,
-			comments: "some-comment",
-			time,
-		};
 		const db = await init_test_db();
+
 		populate(db);
-		const newAlertOrError = Alert.create(patient1, alertData);
-		const alert = <Alert> newAlertOrError.value;
+
 		const repository = new SQLiteAlertRepository(db);
 
-		await repository.save(alert);
+		await repository.save(firstAlert);
 
-		const alertOrError = await repository.getById(alert.alertId);
+		const recordedAlert = await repository.last();
 
-		const alertRecovered = <Alert> alertOrError.value;
+		assertEquals(recordedAlert.alertId.value, "1002");
+		assertEquals(recordedAlert.status, firstAlert.status);
+	});
 
-		assertEquals(alertRecovered.status, alert.status);
+	await t.step("Deve recuperar todos os alertas activos", async () => {
+		const db = await init_test_db();
+
+		populate(db);
+
+		const repository = new SQLiteAlertRepository(db);
+
+		await repository.save(secondAlert);
+
+		const alerts = await repository.getActiveAlerts();
+
+		assertEquals(alerts.every((a) => !a.isDisabled()), true);
 	});
 });
+
+const alertData = {
+	patientId: patient1.systemId,
+	parameters: ["some-param"],
+	rate: 1000,
+	comments: "some-comment",
+	time: new Date().toISOString(),
+};
+
+const firstAlert = new Alert(
+	ID.fromString("1002"),
+	alertData.patientId,
+	alertData.parameters,
+	new Date(alertData.time),
+	new RepeatEvery(alertData.rate),
+	alertData.comments,
+);
+
+const secondAlert = new Alert(
+	ID.fromString("1003"),
+	alertData.patientId,
+	alertData.parameters,
+	new Date(alertData.time),
+	new RepeatEvery(alertData.rate),
+	alertData.comments,
+);

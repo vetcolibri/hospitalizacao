@@ -1,80 +1,96 @@
-import { Either, left, right } from "shared/either.ts";
-import { AlertData } from "shared/types.ts";
-import { ID } from "shared/id.ts";
-import { Patient } from "domain/patients/patient.ts";
 import { RepeatEvery } from "./repeat_every.ts";
-import { InvalidRepeatEvery } from "./repeat_every_error.ts";
+import { ID } from "shared/id.ts";
+
+type Options = {
+	alertId: string;
+	patientId: string;
+	parameters: string[];
+	rate: number;
+	comments: string;
+	time: string;
+	status: string;
+};
 
 export enum AlertStatus {
-	ENABLED = "enabled",
-	DISABLED = "disabled",
+	Enabled = "enabled",
+	Disabled = "disabled",
 }
 
 export class Alert {
 	alertId: ID;
-	readonly patient: Patient;
-	readonly parameters: string[];
-	readonly repeatEvery: RepeatEvery;
-	readonly comments: string;
-	readonly time: Date;
-	status: AlertStatus;
+	patientId: ID;
+	#parameters: string[];
+	#time: Date;
+	#repeatEvery: RepeatEvery;
+	#comments: string;
+	#status: AlertStatus;
 
-	private constructor(
-		patient: Patient,
-		rate: RepeatEvery,
+	constructor(
+		alertId: ID,
+		patientId: ID,
+		parameters: string[],
+		time: Date,
+		repeatEvery: RepeatEvery,
 		comments: string,
-		time: string,
 	) {
-		this.alertId = ID.random();
-		this.patient = patient;
-		this.parameters = [];
-		this.repeatEvery = rate;
-		this.comments = comments;
-		this.time = new Date(time);
-		this.status = AlertStatus.ENABLED;
+		this.alertId = alertId;
+		this.patientId = patientId;
+		this.#parameters = [...parameters];
+		this.#repeatEvery = repeatEvery;
+		this.#comments = comments;
+		this.#time = time;
+		this.#status = AlertStatus.Enabled;
 	}
 
-	static create(
-		patient: Patient,
-		data: AlertData,
-	): Either<InvalidRepeatEvery, Alert> {
-		const { rate, comments, time, parameters } = data;
-		const repeatEvery = new RepeatEvery(rate);
-		if (!repeatEvery.isValid()) {
-			return left(new InvalidRepeatEvery());
-		}
+	static restore(data: Options): Alert {
+		const alert = new Alert(
+			ID.fromString(data.alertId),
+			ID.fromString(data.patientId),
+			data.parameters,
+			new Date(data.time),
+			new RepeatEvery(data.rate),
+			data.comments,
+		);
 
-		const alert = new Alert(patient, repeatEvery, comments, time);
-		alert.addParameters(parameters);
+		alert.updateStatus(data.status);
 
-		return right(alert);
-	}
-
-	addParameters(parameters: string[]): void {
-		this.parameters.push(...parameters);
+		return alert;
 	}
 
 	cancel(): void {
-		this.status = AlertStatus.DISABLED;
+		this.#status = AlertStatus.Disabled;
 	}
 
 	isDisabled(): boolean {
-		return this.status === AlertStatus.DISABLED;
+		return this.#status === AlertStatus.Disabled;
 	}
 
-	getStatus(): string {
-		return this.status;
+	updateStatus(status: string) {
+		if (AlertStatus.Enabled === status) {
+			this.#status = AlertStatus.Enabled;
+			return;
+		}
+
+		this.#status = AlertStatus.Disabled;
 	}
 
-	getParameters(): string[] {
-		return this.parameters;
+	get status(): string {
+		return this.#status;
 	}
 
-	getRate(): number {
-		return this.repeatEvery.value;
+	get parameters(): string[] {
+		return this.#parameters;
 	}
 
-	getTime(): string {
-		return this.time.toISOString();
+	get repeatEvery(): number {
+		return this.#repeatEvery.value;
+	}
+
+	get time(): string {
+		return this.#time.toISOString();
+	}
+
+	get comments(): string {
+		return this.#comments;
 	}
 }

@@ -4,11 +4,26 @@ import { Context, Router } from "deps";
 import { validate } from "shared/tools.ts";
 import { sendBadRequest, sendOk } from "./responses.ts";
 import { cancelAlertSchema, scheduleAlertSchema } from "./schemas/alert_schema.ts";
+import { Alert } from "domain/alerts/alert.ts";
 
 let websocktClients: WebSocket[] = [];
 
+interface AlertDTO {
+	alertId: string;
+	patientId: string;
+	status: string;
+}
+
+function toAlertDTO(alert: Alert): AlertDTO {
+	return {
+		alertId: alert.alertId.value,
+		patientId: alert.patientId.value,
+		status: alert.status,
+	};
+}
+
 export default function (service: AlertService, notifier: AlertNotifier) {
-	const scheduleAlertHandler = async (ctx: Context) => {
+	const scheduleHandler = async (ctx: Context) => {
 		const { patientId, alertData } = ctx.state.validatedData;
 
 		const voidOrErr = await service.schedule(patientId, alertData);
@@ -21,7 +36,7 @@ export default function (service: AlertService, notifier: AlertNotifier) {
 		sendOk(ctx);
 	};
 
-	const cancelAlertHandler = async (ctx: Context) => {
+	const cancelHandler = async (ctx: Context) => {
 		const { alertId } = ctx.state.validatedData;
 
 		const voidOrErr = await service.cancel(alertId);
@@ -32,6 +47,11 @@ export default function (service: AlertService, notifier: AlertNotifier) {
 		}
 
 		sendOk(ctx);
+	};
+
+	const listActiveHandler = async (ctx: Context) => {
+		const alerts = await service.getActiveAlerts();
+		sendOk(ctx, alerts.map(toAlertDTO));
 	};
 
 	const notifyClientsHandler = async (ctx: Context) => {
@@ -61,8 +81,9 @@ export default function (service: AlertService, notifier: AlertNotifier) {
 	notifier.onMessage(onMessageHandler);
 
 	const router = new Router({ prefix: "/alerts" });
-	router.post("/schedule", validate(scheduleAlertSchema), scheduleAlertHandler);
-	router.post("/cancel", validate(cancelAlertSchema), cancelAlertHandler);
+	router.post("/schedule", validate(scheduleAlertSchema), scheduleHandler);
+	router.post("/cancel", validate(cancelAlertSchema), cancelHandler);
 	router.get("/notifications", notifyClientsHandler);
+	router.get("/active", listActiveHandler);
 	return router;
 }

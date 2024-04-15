@@ -1,7 +1,17 @@
-import { Alert } from "domain/alerts/alert.ts";
-
 export interface AlertNotifier {
-  schedule(alert: Alert): void;
-  cancel(alert: Alert): void;
-  onMessage(cb: (event: MessageEvent) => void): void;
+	schedule(payload: AlertPayload): void;
+	cancel(alertId: string): void;
+	onMessage(cb: (event: MessageEvent) => void): void;
+}
+
+export interface AlertPayload {
+	alertId: string;
+	patient: {
+		name: string;
+		patientId: string;
+	};
+	comments: string;
+	time: Date;
+	rate: number;
+	parameters: string[];
 }

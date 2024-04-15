@@ -1,19 +1,11 @@
-import { Patient } from "domain/patients/patient.ts";
-import { Owner } from "domain/patients/owner.ts";
-import { Alert, AlertStatus } from "domain/alerts/alert.ts";
 import { RowObject } from "deps";
-import { Hospitalization } from "domain/patients/hospitalization.ts";
-import { ID } from "./id.ts";
-import { PatientBuilder } from "domain/patients/patient.ts";
+import { Alert } from "domain/alerts/alert.ts";
+import { Budget } from "domain/patients/hospitalizations/budget.ts";
+import { Patient } from "domain/patients/patient.ts";
+import { Hospitalization } from "../domain/patients/hospitalizations/hospitalization.ts";
+import { Owner } from "../domain/patients/owners/owner.ts";
 
-export interface Factory {
-	createOwner(row: RowObject): Owner;
-	createPatient(row: RowObject): Patient;
-	createAlert(row: RowObject): Alert;
-	createHospitalization(row: RowObject): Hospitalization;
-}
-
-export class EntityFactory implements Factory {
+export class EntityFactory {
 	createOwner(row: RowObject): Owner {
 		const ownerData = {
 			ownerId: String(row.owner_id),
@@ -25,75 +17,65 @@ export class EntityFactory implements Factory {
 
 	createPatient(row: RowObject): Patient {
 		const patientData = {
+			systemId: String(row.system_id),
 			patientId: String(row.patient_id),
 			name: String(row.name),
 			specie: String(row.specie),
 			breed: String(row.breed),
 			birthDate: String(row.birth_date),
+			ownerId: String(row.owner_id),
+			status: String(row.status),
 		};
 
-		const owner = this.createOwner(row);
-		const patient = new PatientBuilder()
-			.withSystemId(ID.fromString(String(row.system_id)))
-			.withPatientId(ID.fromString(patientData.patientId))
-			.withName(patientData.name)
-			.withOwner(owner)
-			.withSpecie(patientData.specie)
-			.withBreed(patientData.breed)
-			.withBirthDate(patientData.birthDate)
-			.withStatus(String(row.status))
-			.build();
+		const patient = Patient.restore({
+			...patientData,
+		});
 
 		return patient;
 	}
 
 	createAlert(row: RowObject): Alert {
-		const patient = this.createPatient(row);
 		const alertData = {
 			alertId: String(row.alert_id),
+			patientId: String(row.system_id),
 			parameters: JSON.parse(String(row.parameters)).split(","),
 			rate: Number(row.repeat_every),
 			time: String(row.time),
 			comments: String(row.comments),
-			status: String(row.alert_status),
+			status: String(row.status),
 		};
 
-		const alertOrErr = Alert.create(patient, alertData);
-		const alert = alertOrErr.value as Alert;
-		alert.alertId = ID.fromString(String(row.alert_id));
-
-		if (AlertStatus.ENABLED === alertData.status) {
-			alert.status = AlertStatus.ENABLED;
-		}
-
-		if (AlertStatus.DISABLED === alertData.status) {
-			alert.status = AlertStatus.DISABLED;
-		}
+		const alert = Alert.restore({
+			...alertData,
+		});
 
 		return alert;
 	}
 
 	createHospitalization(row: RowObject): Hospitalization {
 		const hospitalizationData = {
+			patientId: String(row.system_id),
 			hospitalizationId: String(row.hospitalization_id),
 			entryDate: String(row.entry_date),
-			dischargeDate: String(row.discharge_date),
+			dischargeDate: row.discharge_date as string ?? "",
 			weight: Number(row.weight),
 			complaints: JSON.parse(String(row.complaints)).split(","),
 			diagnostics: JSON.parse(String(row.diagnostics)).split(","),
-			status: String(row.h_status),
-			budgetData: this.createBudgetData(row),
+			status: String(row.status),
 		};
-		const hospitalization = Hospitalization.create(hospitalizationData);
-		return hospitalization.value as Hospitalization;
+
+		return Hospitalization.restore(hospitalizationData);
 	}
 
-	createBudgetData(row: RowObject) {
-		return {
+	createBudget(row: RowObject): Budget {
+		const data = {
+			hospitalizationId: String(row.hospitalization_id),
 			budgetId: String(row.budget_id),
 			startOn: String(row.start_on),
 			endOn: String(row.end_on),
-			status: String(row.b_status),
+			status: String(row.status),
 		};
+
+		return Budget.restore(data);
 	}
 }

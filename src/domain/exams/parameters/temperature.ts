@@ -1,8 +1,8 @@
-import { Measurement } from "domain/parameters/measurement.ts";
+import { Measurement } from "./measurement.ts";
 import { Parameter, ParameterName } from "./parameter.ts";
 
-export class RespiratoryRate implements Parameter {
-	name = ParameterName.RespiratoryRate;
+export class Temperature implements Parameter {
+	name = ParameterName.Temperature;
 	measurement: Measurement;
 	issuedAt: Date;
 
@@ -12,9 +12,9 @@ export class RespiratoryRate implements Parameter {
 	}
 
 	static compose(value: number, issuedAt: string) {
-		const respiratoryRate = new RespiratoryRate(value);
-		respiratoryRate.issuedAt = new Date(issuedAt);
-		return respiratoryRate;
+		const temperature = new Temperature(value);
+		temperature.issuedAt = new Date(issuedAt);
+		return temperature;
 	}
 
 	isValid(): boolean {

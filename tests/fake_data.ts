@@ -1,6 +1,7 @@
+import { Patient } from "domain/patients/patient.ts";
+import { RepeatEvery } from "domain/alerts/repeat_every.ts";
+import { Owner } from "../src/domain/patients/owners/owner.ts";
 import { Alert } from "domain/alerts/alert.ts";
-import { Owner } from "domain/patients/owner.ts";
-import { Patient, Species } from "domain/patients/patient.ts";
 import { ID } from "shared/id.ts";
 
 export const patientData = {
@@ -18,35 +19,25 @@ export const ownerData = {
 };
 
 export const hospitalizationData = {
-	entryDate: new Date().toISOString(),
+	entryDate: "2021-01-01",
 	dischargeDate: new Date().toISOString(),
-	budgetData: {
-		startOn: "2021-01-01",
-		endOn: "2021-01-10",
-		status: "NÃO PAGO",
-	},
 	weight: 16.5,
 	birthDate: "2013-07-01",
 	complaints: ["Queixa 1", "Queixa 2"],
 	diagnostics: ["Diagnostico 1"],
 };
 
+export const budgetData = {
+	startOn: "2021-01-01",
+	endOn: "2021-01-10",
+	status: "NÃO PAGO",
+};
+
 export const newPatientData = {
 	patientData,
 	hospitalizationData,
 	ownerData,
-};
-
-export const patientWithSomeOwner = {
-	patientData: {
-		...patientData,
-		patientId: "patient-with-same-owner-id",
-	},
-	hospitalizationData,
-	ownerData: {
-		...ownerData,
-		ownerId: "1001",
-	},
+	budgetData,
 };
 
 const alertData = {
@@ -71,44 +62,41 @@ export const owner = new Owner("1001", "John", "933001122");
 
 export const patient1 = new Patient(
 	ID.random(),
-	ID.fromString("some-patient-id"),
+	"some-patient-id",
 	patientData.name,
 	patientData.breed,
-	patientData.specie as Species,
+	patientData.specie,
 	patientData.birthDate,
-	owner,
+	"1001",
 );
 
 export const patient2 = new Patient(
 	ID.random(),
-	ID.fromString("some-id"),
+	"some-id",
 	patientData.name,
 	patientData.breed,
-	patientData.specie as Species,
+	patientData.specie,
 	patientData.birthDate,
-	owner,
-);
-export const patient3 = new Patient(
-	ID.random(),
-	ID.fromString("some-other-id"),
-	patientData.name,
-	patientData.breed,
-	patientData.specie as Species,
-	patientData.birthDate,
-	owner,
-);
-export const patient4 = new Patient(
-	ID.random(),
-	ID.fromString("some-dummy-id"),
-	patientData.name,
-	patientData.breed,
-	patientData.specie as Species,
-	patientData.birthDate,
-	owner,
+	"1001",
 );
 
-export const alert1 = Alert.create(patient1, alertData);
-patient1.hospitalize(hospitalizationData);
-patient2.hospitalize(hospitalizationData);
-patient4.hospitalize(hospitalizationData);
-patient4.discharge();
+export const patient3 = new Patient(
+	ID.fromString("1919B"),
+	"some-other-id",
+	patientData.name,
+	patientData.breed,
+	patientData.specie,
+	patientData.birthDate,
+	"1001",
+);
+
+patient3.discharge();
+
+export const alert1 = new Alert(
+	ID.fromString("10001"),
+	patient1.systemId,
+	alertData.parameters,
+	new Date(alertData.time),
+	new RepeatEvery(alertData.rate),
+	alertData.comments,
+);

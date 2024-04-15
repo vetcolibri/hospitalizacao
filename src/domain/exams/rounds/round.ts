@@ -1,5 +1,5 @@
 import { ID } from "shared/id.ts";
-import { Parameter } from "domain/parameters/parameter.ts";
+import { Parameter } from "../parameters/parameter.ts";
 
 export class Round {
 	readonly #roundId: ID;

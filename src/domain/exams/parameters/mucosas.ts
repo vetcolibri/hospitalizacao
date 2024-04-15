@@ -1,4 +1,4 @@
-import { Measurement } from "domain/parameters/measurement.ts";
+import { Measurement } from "./measurement.ts";
 import { Parameter, ParameterName } from "./parameter.ts";
 
 export class Mucosas implements Parameter {
