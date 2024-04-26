@@ -33,6 +33,10 @@ const budgetSchema = z.object({
 	]),
 });
 
+export const endhospitalizationSchema = z.object({
+	patientId: z.string(),
+});
+
 export const newHospitalizationSchema = z.object({
 	patientId: z.string(),
 	hospitalizationData: hospitalizationSchema,

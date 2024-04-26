@@ -5,7 +5,11 @@ import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
 import { validate } from "shared/tools.ts";
 import { ContextWithParams } from "./context_with_params.ts";
 import { sendBadRequest, sendCreated, sendNotFound, sendOk } from "./responses.ts";
-import { newHospitalizationSchema, newPatientSchema } from "./schemas/patient_schema.ts";
+import {
+	endhospitalizationSchema,
+	newHospitalizationSchema,
+	newPatientSchema,
+} from "./schemas/patient_schema.ts";
 import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
 
 interface PatientDTO {
@@ -14,6 +18,7 @@ interface PatientDTO {
 	name: string;
 	specie: string;
 	breed: string;
+	status: string;
 	birthDate: string;
 	ownerId: string;
 }
@@ -25,6 +30,7 @@ function toPatientDTO(patient: Patient): PatientDTO {
 		name: patient.name,
 		specie: patient.specie.toString(),
 		breed: patient.breed,
+		status: patient.status.toString(),
 		birthDate: patient.birthDate.age,
 		ownerId: patient.ownerId.value,
 	};
@@ -74,8 +80,12 @@ export default function (service: PatientService) {
 		sendCreated(ctx);
 	};
 
-	const endHospitalizationHandler = async (ctx: ContextWithParams) => {
-		const voidOrErr = await service.endHospitalization(ctx.params.patientId);
+	const endHospitalizationHandler = async (ctx: Context) => {
+		const { patientId } = ctx.state.validatedData;
+
+		const voidOrErr = await service.endHospitalization(patientId);
+
+		console.log(voidOrErr.value);
 
 		if (voidOrErr.value instanceof PatientNotFound) {
 			sendNotFound(ctx, voidOrErr.value.message);
@@ -98,7 +108,8 @@ export default function (service: PatientService) {
 		hospitalizeHandler,
 	);
 	router.post(
-		"/end-hospitalization/:patientId",
+		"/end-hospitalization",
+		validate(endhospitalizationSchema),
 		endHospitalizationHandler,
 	);
 	router.post("/new-patient", validate(newPatientSchema), newPatientHandler);

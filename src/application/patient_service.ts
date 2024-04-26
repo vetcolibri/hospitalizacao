@@ -1,7 +1,4 @@
-import { InvalidDate } from "../domain/patients/hospitalizations/invalid_date_error.ts";
-import { PatientIdAlreadyExists } from "../domain/patients/patient_id_already_exists_error.ts";
-import { InvalidNumber } from "../domain/patients/hospitalizations/invalid_number_error.ts";
-import { Owner } from "../domain/patients/owners/owner.ts";
+import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
 import { Patient } from "domain/patients/patient.ts";
 import { PatientAlreadyHospitalized } from "domain/patients/patient_already_hospitalized_error.ts";
 import { PatientRepository } from "domain/patients/patient_repository.ts";
@@ -13,15 +10,16 @@ import {
 	NewPatientError,
 } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
-import { BudgetRepository } from "../domain/patients/hospitalizations/budget_repository.ts";
 import { BudgetBuilder } from "../domain/patients/hospitalizations/budget_builder.ts";
+import { BudgetRepository } from "../domain/patients/hospitalizations/budget_repository.ts";
 import { HospitalizationBuilder } from "../domain/patients/hospitalizations/hospitalization_builder.ts";
 import { HospitalizationRepository } from "../domain/patients/hospitalizations/hospitalization_repository.ts";
+import { InvalidDate } from "../domain/patients/hospitalizations/invalid_date_error.ts";
+import { InvalidNumber } from "../domain/patients/hospitalizations/invalid_number_error.ts";
+import { Owner } from "../domain/patients/owners/owner.ts";
 import { OwnerRepository } from "../domain/patients/owners/owner_repository.ts";
 import { PatientBuilder } from "../domain/patients/patient_builder.ts";
-import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
-import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
-import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
+import { PatientIdAlreadyExists } from "../domain/patients/patient_id_already_exists_error.ts";
 
 export class PatientService {
 	#patientRepository: PatientRepository;

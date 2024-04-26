@@ -107,6 +107,21 @@ export class Patient {
 			return;
 		}
 
+		if (status === PatientStatus.DischargedWithUnpaidBudget) {
+			this.#status = PatientStatus.DischargedWithUnpaidBudget;
+			return;
+		}
+
+		if (status === PatientStatus.DischargedWithPendingBudget) {
+			this.#status = PatientStatus.DischargedWithPendingBudget;
+			return;
+		}
+
+		if (status === PatientStatus.DischargedWithBudgetSent) {
+			this.#status = PatientStatus.DischargedWithBudgetSent;
+			return;
+		}
+
 		this.#status = PatientStatus.Discharged;
 	}
 
