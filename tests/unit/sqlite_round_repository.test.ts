@@ -3,7 +3,6 @@ import { HeartRate } from "../../src/domain/exams/parameters/heart_rate.ts";
 import { Round } from "../../src/domain/exams/rounds/round.ts";
 import { assertEquals } from "dev_deps";
 import { init_test_db, populate } from "./test_db.ts";
-import { patient1 } from "../fake_data.ts";
 import { RespiratoryRate } from "../../src/domain/exams/parameters/respiratore_rate.ts";
 import { Trc } from "../../src/domain/exams/parameters/trc.ts";
 import { Avdn } from "../../src/domain/exams/parameters/avdn.ts";
@@ -12,6 +11,7 @@ import { Temperature } from "../../src/domain/exams/parameters/temperature.ts";
 import { BloodGlucose } from "../../src/domain/exams/parameters/blood_glucose.ts";
 import { Hct } from "../../src/domain/exams/parameters/hct.ts";
 import { BloodPressure } from "../../src/domain/exams/parameters/blood_pressure.ts";
+import { PATIENTS } from "../fake_data.ts";
 
 Deno.test("SQLite - Round Repository", async (t) => {
 	await t.step(
@@ -20,7 +20,7 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			const db = await init_test_db();
 			populate(db);
 			const persistence = new SQLiteRoundRepository(db);
-			const round = new Round(patient1.systemId);
+			const round = new Round(PATIENTS.hospitalized["1918BA"].systemId);
 			const heartRate = new HeartRate(80);
 			const respiratoryRate = new RespiratoryRate(20);
 			const trc = new Trc("Maior que 2'");
@@ -41,7 +41,9 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			round.addParameter(bloodPressure);
 			await persistence.save(round);
 
-			const measurements = await persistence.measurements(patient1.systemId);
+			const measurements = await persistence.measurements(
+				PATIENTS.hospitalized["1918BA"].systemId,
+			);
 
 			assertEquals(measurements.length, 9);
 		},
@@ -53,8 +55,8 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			const db = await init_test_db();
 			populate(db);
 			const persistence = new SQLiteRoundRepository(db);
-			const round = new Round(patient1.systemId);
-			const round2 = new Round(patient1.systemId);
+			const round = new Round(PATIENTS.hospitalized["1918BA"].systemId);
+			const round2 = new Round(PATIENTS.hospitalized["1918BA"].systemId);
 
 			const heartRate = new HeartRate(80);
 			const respiratoryRate = new RespiratoryRate(20);
@@ -81,7 +83,7 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			await persistence.save(round2);
 
 			const measurements = await persistence.latestMeasurements(
-				patient1.systemId,
+				PATIENTS.hospitalized["1918BA"].systemId,
 			);
 
 			assertEquals(measurements.length, 9);

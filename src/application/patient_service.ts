@@ -7,7 +7,11 @@ import { PatientAlreadyHospitalized } from "domain/patients/patient_already_hosp
 import { PatientRepository } from "domain/patients/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ErrorMessage } from "shared/error_messages.ts";
-import { NewHospitalizationError, NewPatientError } from "shared/errors.ts";
+import {
+	EndHospitalizationError,
+	NewHospitalizationError,
+	NewPatientError,
+} from "shared/errors.ts";
 import { ID } from "shared/id.ts";
 import { BudgetRepository } from "../domain/patients/hospitalizations/budget_repository.ts";
 import { BudgetBuilder } from "../domain/patients/hospitalizations/budget_builder.ts";
@@ -15,6 +19,9 @@ import { HospitalizationBuilder } from "../domain/patients/hospitalizations/hosp
 import { HospitalizationRepository } from "../domain/patients/hospitalizations/hospitalization_repository.ts";
 import { OwnerRepository } from "../domain/patients/owners/owner_repository.ts";
 import { PatientBuilder } from "../domain/patients/patient_builder.ts";
+import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
+import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
+import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
 
 export class PatientService {
 	#patientRepository: PatientRepository;
@@ -63,11 +70,11 @@ export class PatientService {
 		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const patient = patientOrErr.value;
-		if (patient.isHospitalized()) return left(new PatientAlreadyHospitalized(patient.name));
-
 		const voidOrErr = this.#verifyHospitalizationData(data);
 		if (voidOrErr.isLeft()) return left(voidOrErr.value);
+
+		const patient = patientOrErr.value;
+		if (patient.isHospitalized()) return left(new PatientAlreadyHospitalized(patient.name));
 
 		const hospitalizationOrErr = new HospitalizationBuilder()
 			.withPatientId(patient.systemId.value)
@@ -145,6 +152,47 @@ export class PatientService {
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
 		await this.#budgetRepository.save(budgetOrErr.value);
+
+		return right(undefined);
+	}
+
+	async endHospitalization(
+		patientId: string,
+	): Promise<Either<EndHospitalizationError, void>> {
+		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+
+		const hospitalizationOrErr = await this.#hospitalizationRepository.open(
+			ID.fromString(patientId),
+		);
+		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+
+		const patient = <Patient> patientOrErr.value;
+		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
+
+		const budget = await this.#budgetRepository.getByHospitalizationId(
+			hospitalization.hospitalizationId,
+		);
+
+		patient.discharge();
+
+		if (budget.unpaid()) {
+			patient.dischargeWithUnpaidBudget();
+		}
+
+		if (budget.pending()) {
+			patient.dischargeWithPendingBudget();
+		}
+
+		if (budget.itWasSent()) {
+			patient.dischargeWithBudgetSent();
+		}
+
+		hospitalization.close();
+
+		await this.#hospitalizationRepository.update(hospitalization);
+
+		await this.#patientRepository.update(patient);
 
 		return right(undefined);
 	}

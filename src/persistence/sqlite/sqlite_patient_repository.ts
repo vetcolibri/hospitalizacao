@@ -57,8 +57,8 @@ export class SQLitePatientRepository implements PatientRepository {
 
 	hospitalized(): Promise<Patient[]> {
 		const rows = this.#db.queryEntries(
-			"SELECT * FROM patients WHERE status = :status",
-			{ status: PatientStatus.Hospitalized },
+			"SELECT * FROM patients WHERE status != :status",
+			{ status: PatientStatus.Discharged },
 		);
 
 		const patients = rows.map((row) => factory.createPatient(row));

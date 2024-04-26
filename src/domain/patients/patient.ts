@@ -4,6 +4,9 @@ import { ID } from "shared/id.ts";
 export enum PatientStatus {
 	Hospitalized = "HOSPITALIZADO",
 	Discharged = "ALTA MEDICA",
+	DischargedWithUnpaidBudget = "ALTA MEDICA COM ORÇAMENTO NÃO PAGO",
+	DischargedWithPendingBudget = "ALTA MEDICA COM ORÇAMENTO PENDENTE",
+	DischargedWithBudgetSent = "ALTA MEDICA COM ORÇAMENTO ENVIADO",
 }
 
 export enum Specie {
@@ -80,6 +83,18 @@ export class Patient {
 	discharge() {
 		if (!this.isHospitalized()) return;
 		this.#status = PatientStatus.Discharged;
+	}
+
+	dischargeWithUnpaidBudget() {
+		this.#status = PatientStatus.DischargedWithUnpaidBudget;
+	}
+
+	dischargeWithPendingBudget() {
+		this.#status = PatientStatus.DischargedWithPendingBudget;
+	}
+
+	dischargeWithBudgetSent() {
+		this.#status = PatientStatus.DischargedWithBudgetSent;
 	}
 
 	isHospitalized() {

@@ -1,7 +1,7 @@
 import { SQLiteAlertRepository } from "persistence/sqlite/sqlite_alert_repository.ts";
 import { Alert, AlertStatus } from "domain/alerts/alert.ts";
 import { RepeatEvery } from "domain/alerts/repeat_every.ts";
-import { alert1, patient1 } from "../fake_data.ts";
+import { alert1, PATIENTS } from "../fake_data.ts";
 import { assertEquals } from "dev_deps";
 import { init_test_db, populate } from "./test_db.ts";
 import { ID } from "shared/id.ts";
@@ -14,7 +14,7 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 
 		const repository = new SQLiteAlertRepository(db);
 
-		const alerts = await repository.findAll(patient1.systemId);
+		const alerts = await repository.findAll(PATIENTS.hospitalized["1918BA"].systemId);
 
 		assertEquals(alerts.length, 1);
 		assertEquals(alerts[0].parameters.length, 3);
@@ -39,7 +39,7 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 
 		const repository = new SQLiteAlertRepository(db);
 
-		const hasAlerts = await repository.verify(patient1.systemId);
+		const hasAlerts = await repository.verify(PATIENTS.hospitalized["1918BA"].systemId);
 
 		assertEquals(hasAlerts, true);
 	});
@@ -139,7 +139,7 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 });
 
 const alertData = {
-	patientId: patient1.systemId,
+	patientId: PATIENTS.hospitalized["1918BA"].systemId,
 	parameters: ["some-param"],
 	rate: 1000,
 	comments: "some-comment",

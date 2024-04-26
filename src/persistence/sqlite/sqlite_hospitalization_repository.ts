@@ -6,6 +6,9 @@ import {
 import { ID } from "shared/id.ts";
 import { DB } from "deps";
 import { EntityFactory } from "shared/factory.ts";
+import { Either, left } from "shared/either.ts";
+import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
+import { right } from "shared/either.ts";
 
 const factory = new EntityFactory();
 
@@ -53,7 +56,30 @@ export class SQLiteHospitalizationRepository implements HospitalizationRepositor
 		return Promise.resolve(hospitalization);
 	}
 
-	open(_patientId: ID): Promise<Hospitalization> {
-		throw new Error("Method not implemented.");
+	open(patientId: ID): Promise<Either<HospitalizationAlreadyClosed, Hospitalization>> {
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM hospitalizations WHERE system_id = :systemId AND status = :status",
+			{ systemId: patientId.value, status: HospitalizationStatus.Open },
+		);
+
+		if (rows.length === 0) {
+			return Promise.resolve(left(new HospitalizationAlreadyClosed()));
+		}
+
+		const hospitalization = factory.createHospitalization(rows[0]);
+
+		return Promise.resolve(right(hospitalization));
+	}
+
+	update(hospitalization: Hospitalization): Promise<void> {
+		this.#db.queryEntries(
+			"UPDATE hospitalizations SET status = :status WHERE hospitalization_id = :hospitalizationId",
+			{
+				status: HospitalizationStatus.Close,
+				hospitalizationId: hospitalization.hospitalizationId.value,
+			},
+		);
+
+		return Promise.resolve(undefined);
 	}
 }

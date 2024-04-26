@@ -7,6 +7,12 @@ import { Either, left, right } from "shared/either.ts";
 export class InmemPatientRepository implements PatientRepository {
 	readonly #data: Record<string, Patient> = {};
 
+	constructor(patients?: Patient[]) {
+		if (!patients) return;
+
+		patients.forEach((p) => this.#data[p.systemId.value] = p);
+	}
+
 	getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
 		const patient = this.records.find((p) => p.systemId.equals(patientId));
 		if (!patient) return Promise.resolve(left(new PatientNotFound()));
@@ -14,7 +20,7 @@ export class InmemPatientRepository implements PatientRepository {
 	}
 
 	hospitalized(): Promise<Patient[]> {
-		const patients = this.records.filter((p) => p.status === PatientStatus.Hospitalized);
+		const patients = this.records.filter((p) => p.status !== PatientStatus.Discharged);
 		return Promise.resolve(patients);
 	}
 

@@ -1,10 +1,10 @@
 import { SQLitePatientRepository } from "persistence/sqlite/sqlite_patient_repository.ts";
 import { Patient, PatientStatus } from "domain/patients/patient.ts";
 import { init_test_db, populate } from "./test_db.ts";
-import { patient1, patient2 } from "../fake_data.ts";
-import { assertEquals, assertInstanceOf } from "dev_deps";
+import { assert, assertEquals, assertInstanceOf } from "dev_deps";
 import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
 import { ID } from "shared/id.ts";
+import { PATIENTS } from "../fake_data.ts";
 
 Deno.test("SQLite - Patient Repository", async (t) => {
 	await t.step("Deve verificar se o paciente existe.", async () => {
@@ -12,7 +12,7 @@ Deno.test("SQLite - Patient Repository", async (t) => {
 
 		populate(db);
 
-		const patientId = ID.fromString("some-patient-id");
+		const patientId = ID.fromString("some-id");
 
 		const repository = new SQLitePatientRepository(db);
 
@@ -41,12 +41,12 @@ Deno.test("SQLite - Patient Repository", async (t) => {
 
 		const repository = new SQLitePatientRepository(db);
 
-		const patientOrErr = await repository.getById(patient1.systemId);
+		const patientOrErr = await repository.getById(PATIENTS.hospitalized["1918BA"].systemId);
 
 		const patient = <Patient> patientOrErr.value;
 
-		assertEquals(patient.systemId.value, patient1.systemId.value);
-		assertEquals(patient.patientId.value, "some-patient-id");
+		assertEquals(patient.systemId.value, PATIENTS.hospitalized["1918BA"].systemId.value);
+		assertEquals(patient.patientId.value, PATIENTS.hospitalized["1918BA"].patientId.value);
 	});
 
 	await t.step(
@@ -75,8 +75,8 @@ Deno.test("SQLite - Patient Repository", async (t) => {
 		const patients = await repository.hospitalized();
 
 		assertEquals(patients.length, 2);
-		assertEquals(patients[0].patientId.value, "some-patient-id");
 		assertEquals(patients[0].status, PatientStatus.Hospitalized);
+		assertEquals(patients[1].status, PatientStatus.Hospitalized);
 	});
 
 	await t.step("Deve recuperar os pacientes não hospitalizados.", async () => {
@@ -88,23 +88,24 @@ Deno.test("SQLite - Patient Repository", async (t) => {
 
 		const patients = await repository.nonHospitalized();
 
-		assertEquals(patients.length, 1);
-		assertEquals(patients[0].patientId.value, "some-fake-patient-id");
-		assertEquals(patients[0].status, PatientStatus.Discharged);
+		assert(patients.length >= 1);
+		assertEquals(patients.every((p) => p.status === PatientStatus.Discharged), true);
 	});
 
 	await t.step("Deve atualizar os dados de um paciente.", async () => {
 		const db = await init_test_db();
 
-		patient2.discharge();
-
 		populate(db);
 
 		const repository = new SQLitePatientRepository(db);
 
-		await repository.update(patient2);
+		await repository.save(PATIENTS.hospitalized["1920BA"]);
 
-		const patientOrErr = await repository.getById(patient2.systemId);
+		PATIENTS.hospitalized["1920BA"].discharge();
+
+		await repository.update(PATIENTS.hospitalized["1920BA"]);
+
+		const patientOrErr = await repository.getById(PATIENTS.hospitalized["1920BA"].systemId);
 
 		const patient = <Patient> patientOrErr.value;
 

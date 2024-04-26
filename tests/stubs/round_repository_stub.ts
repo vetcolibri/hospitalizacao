@@ -4,7 +4,7 @@ import { Parameter, ParameterName } from "../../src/domain/exams/parameters/para
 import { Trc } from "../../src/domain/exams/parameters/trc.ts";
 import { Round } from "../../src/domain/exams/rounds/round.ts";
 import { RoundRepository } from "../../src/domain/exams/rounds/round_repository.ts";
-import { patient1 } from "../fake_data.ts";
+import { PATIENTS } from "../fake_data.ts";
 
 export class RoundRepositoryStub implements RoundRepository {
 	readonly #rounds: Round[] = [];
@@ -61,9 +61,9 @@ export class RoundRepositoryStub implements RoundRepository {
 	#populate() {
 		const heartRate = new HeartRate(78);
 		const trc = new Trc("Maior que 2'");
-		const round1 = new Round(patient1.systemId);
-		const round2 = new Round(patient1.systemId);
-		const round3 = new Round(patient1.systemId);
+		const round1 = new Round(PATIENTS.hospitalized["1918BA"].systemId);
+		const round2 = new Round(PATIENTS.hospitalized["1918BA"].systemId);
+		const round3 = new Round(PATIENTS.hospitalized["1918BA"].systemId);
 		round1.addParameter(heartRate);
 		round2.addParameter(heartRate);
 		round3.addParameter(trc);

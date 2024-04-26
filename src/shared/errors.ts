@@ -6,6 +6,7 @@ import { AlertNotFound } from "domain/alerts/alert_not_found_error.ts";
 import { InvalidNumber } from "../domain/patients/hospitalizations/invalid_number_error.ts";
 import { InvalidDate } from "../domain/patients/hospitalizations/invalid_date_error.ts";
 import { PatientAlreadyHospitalized } from "domain/patients/patient_already_hospitalized_error.ts";
+import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
 
 export type ScheduleError = PatientNotFound | InvalidRepeatEvery | Error;
 export type NewPatientError = PatientIdAlreadyExists | InvalidNumber | Error;
@@ -15,3 +16,5 @@ export type NewHospitalizationError =
 	| PatientAlreadyHospitalized
 	| InvalidNumber
 	| InvalidDate;
+
+export type EndHospitalizationError = PatientNotFound | HospitalizationAlreadyClosed;

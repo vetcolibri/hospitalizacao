@@ -1,15 +1,22 @@
 import { PatientService } from "application/patient_service.ts";
 import { assert, assertEquals, assertInstanceOf } from "dev_deps";
-import { BudgetStatus } from "../../src/domain/patients/hospitalizations/budget.ts";
-import { InvalidDate } from "../../src/domain/patients/hospitalizations/invalid_date_error.ts";
-import { PatientIdAlreadyExists } from "../../src/domain/patients/patient_id_already_exists_error.ts";
-import { InvalidNumber } from "../../src/domain/patients/hospitalizations/invalid_number_error.ts";
+import { BudgetRepository } from "domain/patients/hospitalizations/budget_repository.ts";
+import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
+import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
+import { Owner } from "domain/patients/owners/owner.ts";
 import { Patient, PatientStatus } from "domain/patients/patient.ts";
+import { PatientAlreadyHospitalized } from "domain/patients/patient_already_hospitalized_error.ts";
+import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
 import { PatientRepository } from "domain/patients/patient_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
 import { ID } from "shared/id.ts";
+import { BudgetStatus } from "../../src/domain/patients/hospitalizations/budget.ts";
 import { HospitalizationRepository } from "../../src/domain/patients/hospitalizations/hospitalization_repository.ts";
+import { InvalidDate } from "../../src/domain/patients/hospitalizations/invalid_date_error.ts";
+import { InvalidNumber } from "../../src/domain/patients/hospitalizations/invalid_number_error.ts";
 import { OwnerRepository } from "../../src/domain/patients/owners/owner_repository.ts";
+import { PatientIdAlreadyExists } from "../../src/domain/patients/patient_id_already_exists_error.ts";
+import { InmemBudgetRepository } from "../../src/persistence/inmem/inmem_budget_repository.ts";
 import { InmemHospitalizationRepository } from "../../src/persistence/inmem/inmem_hospitalization_repository.ts";
 import { InmemOwnerRepository } from "../../src/persistence/inmem/inmem_owner_repository.ts";
 import {
@@ -17,13 +24,11 @@ import {
 	invalidComplaints,
 	invalidDiagnostics,
 	newPatientData,
-	patient1,
+	PATIENTS,
 } from "../fake_data.ts";
+import { BudgetRepositoryStub } from "../stubs/budget_repository_stub.ts";
+import { HospitalizationRepositoryStub } from "../stubs/hospitalization_repository_stub.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
-import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
-import { PatientAlreadyHospitalized } from "domain/patients/patient_already_hospitalized_error.ts";
-import { InmemBudgetRepository } from "../../src/persistence/inmem/inmem_budget_repository.ts";
-import { Owner } from "domain/patients/owners/owner.ts";
 
 Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 	await t.step(
@@ -48,15 +53,19 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 });
 
 Deno.test("Patient Service - New Hospitalization", async (t) => {
+	const patientId = PATIENTS.discharged["1923BA"].id;
+
 	await t.step("Deve abrir uma nova hospitalização", async () => {
 		const { service, patientRepository, hospitalizationRepository } = makeService();
 
-		await service.newHospitalization("1919B", hospitalizationData);
+		await service.newHospitalization(patientId, hospitalizationData);
 
-		const patientOrErr = await patientRepository.getById(ID.fromString("1919B"));
+		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
 
-		const hospitalization = await hospitalizationRepository.open(patient.systemId);
+		const hospitalizationOrErr = await hospitalizationRepository.open(patient.systemId);
+
+		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
 
 		assertEquals(patient.status, PatientStatus.Hospitalized);
 		assertEquals(hospitalization.patientId.value, patient.systemId.value);
@@ -84,7 +93,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const { service } = makeService();
 
 			const error = await service.newHospitalization(
-				"1919B",
+				patientId,
 				hospitalizationData,
 			);
 			assertInstanceOf(error.value, PatientAlreadyHospitalized);
@@ -94,14 +103,10 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	await t.step(
 		"Deve retornar @InvalidNumber se o número de queixas for maior que 10",
 		async () => {
-			const patientRepository = new InmemPatientRepository();
-			patient1.discharge();
-			patientRepository.save(patient1);
-
-			const { service } = makeService({ patientRepository });
+			const { service } = makeService();
 
 			const error = await service.newHospitalization(
-				patient1.systemId.value,
+				"1918BA",
 				{ ...hospitalizationData, complaints: invalidComplaints },
 			);
 
@@ -113,14 +118,10 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	await t.step(
 		"Deve retornar @InvalidNumber se o número de diagnosticos for maior que 5",
 		async () => {
-			const patientRepository = new InmemPatientRepository();
-			patient1.discharge();
-			patientRepository.save(patient1);
-
-			const { service } = makeService({ patientRepository });
+			const { service } = makeService();
 
 			const error = await service.newHospitalization(
-				patient1.systemId.value,
+				"1918BA",
 				{ ...hospitalizationData, diagnostics: invalidDiagnostics },
 			);
 
@@ -132,15 +133,12 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	await t.step(
 		"Deve retornar @InvalidDate se a data de alta médica for inferior a data actual",
 		async () => {
-			const patientRepository = new InmemPatientRepository();
-			patient1.discharge();
-			patientRepository.save(patient1);
 			const entryDate = new Date().getTime() + 1000 * 60 * 60 * 24;
 
-			const { service } = makeService({ patientRepository });
+			const { service } = makeService();
 
 			const error = await service.newHospitalization(
-				patient1.systemId.value,
+				"1918BA",
 				{ ...hospitalizationData, entryDate: new Date(entryDate).toISOString() },
 			);
 
@@ -369,10 +367,131 @@ Deno.test("Patient Service - New Patient", async (t) => {
 	});
 });
 
+Deno.test("Patient Service - End Hospitalization", async (t) => {
+	await t.step("Deve encerrar a hospitalização", async () => {
+		const hospitalizationRepository = new HospitalizationRepositoryStub();
+		const budgetRepository = new BudgetRepositoryStub();
+
+		const { service } = makeService({ hospitalizationRepository, budgetRepository });
+
+		await service.endHospitalization("1918BA");
+
+		const error = await hospitalizationRepository.open(ID.fromString("1918BA"));
+
+		assertEquals(error.isLeft(), true);
+	});
+
+	await t.step("Deve dar a alta no paciente ao encerrar a hospitalização", async () => {
+		const hospitalizationRepository = new HospitalizationRepositoryStub();
+		const budgetRepository = new BudgetRepositoryStub();
+
+		const { service, patientRepository } = makeService({
+			hospitalizationRepository,
+			budgetRepository,
+		});
+
+		await service.endHospitalization("1922BA");
+
+		const patientOrErr = await patientRepository.getById(ID.fromString("1922BA"));
+
+		const patient = <Patient> patientOrErr.value;
+
+		assertEquals(patient.status, PatientStatus.Discharged);
+	});
+
+	await t.step(
+		"Se o Orçamento não foi pago, dever dar alta com o estado **ALTA_MEDICA_E_ORCAMENTO_NÃO_PAGO**",
+		async () => {
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const budgetRepository = new BudgetRepositoryStub();
+
+			const { service, patientRepository } = makeService({
+				hospitalizationRepository,
+				budgetRepository,
+			});
+
+			await service.endHospitalization("1919BA");
+
+			const patientOrErr = await patientRepository.getById(ID.fromString("1919BA"));
+
+			const patient = <Patient> patientOrErr.value;
+
+			assertEquals(patient.status, PatientStatus.DischargedWithUnpaidBudget);
+		},
+	);
+
+	await t.step(
+		"Se o orçamento está pendente, deve dar alta com o estado **ALTA_MEDICA_E_ORCAMENTO_PENDENTE**",
+		async () => {
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const budgetRepository = new BudgetRepositoryStub();
+			const { service, patientRepository } = makeService({
+				hospitalizationRepository,
+				budgetRepository,
+			});
+
+			await service.endHospitalization("1920BA");
+
+			const patientOrErr = await patientRepository.getById(ID.fromString("1920BA"));
+
+			const patient = <Patient> patientOrErr.value;
+
+			assertEquals(patient.status, PatientStatus.DischargedWithPendingBudget);
+		},
+	);
+
+	await t.step(
+		"Se o orçamento está pendente com orçamento envido, deve dar alta com o estado **ALTA_MEDICA_E_ORCAMENTO_ENVIADO**",
+		async () => {
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const budgetRepository = new BudgetRepositoryStub();
+
+			const { service, patientRepository } = makeService({
+				hospitalizationRepository,
+				budgetRepository,
+			});
+
+			await service.endHospitalization("1921BA");
+
+			const patientOrErr = await patientRepository.getById(ID.fromString("1921BA"));
+
+			const patient = <Patient> patientOrErr.value;
+
+			assertEquals(patient.status, PatientStatus.DischargedWithBudgetSent);
+		},
+	);
+
+	await t.step(
+		"Deve retornar @PatientNotFound se o paciente não foi encontrado",
+		async () => {
+			const { service } = makeService();
+
+			const error = await service.endHospitalization("1781GD");
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PatientNotFound);
+		},
+	);
+
+	await t.step(
+		"Deve retornar @HospitalizationAlreadyClosed, se a hospitalização já foi encerrada",
+		async () => {
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const { service } = makeService({ hospitalizationRepository });
+
+			const error = await service.endHospitalization("1918BA");
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, HospitalizationAlreadyClosed);
+		},
+	);
+});
+
 interface Options {
 	patientRepository?: PatientRepository;
 	ownerRepository?: OwnerRepository;
 	hospitalizationRepository?: HospitalizationRepository;
+	budgetRepository?: BudgetRepository;
 }
 
 function makeService(options?: Options) {
@@ -380,7 +499,7 @@ function makeService(options?: Options) {
 	const ownerRepository = options?.ownerRepository ?? new InmemOwnerRepository();
 	const hospitalizationRepository = options?.hospitalizationRepository ??
 		new InmemHospitalizationRepository();
-	const budgetRepository = new InmemBudgetRepository();
+	const budgetRepository = options?.budgetRepository ?? new InmemBudgetRepository();
 
 	const service = new PatientService(
 		patientRepository,

@@ -59,6 +59,18 @@ export class Budget {
 		return BudgetStatus.UnPaid;
 	}
 
+	unpaid(): boolean {
+		return this.#status === BudgetStatus.UnPaid;
+	}
+
+	pending(): boolean {
+		return this.#status === BudgetStatus.Pending;
+	}
+
+	itWasSent(): boolean {
+		return this.#status === BudgetStatus.PendingWithBudgetSent;
+	}
+
 	get status(): string {
 		return this.#status.toString();
 	}

@@ -1,7 +1,9 @@
-import { Patient } from "domain/patients/patient.ts";
-import { RepeatEvery } from "domain/alerts/repeat_every.ts";
-import { Owner } from "../src/domain/patients/owners/owner.ts";
 import { Alert } from "domain/alerts/alert.ts";
+import { RepeatEvery } from "domain/alerts/repeat_every.ts";
+import { Budget } from "domain/patients/hospitalizations/budget.ts";
+import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
+import { Patient } from "domain/patients/patient.ts";
+import { Owner } from "../src/domain/patients/owners/owner.ts";
 import { ID } from "shared/id.ts";
 
 export const patientData = {
@@ -10,6 +12,8 @@ export const patientData = {
 	specie: "CANINO",
 	breed: "bulldog",
 	birthDate: "2013-07-01",
+	status: "HOSPITALIZADO",
+	ownerId: "1001",
 };
 
 export const ownerData = {
@@ -28,8 +32,8 @@ export const hospitalizationData = {
 };
 
 export const budgetData = {
-	startOn: "2021-01-01",
-	endOn: "2021-01-10",
+	startOn: "2021-01-01T00:00:00.000Z",
+	endOn: "2021-01-10T00:00:00.000Z",
 	status: "NÃO PAGO",
 };
 
@@ -57,46 +61,160 @@ const generateArrayString = (size: number) => {
 
 export const invalidComplaints = generateArrayString(11);
 export const invalidDiagnostics = generateArrayString(6);
-
 export const owner = new Owner("1001", "John", "933001122");
-
-export const patient1 = new Patient(
-	ID.random(),
-	"some-patient-id",
-	patientData.name,
-	patientData.breed,
-	patientData.specie,
-	patientData.birthDate,
-	"1001",
-);
-
-export const patient2 = new Patient(
-	ID.random(),
-	"some-id",
-	patientData.name,
-	patientData.breed,
-	patientData.specie,
-	patientData.birthDate,
-	"1001",
-);
-
-export const patient3 = new Patient(
-	ID.fromString("1919B"),
-	"some-other-id",
-	patientData.name,
-	patientData.breed,
-	patientData.specie,
-	patientData.birthDate,
-	"1001",
-);
-
-patient3.discharge();
 
 export const alert1 = new Alert(
 	ID.fromString("10001"),
-	patient1.systemId,
+	ID.fromString("1918BA"),
 	alertData.parameters,
 	new Date(alertData.time),
 	new RepeatEvery(alertData.rate),
 	alertData.comments,
 );
+
+export const hospitalizationClosed = new Hospitalization(
+	ID.random(),
+	"1918BA",
+	45,
+	["Queixa 1"],
+	["Diagnostico 1"],
+	"2024-04-10",
+);
+
+hospitalizationClosed.close();
+
+const patientDischarged = new Patient(
+	ID.fromString("1923BA"),
+	ID.random().value,
+	patientData.name,
+	patientData.specie,
+	patientData.breed,
+	patientData.birthDate,
+	patientData.ownerId,
+);
+
+patientDischarged.discharge();
+
+export const PATIENTS = {
+	hospitalized: {
+		[ID.fromString("1918BA").value]: new Patient(
+			ID.fromString("1918BA"),
+			ID.random().value,
+			patientData.name,
+			patientData.specie,
+			patientData.breed,
+			patientData.birthDate,
+			patientData.ownerId,
+		),
+		[ID.fromString("1919BA").value]: new Patient(
+			ID.fromString("1919BA"),
+			ID.fromString("some-id").value,
+			patientData.name,
+			patientData.specie,
+			patientData.breed,
+			patientData.birthDate,
+			patientData.ownerId,
+		),
+		[ID.fromString("1920BA").value]: new Patient(
+			ID.fromString("1920BA"),
+			ID.random().value,
+			patientData.name,
+			patientData.specie,
+			patientData.breed,
+			patientData.birthDate,
+			patientData.ownerId,
+		),
+		[ID.fromString("1921BA").value]: new Patient(
+			ID.fromString("1921BA"),
+			ID.random().value,
+			patientData.name,
+			patientData.specie,
+			patientData.breed,
+			patientData.birthDate,
+			patientData.ownerId,
+		),
+		[ID.fromString("1922BA").value]: new Patient(
+			ID.fromString("1922BA"),
+			ID.random().value,
+			patientData.name,
+			patientData.specie,
+			patientData.breed,
+			patientData.birthDate,
+			patientData.ownerId,
+		),
+		["1900BA"]: new Patient(
+			ID.fromString("1900BA"),
+			ID.fromString("some-id-10").value,
+			patientData.name,
+			patientData.specie,
+			patientData.breed,
+			patientData.birthDate,
+			patientData.ownerId,
+		),
+	},
+
+	discharged: {
+		"1923BA": { id: "1923BA", patient: patientDischarged },
+	},
+};
+
+export const HOSPITALIZATIONS = {
+	opened: {
+		[ID.fromString("0001").value]: new Hospitalization(
+			ID.fromString("0001"),
+			"1918BA",
+			hospitalizationData.weight,
+			hospitalizationData.complaints,
+			hospitalizationData.diagnostics,
+			hospitalizationData.entryDate,
+			hospitalizationData.dischargeDate,
+		),
+		[ID.fromString("0002").value]: new Hospitalization(
+			ID.fromString("0002"),
+			"1919BA",
+			hospitalizationData.weight,
+			hospitalizationData.complaints,
+			hospitalizationData.diagnostics,
+			hospitalizationData.entryDate,
+			hospitalizationData.dischargeDate,
+		),
+		[ID.fromString("0003").value]: new Hospitalization(
+			ID.fromString("0003"),
+			"1920BA",
+			hospitalizationData.weight,
+			hospitalizationData.complaints,
+			hospitalizationData.diagnostics,
+			hospitalizationData.entryDate,
+			hospitalizationData.dischargeDate,
+		),
+		[ID.fromString("0004").value]: new Hospitalization(
+			ID.fromString("0004"),
+			"1921BA",
+			hospitalizationData.weight,
+			hospitalizationData.complaints,
+			hospitalizationData.diagnostics,
+			hospitalizationData.entryDate,
+			hospitalizationData.dischargeDate,
+		),
+		[ID.fromString("0005").value]: new Hospitalization(
+			ID.fromString("0005"),
+			"1922BA",
+			hospitalizationData.weight,
+			hospitalizationData.complaints,
+			hospitalizationData.diagnostics,
+			hospitalizationData.entryDate,
+			hospitalizationData.dischargeDate,
+		),
+	},
+	closed: {
+		"1923BA": hospitalizationClosed,
+	},
+};
+
+export const BUDGETS = [
+	new Budget("0001", "2024-04-10", "2024-04-20", "NÃO PAGO"),
+	new Budget("0002", "2024-04-10", "2024-04-20", "NÃO PAGO"),
+	new Budget("0003", "2024-04-10", "2024-04-20", "PENDENTE"),
+	new Budget("0004", "2024-04-10", "2024-04-20", "PENDENTE (ORÇAMENTO ENVIADO)"),
+	new Budget("0005", "2024-04-10", "2024-04-20", "PAGO"),
+];

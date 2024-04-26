@@ -7,6 +7,7 @@ export class HospitalizationService {
 	constructor(hospitalizationRepository: HospitalizationRepository) {
 		this.#hospitalizationRepository = hospitalizationRepository;
 	}
+
 	async getAllOpened(): Promise<Hospitalization[]> {
 		return await this.#hospitalizationRepository.getAllOpened();
 	}

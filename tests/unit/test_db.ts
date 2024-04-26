@@ -1,5 +1,5 @@
 import { HospitalizationStatus } from "../../src/domain/patients/hospitalizations/hospitalization.ts";
-import { alert1, owner, patient1, patient2 } from "../fake_data.ts";
+import { alert1, budgetData, owner, patientData, PATIENTS } from "../fake_data.ts";
 import { DB } from "deps";
 
 export async function init_test_db(): Promise<DB> {
@@ -40,14 +40,14 @@ export function populate(db: DB) {
 			owner_id
 		) 
 		VALUES (
-			'${patient1.systemId.value}',
-			'${patient1.patientId.value}',
-			'${patient1.name}',
-			'${patient1.specie}',
-			'${patient1.breed}',
-			'${patient1.status}',
-			'${patient1.birthDate.value.toISOString()}',
-			'${patient1.ownerId.value}'
+			'${PATIENTS.hospitalized["1918BA"].systemId.value}',
+			'${PATIENTS.hospitalized["1918BA"].patientId.value}',
+			'${patientData.name}',
+			'${patientData.specie}',
+			'${patientData.breed}',
+			'${patientData.status}',
+			'${patientData.birthDate}',
+			'${patientData.ownerId}'
 		)
 	`;
 
@@ -62,14 +62,14 @@ export function populate(db: DB) {
 			owner_id
 		) 
 		VALUES (
-			'${patient2.systemId.value}',
+			'${PATIENTS.hospitalized["1919BA"].systemId.value}',
 			'${"some-id"}',
-			'${patient1.name}',
-			'${patient1.specie}',
-			'${patient1.breed}',
-			'${patient1.status}',
-			'${patient1.birthDate.value.toISOString()}',
-			'${patient1.ownerId.value}'
+			'${patientData.name}',
+			'${patientData.specie}',
+			'${patientData.breed}',
+			'${patientData.status}',
+			'${patientData.birthDate}',
+			'${patientData.ownerId}'
 		)
 	`;
 
@@ -86,12 +86,34 @@ export function populate(db: DB) {
 		VALUES (
 			'${"some-id"}',
 			'${"some-fake-patient-id"}',
-			'${patient1.name}',
-			'${patient1.specie}',
-			'${patient1.breed}',
+			'${patientData.name}',
+			'${patientData.specie}',
+			'${patientData.breed}',
 			'${"ALTA MEDICA"}',
-			'${patient1.birthDate.value.toISOString()}',
-			'${patient1.ownerId.value}'
+			'${patientData.birthDate}',
+			'${patientData.ownerId}'
+		)
+	`;
+
+	const insert_patient_3 = `INSERT INTO patients (
+			system_id,
+			patient_id,
+			name,
+			specie,
+			breed,
+			status,
+			birth_date,
+			owner_id
+		)
+		VALUES (
+			'${"patient-19200BA"}',
+			'${"192000BA"}',
+			'${patientData.name}',
+			'${patientData.specie}',
+			'${patientData.breed}',
+			'${"ALTA MEDICA"}',
+			'${patientData.birthDate}',
+			'${patientData.ownerId}'
 		)
 	`;
 
@@ -112,7 +134,28 @@ export function populate(db: DB) {
 			'${JSON.stringify(["some-diagnostics"].join(","))}',
 			'${HospitalizationStatus.Open}',
 			'${"some-hospitalization-id"}',
-			'${patient1.systemId.value}'
+			'${PATIENTS.hospitalized["1918BA"].systemId.value}'
+		)
+	`;
+
+	const insert_hospitalization_1 = `INSERT INTO hospitalizations (
+			weight,
+			entry_date,
+			discharge_date,
+			complaints,
+			diagnostics,
+			status,
+			hospitalization_id,
+			system_id
+		)  VALUES (
+			'${16.5}',
+			'${new Date().toISOString()}',
+			'${new Date().toISOString()}',
+			'${JSON.stringify(["some-complaints"].join(","))}',
+			'${JSON.stringify(["some-diagnostics"].join(","))}',
+			'${HospitalizationStatus.Close}',
+			'${"some-hospitalization-id-2"}',
+			'${"patient-19200BA"}'
 		)
 	`;
 
@@ -135,6 +178,21 @@ export function populate(db: DB) {
 		)
 	`;
 
+	const insert_budget = `INSERT INTO budgets (
+			hospitalization_id,
+			start_on,
+			end_on,
+			status,
+			budget_id
+		)  VALUES (
+			'${"some-hospitalization-id"}',
+			'${budgetData.startOn}',
+			'${budgetData.endOn}',
+			'${budgetData.status}',
+			'${"some-budget-id"}'
+		)
+	`;
+
 	db.execute(insert_owner);
 
 	db.execute(insert_patient);
@@ -143,7 +201,13 @@ export function populate(db: DB) {
 
 	db.execute(insert_patient_2);
 
+	db.execute(insert_patient_3);
+
 	db.execute(insert_hospitalization);
+
+	db.execute(insert_hospitalization_1);
+
+	db.execute(insert_budget);
 
 	db.execute(insert_alert);
 }

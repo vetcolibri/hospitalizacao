@@ -6,6 +6,7 @@ import { validate } from "shared/tools.ts";
 import { ContextWithParams } from "./context_with_params.ts";
 import { sendBadRequest, sendCreated, sendNotFound, sendOk } from "./responses.ts";
 import { newHospitalizationSchema, newPatientSchema } from "./schemas/patient_schema.ts";
+import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
 
 interface PatientDTO {
 	systemId: string;
@@ -73,12 +74,32 @@ export default function (service: PatientService) {
 		sendCreated(ctx);
 	};
 
+	const endHospitalizationHandler = async (ctx: ContextWithParams) => {
+		const voidOrErr = await service.endHospitalization(ctx.params.patientId);
+
+		if (voidOrErr.value instanceof PatientNotFound) {
+			sendNotFound(ctx, voidOrErr.value.message);
+			return;
+		}
+
+		if (voidOrErr.value instanceof HospitalizationAlreadyClosed) {
+			sendBadRequest(ctx, voidOrErr.value.message);
+			return;
+		}
+
+		sendOk(ctx);
+	};
+
 	const router = new Router({ prefix: "/patients" });
 	router.get("/hospitalized", hospitalizedHandler);
 	router.post(
 		"/hospitalize",
 		validate(newHospitalizationSchema),
 		hospitalizeHandler,
+	);
+	router.post(
+		"/end-hospitalization/:patientId",
+		endHospitalizationHandler,
 	);
 	router.post("/new-patient", validate(newPatientSchema), newPatientHandler);
 	router.get("/", nonHospitalizedHandler);

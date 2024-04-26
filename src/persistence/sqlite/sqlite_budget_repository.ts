@@ -2,6 +2,7 @@ import { Budget } from "../../domain/patients/hospitalizations/budget.ts";
 import { BudgetRepository } from "../../domain/patients/hospitalizations/budget_repository.ts";
 import { DB } from "../../../deps.ts";
 import { EntityFactory } from "shared/factory.ts";
+import { ID } from "../../shared/id.ts";
 
 const factory = new EntityFactory();
 
@@ -10,6 +11,19 @@ export class SQLiteBudgetRepository implements BudgetRepository {
 
 	constructor(db: DB) {
 		this.#db = db;
+	}
+
+	getByHospitalizationId(hospitalizationId: ID): Promise<Budget> {
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM budgets WHERE hospitalization_id = :hospitalizationId LIMIT 1",
+			{
+				hospitalizationId: hospitalizationId.value,
+			},
+		);
+
+		const budget = factory.createBudget(rows[0]);
+
+		return Promise.resolve(budget);
 	}
 
 	getAll(): Promise<Budget[]> {

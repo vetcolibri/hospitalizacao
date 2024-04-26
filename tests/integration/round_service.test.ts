@@ -9,7 +9,7 @@ import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
 import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
 import { Parameter } from "../../src/domain/exams/parameters/parameter.ts";
 import { InvalidParameter } from "../../src/domain/exams/parameters/parameter_error.ts";
-import { patient1 } from "../fake_data.ts";
+import { PATIENTS } from "../fake_data.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step(
@@ -204,7 +204,9 @@ Deno.test("Round Service - Latest Measurements", async (t) => {
 		const roundRepository = new RoundRepositoryStub();
 		const { service } = makeService({ roundRepository });
 
-		const paramsOrErr = await service.latestMeasurements(patient1.systemId.value);
+		const paramsOrErr = await service.latestMeasurements(
+			PATIENTS.hospitalized["1918BA"].systemId.value,
+		);
 
 		const parameters = <Parameter[]> paramsOrErr.value;
 
@@ -217,7 +219,9 @@ Deno.test("Round Service - List Measurements", async (t) => {
 		const roundRepository = new RoundRepositoryStub();
 		const { service } = makeService({ roundRepository });
 
-		const paramsOrErr = await service.measurements(patient1.systemId.value);
+		const paramsOrErr = await service.measurements(
+			PATIENTS.hospitalized["1918BA"].systemId.value,
+		);
 
 		const parameters = <Parameter[]> paramsOrErr.value;
 
@@ -255,7 +259,10 @@ Deno.test("Round Service - Errors", async (t) => {
 			};
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -273,7 +280,10 @@ Deno.test("Round Service - Errors", async (t) => {
 			};
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -291,7 +301,10 @@ Deno.test("Round Service - Errors", async (t) => {
 			};
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -310,7 +323,10 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -329,7 +345,10 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -348,7 +367,10 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -367,7 +389,10 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -386,7 +411,10 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -405,7 +433,10 @@ Deno.test("Round Service - Errors", async (t) => {
 
 			const { service } = makeService();
 
-			const error = await service.new(patient1.systemId.value, parameters);
+			const error = await service.new(
+				PATIENTS.hospitalized["1918BA"].systemId.value,
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, InvalidParameter);
@@ -439,7 +470,7 @@ Deno.test("Round Service - Errors", async (t) => {
 	);
 });
 
-const patientId = patient1.systemId.value;
+const patientId = PATIENTS.hospitalized["1918BA"].systemId.value;
 
 interface options {
 	roundRepository?: RoundRepository;

@@ -1,16 +1,14 @@
-import { assertEquals, assertInstanceOf, assertSpyCall, assertSpyCalls, spy } from "dev_deps";
-import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
-import { InmemAlertRepository } from "persistence/inmem/inmem_alert_repository.ts";
-import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
 import { AlertService } from "application/alert_service.ts";
+import { assertEquals, assertInstanceOf, assertSpyCall, assertSpyCalls, spy } from "dev_deps";
 import { Alert, AlertStatus } from "domain/alerts/alert.ts";
-import { RepeatEvery } from "domain/alerts/repeat_every.ts";
-
-import { patient1 } from "../fake_data.ts";
-import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";
-import { InvalidRepeatEvery } from "domain/alerts/repeat_every_error.ts";
 import { AlertAlreadyDisabled } from "domain/alerts/alert_already_disabled_error.ts";
+import { RepeatEvery } from "domain/alerts/repeat_every.ts";
+import { InvalidRepeatEvery } from "domain/alerts/repeat_every_error.ts";
+import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
+import { InmemAlertRepository } from "persistence/inmem/inmem_alert_repository.ts";
 import { ID } from "shared/id.ts";
+import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";
+import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 
 Deno.test("Alert Service - Schedule Alert", async (t) => {
 	await t.step(
@@ -28,32 +26,32 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 	await t.step("Deve salvar o alerta no repositório", async () => {
 		const { service, alertRepository } = await makeService();
 
-		await service.schedule(patient1.systemId.value, alertData);
+		await service.schedule("1918BA", alertData);
 
-		const alerts = await alertRepository.findAll(patient1.systemId);
+		const alerts = await alertRepository.findAll(ID.fromString("1918BA"));
 
 		assertEquals(alerts.length, 2);
-		assertEquals(alerts[0].patientId.value, patient1.systemId.value);
+		assertEquals(alerts[0].patientId.value, "1918BA");
 		assertEquals(alerts[0].status, AlertStatus.Enabled);
 	});
 
 	await t.step("Deve registar os parâmetros do alerta", async () => {
 		const { service, alertRepository } = await makeService();
 
-		await service.schedule(patient1.systemId.value, alertData);
+		await service.schedule("1918BA", alertData);
 
-		const alerts = await alertRepository.findAll(patient1.systemId);
+		const alerts = await alertRepository.findAll(ID.fromString("1918BA"));
 
 		assertEquals(alerts.length, 2);
 		assertEquals(alerts[1].parameters, alertData.parameters);
 	});
 
 	await t.step("Deve agendar o alerta.", async () => {
-		const { service, patientRepository, notifier } = await makeService();
-		await patientRepository.save(patient1);
+		const { service, notifier } = await makeService();
+
 		const notifierSpy = spy(notifier, "schedule");
 
-		await service.schedule(patient1.systemId.value, alertData);
+		await service.schedule("1918BA", alertData);
 
 		assertSpyCalls(notifierSpy, 1);
 	});
@@ -63,7 +61,7 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 		async () => {
 			const { service, alertRepository } = await makeService();
 
-			await service.schedule(patient1.systemId.value, alertData);
+			await service.schedule("1918BA", alertData);
 
 			const alert = await alertRepository.last();
 
@@ -76,7 +74,7 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 		async () => {
 			const { service, alertRepository } = await makeService();
 
-			await service.schedule(patient1.systemId.value, alertData);
+			await service.schedule("1918BA", alertData);
 
 			const alert = await alertRepository.last();
 			assertEquals(alert.comments, alertData.comments);
@@ -84,10 +82,9 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 	);
 
 	await t.step("Deve receber a hora de exibição do alerta", async () => {
-		const { service, alertRepository, patientRepository } = await makeService();
-		await patientRepository.save(patient1);
+		const { service, alertRepository } = await makeService();
 
-		await service.schedule(patient1.systemId.value, alertData);
+		await service.schedule("1918BA", alertData);
 
 		const alert = await alertRepository.last();
 
@@ -99,7 +96,7 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 		async () => {
 			const { service } = await makeService();
 
-			const error = await service.schedule(patient1.systemId.value, {
+			const error = await service.schedule("1918BA", {
 				...alertData,
 				rate: 0,
 			});
@@ -113,6 +110,7 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 Deno.test("Alert Service - Cancel Alert", async (t) => {
 	await t.step("Deve cancelar o alerta", async () => {
 		const { service, alertRepository } = await makeService();
+
 		const alert = await alertRepository.last();
 
 		await service.cancel(alert.alertId.value);
@@ -202,7 +200,7 @@ const alertData = {
 async function makeService() {
 	const alert = new Alert(
 		ID.random(),
-		patient1.systemId,
+		ID.fromString("1918BA"),
 		alertData.parameters,
 		new Date(alertData.time),
 		new RepeatEvery(120),
@@ -211,8 +209,8 @@ async function makeService() {
 	const alertRepository = new InmemAlertRepository();
 	await alertRepository.save(alert);
 
-	const patientRepository = new InmemPatientRepository();
-	await patientRepository.save(patient1);
+	const patientRepository = new PatientRepositoryStub();
+
 	const notifier = new AlertNotifierDummy();
 
 	const service = new AlertService(
