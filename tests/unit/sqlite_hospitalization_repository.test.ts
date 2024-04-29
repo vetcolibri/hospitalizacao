@@ -33,7 +33,7 @@ Deno.test("SQLite - Hospitalization Repository", async (t) => {
 		assertEquals(result.diagnostics, hospitalizationData.diagnostics);
 	});
 
-	await t.step("Deve recuperar as hospitalizações abertas", async () => {
+	await t.step("Deve recuperar as hospitalizações", async () => {
 		const db = await init_test_db();
 
 		populate(db);
@@ -51,9 +51,9 @@ Deno.test("SQLite - Hospitalization Repository", async (t) => {
 
 		await repository.save(hospitalization);
 
-		const hospitalizations = await repository.getAllOpened();
+		const hospitalizations = await repository.getAll();
 
-		assertEquals(hospitalizations.length, 2);
+		assertEquals(hospitalizations.length, 3);
 		assertEquals(hospitalizations[0].status, "Aberta");
 	});
 
@@ -79,9 +79,9 @@ Deno.test("SQLite - Hospitalization Repository", async (t) => {
 
 		await repository.update(hospitalization);
 
-		const hospitalizations = await repository.getAllOpened();
+		const hospitalizations = await repository.getAll();
 
-		assertEquals(hospitalizations.length, 1);
+		assertEquals(hospitalizations[2].isOpen(), false);
 	});
 
 	await t.step("Deve recuperar um hospitalização aberta com base paciente.", async () => {

@@ -19,11 +19,8 @@ export class SQLiteHospitalizationRepository implements HospitalizationRepositor
 		this.#db = db;
 	}
 
-	getAllOpened(): Promise<Hospitalization[]> {
-		const rows = this.#db.queryEntries(
-			"SELECT * FROM hospitalizations WHERE status = :open",
-			{ open: HospitalizationStatus.Open },
-		);
+	getAll(): Promise<Hospitalization[]> {
+		const rows = this.#db.queryEntries("SELECT * FROM hospitalizations");
 
 		const hospitalizations = rows.map((row) => factory.createHospitalization(row));
 

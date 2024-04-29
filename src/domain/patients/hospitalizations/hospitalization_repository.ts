@@ -4,7 +4,7 @@ import { HospitalizationAlreadyClosed } from "./hospitalization_already_closed_e
 import { Hospitalization } from "./hospitalization.ts";
 
 export interface HospitalizationRepository {
-	getAllOpened(): Promise<Hospitalization[]>;
+	getAll(): Promise<Hospitalization[]>;
 	open(patientId: ID): Promise<Either<HospitalizationAlreadyClosed, Hospitalization>>;
 	save(hospitalization: Hospitalization): Promise<void>;
 	update(hospitalization: Hospitalization): Promise<void>;

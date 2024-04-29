@@ -13,7 +13,7 @@ export class InmemHospitalizationRepository implements HospitalizationRepository
 		hospitalizations.forEach((h) => (this.#data[h.hospitalizationId.value] = h));
 	}
 
-	getAllOpened(): Promise<Hospitalization[]> {
+	getAll(): Promise<Hospitalization[]> {
 		const result = this.records.filter((h) => h.isOpen());
 		return Promise.resolve(result);
 	}
