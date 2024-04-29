@@ -85,8 +85,6 @@ export default function (service: PatientService) {
 
 		const voidOrErr = await service.endHospitalization(patientId);
 
-		console.log(voidOrErr.value);
-
 		if (voidOrErr.value instanceof PatientNotFound) {
 			sendNotFound(ctx, voidOrErr.value.message);
 			return;
