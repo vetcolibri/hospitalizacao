@@ -24,9 +24,9 @@ function toAlertDTO(alert: Alert): AlertDTO {
 
 export default function (service: AlertService, notifier: AlertNotifier) {
 	const scheduleHandler = async (ctx: Context) => {
-		const { patientId, alertData } = ctx.state.validatedData;
+		const { alertData } = ctx.state.validatedData;
 
-		const voidOrErr = await service.schedule(patientId, alertData);
+		const voidOrErr = await service.schedule(alertData);
 
 		if (voidOrErr.isLeft()) {
 			sendBadRequest(ctx, voidOrErr.value.message);

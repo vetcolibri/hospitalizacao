@@ -26,16 +26,14 @@ export class AlertService {
 
 	/**
 	 * Agenda um alerta
-	 * @param patientId
-	 * @param data
+	 * @param alertData
 	 * @returns {Promise<Either<ScheduleError, void>>}
 	 */
 	async schedule(
-		patientId: string,
 		data: AlertData,
 	): Promise<Either<ScheduleError, void>> {
 		const patientOrErr = await this.#patientRepository.getById(
-			ID.fromString(patientId),
+			ID.fromString(data.patientId),
 		);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
@@ -95,7 +93,7 @@ export class AlertService {
 		return {
 			alertId: alert.alertId.value,
 			patient: {
-				patientId: patient.patientId.value,
+				patientId: patient.systemId.value,
 				name: patient.name,
 			},
 			comments: alert.comments,
@@ -107,6 +105,7 @@ export class AlertService {
 }
 
 type AlertData = {
+	patientId: string;
 	parameters: string[];
 	rate: number;
 	comments: string;
