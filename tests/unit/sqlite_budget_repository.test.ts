@@ -46,4 +46,26 @@ Deno.test("SQLite - Budget Repository", async (t) => {
 		assertEquals(budget.startOn.toISOString(), budgetData.startOn);
 		assertEquals(budget.endOn.toISOString(), budgetData.endOn);
 	});
+
+	await t.step("Deve atualizar o orçamento", async () => {
+		const db = await init_test_db();
+
+		populate(db);
+
+		const repository = new SQLiteBudgetRepository(db);
+
+		const budget = await repository.getByHospitalizationId(
+			ID.fromString("some-hospitalization-id"),
+		);
+
+		budget.changeStatus(BudgetStatus.Paid);
+
+		await repository.update(budget);
+
+		const updatedBudget = await repository.getByHospitalizationId(
+			ID.fromString("some-hospitalization-id"),
+		);
+
+		assertEquals(updatedBudget.status, BudgetStatus.Paid);
+	});
 });

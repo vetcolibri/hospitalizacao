@@ -81,7 +81,6 @@ export class Patient {
 	}
 
 	discharge() {
-		if (!this.isHospitalized()) return;
 		this.#status = PatientStatus.Discharged;
 	}
 
@@ -99,6 +98,20 @@ export class Patient {
 
 	isHospitalized() {
 		return this.#status === PatientStatus.Hospitalized;
+	}
+
+	alreadyDischarged() {
+		return this.status === PatientStatus.Discharged;
+	}
+
+	hasDischarged() {
+		if (this.status === PatientStatus.DischargedWithUnpaidBudget) return true;
+
+		if (this.status === PatientStatus.DischargedWithPendingBudget) return true;
+
+		if (this.status === PatientStatus.DischargedWithBudgetSent) return true;
+
+		return false;
 	}
 
 	private updateStatus(status: string) {

@@ -26,20 +26,11 @@ const budgetSchema = z.object({
 	startOn: z.string(),
 	endOn: z.string(),
 	status: z.enum([
-		"PENDENTE",
-		"PAGO",
 		"NÃO PAGO",
+		"PENDENTE",
 		"PENDENTE (ORÇAMENTO ENVIADO)",
+		"PAGO",
 	]),
-});
-
-export const endhospitalizationSchema = z.object({
-	patientId: z.string(),
-});
-
-export const newHospitalizationSchema = z.object({
-	patientId: z.string(),
-	hospitalizationData: hospitalizationSchema,
 });
 
 export const newPatientSchema = z.object({
@@ -47,4 +38,24 @@ export const newPatientSchema = z.object({
 	hospitalizationData: hospitalizationSchema,
 	ownerData: ownerSchema,
 	budgetData: budgetSchema,
+});
+
+export const newHospitalizationSchema = z.object({
+	patientId: z.string(),
+	hospitalizationData: hospitalizationSchema,
+});
+
+export const endhospitalizationSchema = z.object({
+	patientId: z.string(),
+});
+
+export const endBudgetSchema = z.object({
+	patientId: z.string(),
+	hospitalizationId: z.string(),
+	status: z.enum([
+		"NÃO PAGO",
+		"PENDENTE",
+		"PENDENTE (ORÇAMENTO ENVIADO)",
+		"PAGO",
+	]),
 });

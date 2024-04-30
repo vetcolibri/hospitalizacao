@@ -93,7 +93,62 @@ const patientDischarged = new Patient(
 	patientData.ownerId,
 );
 
+const patientDischarged1 = new Patient(
+	ID.fromString("1924BA"),
+	ID.fromString("some-id-11").value,
+	patientData.name,
+	patientData.specie,
+	patientData.breed,
+	patientData.birthDate,
+	patientData.ownerId,
+);
+
+const patientDischarged2 = new Patient(
+	ID.fromString("1925BA"),
+	ID.random().value,
+	patientData.name,
+	patientData.specie,
+	patientData.breed,
+	patientData.birthDate,
+	patientData.ownerId,
+);
+
+const patientDischarged3 = new Patient(
+	ID.fromString("1926BA"),
+	ID.random().value,
+	patientData.name,
+	patientData.specie,
+	patientData.breed,
+	patientData.birthDate,
+	patientData.ownerId,
+);
+
+const patientDischarged4 = new Patient(
+	ID.fromString("1927BA"),
+	ID.random().value,
+	patientData.name,
+	patientData.specie,
+	patientData.breed,
+	patientData.birthDate,
+	patientData.ownerId,
+);
+
+const patientDischarged5 = new Patient(
+	ID.fromString("1928BA"),
+	ID.random().value,
+	patientData.name,
+	patientData.specie,
+	patientData.breed,
+	patientData.birthDate,
+	patientData.ownerId,
+);
+
 patientDischarged.discharge();
+patientDischarged1.dischargeWithUnpaidBudget();
+patientDischarged2.discharge();
+patientDischarged3.dischargeWithUnpaidBudget();
+patientDischarged4.dischargeWithPendingBudget();
+patientDischarged5.dischargeWithBudgetSent();
 
 export const PATIENTS = {
 	hospitalized: {
@@ -155,6 +210,11 @@ export const PATIENTS = {
 
 	discharged: {
 		"1923BA": { id: "1923BA", patient: patientDischarged },
+		"1924BA": { id: "1924BA", patient: patientDischarged1 },
+		"1925BA": { id: "1925BA", patient: patientDischarged2 },
+		"1926BA": { id: "1926BA", patient: patientDischarged3 },
+		"1927BA": { id: "1927BA", patient: patientDischarged4 },
+		"1928BA": { id: "1928BA", patient: patientDischarged5 },
 	},
 };
 
@@ -205,6 +265,15 @@ export const HOSPITALIZATIONS = {
 			hospitalizationData.entryDate,
 			hospitalizationData.dischargeDate,
 		),
+		["0006"]: new Hospitalization(
+			ID.fromString("0006"),
+			"1924BA",
+			hospitalizationData.weight,
+			hospitalizationData.complaints,
+			hospitalizationData.diagnostics,
+			hospitalizationData.entryDate,
+			hospitalizationData.dischargeDate,
+		),
 	},
 	closed: {
 		"1923BA": hospitalizationClosed,
@@ -217,4 +286,5 @@ export const BUDGETS = [
 	new Budget("0003", "2024-04-10", "2024-04-20", "PENDENTE"),
 	new Budget("0004", "2024-04-10", "2024-04-20", "PENDENTE (ORÇAMENTO ENVIADO)"),
 	new Budget("0005", "2024-04-10", "2024-04-20", "PAGO"),
+	new Budget("0006", "2024-04-10", "2024-04-20", "PENDENTE"),
 ];

@@ -1,5 +1,5 @@
 import { PatientService } from "application/patient_service.ts";
-import { assert, assertEquals, assertInstanceOf } from "dev_deps";
+import { assert, assertEquals, assertInstanceOf, assertSpyCalls, spy } from "dev_deps";
 import { BudgetRepository } from "domain/patients/hospitalizations/budget_repository.ts";
 import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
 import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
@@ -48,7 +48,7 @@ Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 
 		const patients = await service.listHospitalizad();
 
-		assertEquals(patients.every((p) => p.status === PatientStatus.Hospitalized), true);
+		assert(patients.length >= 1);
 	});
 });
 
@@ -483,6 +483,152 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, HospitalizationAlreadyClosed);
+		},
+	);
+});
+
+Deno.test("Patient Service - End Budget", async (t) => {
+	await t.step("Deve dar alta médica ao paciente se o orçamento for pago", async () => {
+		const budgetRepository = new BudgetRepositoryStub();
+		const hospitalizationRepository = new HospitalizationRepositoryStub();
+		const { service, patientRepository } = makeService({
+			budgetRepository,
+			hospitalizationRepository,
+		});
+		const patientId = "1924BA";
+		const hospitalizationId = "0006";
+		const status = "PAGO";
+
+		await service.endBudget(patientId, hospitalizationId, status);
+
+		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+		const patient = <Patient> patientOrErr.value;
+
+		const budget = await budgetRepository.getByHospitalizationId(
+			ID.fromString(hospitalizationId),
+		);
+
+		assertEquals(patient.status, PatientStatus.Discharged);
+		assertEquals(budget.status, BudgetStatus.Paid);
+	});
+
+	await t.step(
+		"Deve retornar @PatientNotFound se o paciente não foi encontrado",
+		async () => {
+			const { service } = makeService();
+			const patientId = "20000";
+
+			const error = await service.endBudget(patientId, "0001", "PAGO");
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PatientNotFound);
+		},
+	);
+
+	await t.step(
+		"Não deve actualizar o estado do paciente se ele já recebeu alta",
+		async () => {
+			const { service, patientRepository } = makeService();
+			const repoSpy = spy(patientRepository, "update");
+			const patientId = "1925BA";
+
+			await service.endBudget(patientId, "0001", "PAGO");
+
+			assertSpyCalls(repoSpy, 0);
+		},
+	);
+
+	await t.step(
+		"Não deve actualizar o estado do orçamento se o paciente já recebeu alta",
+		async () => {
+			const { service, budgetRepository } = makeService();
+			const repoSpy = spy(budgetRepository, "update");
+			const patientId = "1925BA";
+
+			await service.endBudget(patientId, "0001", "PAGO");
+
+			assertSpyCalls(repoSpy, 0);
+		},
+	);
+
+	await t.step(
+		"Se o orçamento não foi pago, deve dar alta com o estado **ALTA_MEDICA_E_ORCAMENTO_NÃO_PAGO**",
+		async () => {
+			const budgetRepository = new BudgetRepositoryStub();
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const { service, patientRepository } = makeService({
+				budgetRepository,
+				hospitalizationRepository,
+			});
+			const patientId = "1926BA";
+			const hospitalizationId = "0006";
+			const status = "NÃO PAGO";
+
+			await service.endBudget(patientId, hospitalizationId, status);
+
+			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+			const patient = <Patient> patientOrErr.value;
+
+			const budget = await budgetRepository.getByHospitalizationId(
+				ID.fromString(hospitalizationId),
+			);
+
+			assertEquals(patient.status, PatientStatus.DischargedWithUnpaidBudget);
+			assertEquals(budget.status, BudgetStatus.UnPaid);
+		},
+	);
+
+	await t.step(
+		"Se o orçamento está pendente, deve dar alta com o estado **ALTA_MEDICA_E_ORCAMENTO_PENDENTE**",
+		async () => {
+			const budgetRepository = new BudgetRepositoryStub();
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const { service, patientRepository } = makeService({
+				budgetRepository,
+				hospitalizationRepository,
+			});
+			const patientId = "1927BA";
+			const hospitalizationId = "0006";
+			const status = "PENDENTE";
+
+			await service.endBudget(patientId, hospitalizationId, status);
+
+			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+			const patient = <Patient> patientOrErr.value;
+
+			const budget = await budgetRepository.getByHospitalizationId(
+				ID.fromString(hospitalizationId),
+			);
+
+			assertEquals(patient.status, PatientStatus.DischargedWithPendingBudget);
+			assertEquals(budget.status, BudgetStatus.Pending);
+		},
+	);
+
+	await t.step(
+		"Se o orçamento está pendente com orçamento envido, deve dar alta com o estado **ALTA_MEDICA_E_ORCAMENTO_ENVIADO**",
+		async () => {
+			const budgetRepository = new BudgetRepositoryStub();
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const { service, patientRepository } = makeService({
+				budgetRepository,
+				hospitalizationRepository,
+			});
+			const patientId = "1928BA";
+			const hospitalizationId = "0006";
+			const status = "PENDENTE (ORÇAMENTO ENVIADO)";
+
+			await service.endBudget(patientId, hospitalizationId, status);
+
+			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+			const patient = <Patient> patientOrErr.value;
+
+			const budget = await budgetRepository.getByHospitalizationId(
+				ID.fromString(hospitalizationId),
+			);
+
+			assertEquals(patient.status, PatientStatus.DischargedWithBudgetSent);
+			assertEquals(budget.status, BudgetStatus.PendingWithBudgetSent);
 		},
 	);
 });

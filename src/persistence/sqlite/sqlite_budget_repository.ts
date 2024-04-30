@@ -49,6 +49,15 @@ export class SQLiteBudgetRepository implements BudgetRepository {
 		return Promise.resolve(undefined);
 	}
 
+	update(budget: Budget): Promise<void> {
+		this.#db.queryEntries("UPDATE budgets SET status = :status WHERE budget_id = :budgetId", {
+			status: budget.status,
+			budgetId: budget.budgetId,
+		});
+
+		return Promise.resolve(undefined);
+	}
+
 	last(): Promise<Budget> {
 		const rows = this.#db.queryEntries("SELECT * FROM budgets");
 

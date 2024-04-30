@@ -5,6 +5,7 @@ import { PatientRepository } from "domain/patients/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ErrorMessage } from "shared/error_messages.ts";
 import {
+	EndBudgetError,
 	EndHospitalizationError,
 	NewHospitalizationError,
 	NewPatientError,
@@ -174,6 +175,8 @@ export class PatientService {
 
 		patient.discharge();
 
+		hospitalization.close();
+
 		if (budget.unpaid()) {
 			patient.dischargeWithUnpaidBudget();
 		}
@@ -186,9 +189,48 @@ export class PatientService {
 			patient.dischargeWithBudgetSent();
 		}
 
-		hospitalization.close();
-
 		await this.#hospitalizationRepository.update(hospitalization);
+
+		await this.#patientRepository.update(patient);
+
+		return right(undefined);
+	}
+
+	async endBudget(
+		patientId: string,
+		hospitalizationId: string,
+		status: string,
+	): Promise<Either<EndBudgetError, void>> {
+		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+
+		const patient = patientOrErr.value;
+
+		if (patient.alreadyDischarged()) return left(new Error("Patient already discharged"));
+
+		const budget = await this.#budgetRepository.getByHospitalizationId(
+			ID.fromString(hospitalizationId),
+		);
+
+		budget.changeStatus(status);
+
+		if (budget.unpaid() && patient.hasDischarged()) {
+			patient.dischargeWithUnpaidBudget();
+		}
+
+		if (budget.pending() && patient.hasDischarged()) {
+			patient.dischargeWithPendingBudget();
+		}
+
+		if (budget.itWasSent() && patient.hasDischarged()) {
+			patient.dischargeWithBudgetSent();
+		}
+
+		if (budget.isPaid() && patient.hasDischarged()) {
+			patient.discharge();
+		}
+
+		await this.#budgetRepository.update(budget);
 
 		await this.#patientRepository.update(patient);
 

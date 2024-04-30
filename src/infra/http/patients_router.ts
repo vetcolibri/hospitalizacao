@@ -6,11 +6,13 @@ import { validate } from "shared/tools.ts";
 import { ContextWithParams } from "./context_with_params.ts";
 import { sendBadRequest, sendCreated, sendNotFound, sendOk } from "./responses.ts";
 import {
+	endBudgetSchema,
 	endhospitalizationSchema,
 	newHospitalizationSchema,
 	newPatientSchema,
 } from "./schemas/patient_schema.ts";
 import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
+import { PatientAlreadyDischarged } from "domain/patients/patient_already_discharged_error.ts";
 
 interface PatientDTO {
 	systemId: string;
@@ -98,8 +100,32 @@ export default function (service: PatientService) {
 		sendOk(ctx);
 	};
 
+	const endBudgetHandler = async (ctx: Context) => {
+		const { budgetData } = ctx.state.validatedData;
+
+		const voidOrErr = await service.endBudget(
+			budgetData.patientId,
+			budgetData.hospitalizationId,
+			budgetData.status,
+		);
+
+		if (voidOrErr.value instanceof PatientNotFound) {
+			sendNotFound(ctx, voidOrErr.value.message);
+			return;
+		}
+
+		if (voidOrErr.value instanceof PatientAlreadyDischarged) {
+			sendBadRequest(ctx, voidOrErr.value.message);
+			return;
+		}
+
+		sendOk(ctx);
+	};
+
 	const router = new Router({ prefix: "/patients" });
 	router.get("/hospitalized", hospitalizedHandler);
+	router.get("/", nonHospitalizedHandler);
+	router.post("/new-patient", validate(newPatientSchema), newPatientHandler);
 	router.post(
 		"/hospitalize",
 		validate(newHospitalizationSchema),
@@ -110,7 +136,6 @@ export default function (service: PatientService) {
 		validate(endhospitalizationSchema),
 		endHospitalizationHandler,
 	);
-	router.post("/new-patient", validate(newPatientSchema), newPatientHandler);
-	router.get("/", nonHospitalizedHandler);
+	router.post("/end-budget", validate(endBudgetSchema), endBudgetHandler);
 	return router;
 }

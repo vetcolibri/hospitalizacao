@@ -27,7 +27,7 @@ export class Budget {
 		this.#budgetId = ID.random();
 		this.startOn = new Date(startOn);
 		this.endOn = new Date(endOn);
-		this.#status = this.setStatus(status);
+		this.#status = this.#setStatus(status);
 	}
 
 	static restore(data: Options): Budget {
@@ -43,7 +43,27 @@ export class Budget {
 		return budget;
 	}
 
-	private setStatus(value: string) {
+	changeStatus(status: string): void {
+		this.#status = this.#setStatus(status);
+	}
+
+	isPaid(): boolean {
+		return this.#status === BudgetStatus.Paid;
+	}
+
+	unpaid(): boolean {
+		return this.#status === BudgetStatus.UnPaid;
+	}
+
+	pending(): boolean {
+		return this.#status === BudgetStatus.Pending;
+	}
+
+	itWasSent(): boolean {
+		return this.#status === BudgetStatus.PendingWithBudgetSent;
+	}
+
+	#setStatus(value: string) {
 		if (value === BudgetStatus.Paid) {
 			return BudgetStatus.Paid;
 		}
@@ -57,18 +77,6 @@ export class Budget {
 		}
 
 		return BudgetStatus.UnPaid;
-	}
-
-	unpaid(): boolean {
-		return this.#status === BudgetStatus.UnPaid;
-	}
-
-	pending(): boolean {
-		return this.#status === BudgetStatus.Pending;
-	}
-
-	itWasSent(): boolean {
-		return this.#status === BudgetStatus.PendingWithBudgetSent;
 	}
 
 	get status(): string {

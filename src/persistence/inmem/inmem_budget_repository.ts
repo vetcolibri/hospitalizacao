@@ -23,6 +23,11 @@ export class InmemBudgetRepository implements BudgetRepository {
 		return Promise.resolve(undefined);
 	}
 
+	update(budget: Budget): Promise<void> {
+		this.#budgets[budget.budgetId] = budget;
+		return Promise.resolve(undefined);
+	}
+
 	last(): Promise<Budget> {
 		return Promise.resolve(this.records[this.records.length - 1]);
 	}
