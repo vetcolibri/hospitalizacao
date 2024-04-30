@@ -101,12 +101,12 @@ export default function (service: PatientService) {
 	};
 
 	const endBudgetHandler = async (ctx: Context) => {
-		const { budgetData } = ctx.state.validatedData;
+		const { patientId, hospitalizationId, status } = ctx.state.validatedData;
 
 		const voidOrErr = await service.endBudget(
-			budgetData.patientId,
-			budgetData.hospitalizationId,
-			budgetData.status,
+			patientId,
+			hospitalizationId,
+			status,
 		);
 
 		if (voidOrErr.value instanceof PatientNotFound) {
