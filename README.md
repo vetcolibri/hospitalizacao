@@ -21,19 +21,12 @@ $ docker build -f ./.build/Dockerfile -t hospitalizacao-api .
 
 ```bash
 $ docker run -d -p 3001:8080 hospitalizacao-api
-
 ```
 
 ### Ambiente de desenvolvimento
 
-1. Base de dados
+Execute o servidor com o seguinte comando:
 
 ```bash
-$ deno task initdb
-```
-
-2. Execução do servidor
-
-```bash
-$ deno run -A infra/server.ts
+$ deno run -A mod.ts
 ```
