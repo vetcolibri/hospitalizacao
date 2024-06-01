@@ -1,4 +1,5 @@
 import { HospitalizationStatus } from "../../src/domain/patients/hospitalizations/hospitalization.ts";
+import { appyMigrations } from "persistence/sqlite/sqlite_db_factory.ts";
 import { alert1, budgetData, owner, patientData, PATIENTS } from "../fake_data.ts";
 import { DB } from "deps";
 
@@ -13,6 +14,8 @@ export async function init_test_db(): Promise<DB> {
 	const db = new DB("test.db", { memory: true });
 
 	db.execute(schema);
+
+	appyMigrations(db);
 
 	return db;
 }
