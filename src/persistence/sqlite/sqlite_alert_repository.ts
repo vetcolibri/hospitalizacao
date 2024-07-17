@@ -15,7 +15,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 		this.#db = db;
 	}
 
-	getActiveAlerts(): Promise<Alert[]> {
+	getActives(): Promise<Alert[]> {
 		const rows = this.#db.queryEntries(
 			"SELECT * FROM alerts WHERE status = :status",
 			{ status: AlertStatus.Enabled },

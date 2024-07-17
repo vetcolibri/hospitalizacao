@@ -132,7 +132,7 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 
 		await repository.save(secondAlert);
 
-		const alerts = await repository.getActiveAlerts();
+		const alerts = await repository.getActives();
 
 		assertEquals(alerts.every((a) => !a.isDisabled()), true);
 	});

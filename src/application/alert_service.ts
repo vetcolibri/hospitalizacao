@@ -86,7 +86,7 @@ export class AlertService {
 	 * @returns {Promise<Alert[]>}
 	 */
 	async getActiveAlerts(): Promise<Alert[]> {
-		return await this.#alertRepository.getActiveAlerts();
+		return await this.#alertRepository.getActives();
 	}
 
 	#buildAlertPayload(alert: Alert, patient: Patient): AlertPayload {

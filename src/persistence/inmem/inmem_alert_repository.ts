@@ -7,7 +7,7 @@ import { Either, left, right } from "shared/either.ts";
 export class InmemAlertRepository implements AlertRepository {
 	#data: Record<string, Alert> = {};
 
-	getActiveAlerts(): Promise<Alert[]> {
+	getActives(): Promise<Alert[]> {
 		const alerts = this.records.filter((a) => !a.isDisabled());
 		return Promise.resolve(alerts);
 	}
