@@ -1,7 +1,7 @@
-import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
-import { Patient } from "domain/patients/patient.ts";
-import { PatientAlreadyHospitalized } from "domain/patients/patient_already_hospitalized_error.ts";
-import { PatientRepository } from "domain/patients/patient_repository.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { Patient } from "domain/patient/patient.ts";
+import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
+import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ErrorMessage } from "shared/error_messages.ts";
 import {
@@ -11,16 +11,16 @@ import {
 	NewPatientError,
 } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
-import { BudgetBuilder } from "../domain/patients/hospitalizations/budget_builder.ts";
-import { BudgetRepository } from "../domain/patients/hospitalizations/budget_repository.ts";
-import { HospitalizationBuilder } from "../domain/patients/hospitalizations/hospitalization_builder.ts";
-import { HospitalizationRepository } from "../domain/patients/hospitalizations/hospitalization_repository.ts";
-import { InvalidDate } from "../domain/patients/hospitalizations/invalid_date_error.ts";
-import { InvalidNumber } from "../domain/patients/hospitalizations/invalid_number_error.ts";
-import { Owner } from "../domain/patients/owners/owner.ts";
-import { OwnerRepository } from "../domain/patients/owners/owner_repository.ts";
-import { PatientBuilder } from "../domain/patients/patient_builder.ts";
-import { PatientIdAlreadyExists } from "../domain/patients/patient_id_already_exists_error.ts";
+import { BudgetBuilder } from "../domain/budget/budget_builder.ts";
+import { BudgetRepository } from "../domain/budget/budget_repository.ts";
+import { Owner } from "../domain/crm/owner/owner.ts";
+import { OwnerRepository } from "../domain/crm/owner/owner_repository.ts";
+import { HospitalizationBuilder } from "../domain/hospitalization/hospitalization_builder.ts";
+import { HospitalizationRepository } from "../domain/hospitalization/hospitalization_repository.ts";
+import { InvalidDate } from "../domain/hospitalization/invalid_date_error.ts";
+import { InvalidNumber } from "../domain/hospitalization/invalid_number_error.ts";
+import { PatientBuilder } from "../domain/patient/patient_builder.ts";
+import { PatientIdAlreadyExists } from "../domain/patient/patient_id_already_exists_error.ts";
 
 export class PatientService {
 	#patientRepository: PatientRepository;

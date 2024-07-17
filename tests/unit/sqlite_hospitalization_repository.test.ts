@@ -1,6 +1,6 @@
 import { assertEquals, assertInstanceOf } from "dev_deps";
-import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
-import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
 import { ID } from "shared/id.ts";
 import { SQLiteHospitalizationRepository } from "../../src/persistence/sqlite/sqlite_hospitalization_repository.ts";
 import { hospitalizationData } from "../fake_data.ts";

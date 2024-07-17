@@ -1,9 +1,9 @@
 import { RowObject } from "deps";
-import { Alert } from "domain/alerts/alert.ts";
-import { Budget } from "domain/patients/hospitalizations/budget.ts";
-import { Patient } from "domain/patients/patient.ts";
-import { Hospitalization } from "../domain/patients/hospitalizations/hospitalization.ts";
-import { Owner } from "../domain/patients/owners/owner.ts";
+import { Budget } from "domain/budget/budget.ts";
+import { Alert } from "domain/hospitalization/alerts/alert.ts";
+import { Patient } from "domain/patient/patient.ts";
+import { Owner } from "../domain/crm/owner/owner.ts";
+import { Hospitalization } from "../domain/hospitalization/hospitalization.ts";
 
 export class EntityFactory {
 	createOwner(row: RowObject): Owner {

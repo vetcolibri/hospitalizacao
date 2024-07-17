@@ -1,7 +1,9 @@
 import { PatientService } from "application/patient_service.ts";
 import { Context, Router } from "deps";
-import { Patient } from "domain/patients/patient.ts";
-import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
+import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { Patient } from "domain/patient/patient.ts";
+import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
+import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { validate } from "shared/tools.ts";
 import { ContextWithParams } from "./context_with_params.ts";
 import { sendBadRequest, sendCreated, sendNotFound, sendOk } from "./responses.ts";
@@ -11,8 +13,6 @@ import {
 	newHospitalizationSchema,
 	newPatientSchema,
 } from "./schemas/patient_schema.ts";
-import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
-import { PatientAlreadyDischarged } from "domain/patients/patient_already_discharged_error.ts";
 
 interface PatientDTO {
 	systemId: string;

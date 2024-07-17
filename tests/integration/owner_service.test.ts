@@ -1,8 +1,8 @@
-import { InmemOwnerRepository } from "persistence/inmem/inmem_owner_repository.ts";
 import { assertEquals, assertInstanceOf } from "dev_deps";
-import { Owner } from "domain/patients/owners/owner.ts";
+import { InmemOwnerRepository } from "persistence/inmem/inmem_owner_repository.ts";
 import { OwnerService } from "../../src/application/owner_service.ts";
-import { OwnerNotFound } from "../../src/domain/patients/owners/owner_not_found_error.ts";
+import { Owner } from "../../src/domain/crm/owner/owner.ts";
+import { OwnerNotFound } from "../../src/domain/crm/owner/owner_not_found_error.ts";
 
 Deno.test("Owner Service - List Owners", async (t) => {
 	await t.step("Deve recuperar os proprietários do repositório", async () => {

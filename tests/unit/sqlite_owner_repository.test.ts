@@ -1,8 +1,8 @@
 import { assertEquals } from "dev_deps";
-import { Owner } from "domain/patients/owners/owner.ts";
 import { ID } from "shared/id.ts";
-import { init_test_db, populate } from "./test_db.ts";
+import { Owner } from "../../src/domain/crm/owner/owner.ts";
 import { SQLiteOwnerRepository } from "../../src/persistence/sqlite/sqlite_owner_repository.ts";
+import { init_test_db, populate } from "./test_db.ts";
 
 Deno.test("SQLite - Owner Repository", async (t) => {
 	await t.step("Deve recuperar o Dono do paciente.", async () => {

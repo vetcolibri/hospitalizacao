@@ -1,7 +1,7 @@
 import { assertEquals } from "dev_deps";
-import { BudgetStatus } from "domain/patients/hospitalizations/budget.ts";
+import { BudgetStatus } from "domain/budget/budget.ts";
 import { ID } from "shared/id.ts";
-import { Budget } from "../../src/domain/patients/hospitalizations/budget.ts";
+import { Budget } from "../../src/domain/budget/budget.ts";
 import { SQLiteBudgetRepository } from "../../src/persistence/sqlite/sqlite_budget_repository.ts";
 import { budgetData } from "../fake_data.ts";
 import { init_test_db, populate } from "./test_db.ts";

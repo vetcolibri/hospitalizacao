@@ -1,10 +1,10 @@
-import { SQLiteAlertRepository } from "persistence/sqlite/sqlite_alert_repository.ts";
-import { Alert, AlertStatus } from "domain/alerts/alert.ts";
-import { RepeatEvery } from "domain/alerts/repeat_every.ts";
-import { alert1, PATIENTS } from "../fake_data.ts";
 import { assertEquals } from "dev_deps";
-import { init_test_db, populate } from "./test_db.ts";
+import { Alert, AlertStatus } from "domain/hospitalization/alerts/alert.ts";
+import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
+import { SQLiteAlertRepository } from "persistence/sqlite/sqlite_alert_repository.ts";
 import { ID } from "shared/id.ts";
+import { alert1, PATIENTS } from "../fake_data.ts";
+import { init_test_db, populate } from "./test_db.ts";
 
 Deno.test("SQLite - Alert Repository", async (t) => {
 	await t.step("Deve recuperar os alertas de um paciente", async () => {

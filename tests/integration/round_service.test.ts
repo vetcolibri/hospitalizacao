@@ -1,15 +1,15 @@
 import { RoundService } from "application/round_service.ts";
-import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { assertEquals, assertInstanceOf, assertNotEquals } from "dev_deps";
-import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.ts";
-import { PatientRepository } from "domain/patients/patient_repository.ts";
+import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
+import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
-import { RoundRepository } from "../../src/domain/exams/rounds/round_repository.ts";
-import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
-import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
-import { Parameter } from "../../src/domain/exams/parameters/parameter.ts";
-import { InvalidParameter } from "../../src/domain/exams/parameters/parameter_error.ts";
+import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.ts";
+import { Parameter } from "../../src/domain/hospitalization/parameters/parameter.ts";
+import { InvalidParameter } from "../../src/domain/hospitalization/parameters/parameter_error.ts";
+import { RoundRepository } from "../../src/domain/hospitalization/rounds/round_repository.ts";
 import { PATIENTS } from "../fake_data.ts";
+import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
+import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step(

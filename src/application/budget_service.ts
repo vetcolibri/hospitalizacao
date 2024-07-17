@@ -1,5 +1,5 @@
-import { Budget } from "domain/patients/hospitalizations/budget.ts";
-import { BudgetRepository } from "../domain/patients/hospitalizations/budget_repository.ts";
+import { Budget } from "domain/budget/budget.ts";
+import { BudgetRepository } from "../domain/budget/budget_repository.ts";
 
 export class BudgetService {
 	#budgetRepository: BudgetRepository;

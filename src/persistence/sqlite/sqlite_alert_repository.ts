@@ -1,10 +1,10 @@
-import { AlertNotFound } from "domain/alerts/alert_not_found_error.ts";
-import { AlertRepository } from "domain/alerts/alert_repository.ts";
-import { Alert, AlertStatus } from "domain/alerts/alert.ts";
-import { Either, left, right } from "shared/either.ts";
 import { DB } from "deps";
-import { ID } from "shared/id.ts";
+import { Alert, AlertStatus } from "domain/hospitalization/alerts/alert.ts";
+import { AlertNotFound } from "domain/hospitalization/alerts/alert_not_found_error.ts";
+import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
+import { Either, left, right } from "shared/either.ts";
 import { EntityFactory } from "shared/factory.ts";
+import { ID } from "shared/id.ts";
 
 const factory = new EntityFactory();
 

@@ -1,10 +1,10 @@
-import { AlertService } from "application/alert_service.ts";
 import { AlertNotifier } from "application/alert_notifier.ts";
+import { AlertService } from "application/alert_service.ts";
 import { Context, Router } from "deps";
+import { Alert } from "domain/hospitalization/alerts/alert.ts";
 import { validate } from "shared/tools.ts";
 import { sendBadRequest, sendOk } from "./responses.ts";
 import { cancelAlertSchema, scheduleAlertSchema } from "./schemas/alert_schema.ts";
-import { Alert } from "domain/alerts/alert.ts";
 
 let websocktClients: WebSocket[] = [];
 

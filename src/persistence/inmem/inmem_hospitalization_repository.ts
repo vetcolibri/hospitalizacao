@@ -1,7 +1,7 @@
 import { Either, left, right } from "shared/either.ts";
-import { HospitalizationAlreadyClosed } from "../../domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
-import { Hospitalization } from "../../domain/patients/hospitalizations/hospitalization.ts";
-import { HospitalizationRepository } from "../../domain/patients/hospitalizations/hospitalization_repository.ts";
+import { Hospitalization } from "../../domain/hospitalization/hospitalization.ts";
+import { HospitalizationAlreadyClosed } from "../../domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationRepository } from "../../domain/hospitalization/hospitalization_repository.ts";
 import { ID } from "../../shared/id.ts";
 
 export class InmemHospitalizationRepository implements HospitalizationRepository {

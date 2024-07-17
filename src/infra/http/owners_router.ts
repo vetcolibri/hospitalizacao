@@ -1,8 +1,8 @@
-import { Context, Router } from "deps";
 import { OwnerService } from "application/owner_service.ts";
-import { sendNotFound, sendOk } from "infra/http/responses.ts";
-import { Owner } from "domain/patients/owners/owner.ts";
+import { Context, Router } from "deps";
 import { ContextWithParams } from "infra/http/context_with_params.ts";
+import { sendNotFound, sendOk } from "infra/http/responses.ts";
+import { Owner } from "../../domain/crm/owner/owner.ts";
 
 interface OwnerDTO {
 	ownerId: string;

@@ -1,7 +1,7 @@
-import { Context, Router } from "deps";
-import { sendOk } from "infra/http/responses.ts";
 import { BudgetService } from "application/budget_service.ts";
-import { Budget } from "domain/patients/hospitalizations/budget.ts";
+import { Context, Router } from "deps";
+import { Budget } from "domain/budget/budget.ts";
+import { sendOk } from "infra/http/responses.ts";
 
 interface BudgetDTO {
 	hospitalizationId: string;

@@ -1,10 +1,10 @@
-import { Alert } from "domain/alerts/alert.ts";
-import { RepeatEvery } from "domain/alerts/repeat_every.ts";
-import { Budget } from "domain/patients/hospitalizations/budget.ts";
-import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
-import { Patient } from "domain/patients/patient.ts";
-import { Owner } from "../src/domain/patients/owners/owner.ts";
+import { Budget } from "domain/budget/budget.ts";
+import { Alert } from "domain/hospitalization/alerts/alert.ts";
+import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { Patient } from "domain/patient/patient.ts";
 import { ID } from "shared/id.ts";
+import { Owner } from "../src/domain/crm/owner/owner.ts";
 
 export const patientData = {
 	patientId: "some-id",

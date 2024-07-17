@@ -1,11 +1,10 @@
 import { RoundService } from "application/round_service.ts";
 import { Context, Router } from "deps";
 import { validate } from "shared/tools.ts";
+import { Parameter } from "../../domain/hospitalization/parameters/parameter.ts";
 import { ContextWithParams } from "./context_with_params.ts";
-import { sendOk } from "./responses.ts";
-import { sendBadRequest } from "./responses.ts";
+import { sendBadRequest, sendOk } from "./responses.ts";
 import { roundSchema } from "./schemas/round_schema.ts";
-import { Parameter } from "../../domain/exams/parameters/parameter.ts";
 
 interface ParameterDTO {
 	name: string;

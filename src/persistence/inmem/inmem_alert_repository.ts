@@ -1,8 +1,8 @@
-import { Alert, AlertStatus } from "domain/alerts/alert.ts";
-import { AlertNotFound } from "domain/alerts/alert_not_found_error.ts";
-import { AlertRepository } from "domain/alerts/alert_repository.ts";
-import { ID } from "shared/id.ts";
+import { Alert, AlertStatus } from "domain/hospitalization/alerts/alert.ts";
+import { AlertNotFound } from "domain/hospitalization/alerts/alert_not_found_error.ts";
+import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
 import { Either, left, right } from "shared/either.ts";
+import { ID } from "shared/id.ts";
 
 export class InmemAlertRepository implements AlertRepository {
 	#data: Record<string, Alert> = {};

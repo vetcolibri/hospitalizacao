@@ -1,10 +1,10 @@
-import { SQLitePatientRepository } from "persistence/sqlite/sqlite_patient_repository.ts";
-import { Patient, PatientStatus } from "domain/patients/patient.ts";
-import { init_test_db, populate } from "./test_db.ts";
 import { assert, assertEquals, assertInstanceOf } from "dev_deps";
-import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
+import { Patient, PatientStatus } from "domain/patient/patient.ts";
+import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
+import { SQLitePatientRepository } from "persistence/sqlite/sqlite_patient_repository.ts";
 import { ID } from "shared/id.ts";
 import { PATIENTS } from "../fake_data.ts";
+import { init_test_db, populate } from "./test_db.ts";
 
 Deno.test("SQLite - Patient Repository", async (t) => {
 	await t.step("Deve verificar se o paciente existe.", async () => {

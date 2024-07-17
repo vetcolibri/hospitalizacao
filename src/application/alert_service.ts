@@ -1,13 +1,13 @@
-import { AlertAlreadyDisabled } from "domain/alerts/alert_already_disabled_error.ts";
-import { PatientRepository } from "domain/patients/patient_repository.ts";
-import { AlertRepository } from "domain/alerts/alert_repository.ts";
-import { AlertNotifier, AlertPayload } from "./alert_notifier.ts";
-import { CancelError, ScheduleError } from "shared/errors.ts";
-import { AlertBuider } from "../domain/alerts/alert_buider.ts";
+import { Alert } from "domain/hospitalization/alerts/alert.ts";
+import { AlertAlreadyDisabled } from "domain/hospitalization/alerts/alert_already_disabled_error.ts";
+import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
+import { Patient } from "domain/patient/patient.ts";
+import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
-import { Patient } from "domain/patients/patient.ts";
-import { Alert } from "domain/alerts/alert.ts";
+import { CancelError, ScheduleError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
+import { AlertBuider } from "../domain/hospitalization/alerts/alert_buider.ts";
+import { AlertNotifier, AlertPayload } from "./alert_notifier.ts";
 
 export class AlertService {
 	#alertRepository: AlertRepository;

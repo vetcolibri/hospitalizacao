@@ -1,17 +1,16 @@
 import { assertEquals, assertInstanceOf } from "dev_deps";
-import { Round } from "../../src/domain/exams/rounds/round.ts";
-import { Patient } from "domain/patients/patient.ts";
-import { HeartRate } from "../../src/domain/exams/parameters/heart_rate.ts";
-import { RespiratoryRate } from "../../src/domain/exams/parameters/respiratore_rate.ts";
-import { Trc } from "../../src/domain/exams/parameters/trc.ts";
-import { Avdn } from "../../src/domain/exams/parameters/avdn.ts";
-import { Mucosas } from "../../src/domain/exams/parameters/mucosas.ts";
-import { BloodGlucose } from "../../src/domain/exams/parameters/blood_glucose.ts";
-import { Hct } from "../../src/domain/exams/parameters/hct.ts";
-import { BloodPressure } from "../../src/domain/exams/parameters/blood_pressure.ts";
-import { Temperature } from "../../src/domain/exams/parameters/temperature.ts";
-import { Specie } from "domain/patients/patient.ts";
+import { Patient, Specie } from "domain/patient/patient.ts";
 import { ID } from "shared/id.ts";
+import { Avdn } from "../../src/domain/hospitalization/parameters/avdn.ts";
+import { BloodGlucose } from "../../src/domain/hospitalization/parameters/blood_glucose.ts";
+import { BloodPressure } from "../../src/domain/hospitalization/parameters/blood_pressure.ts";
+import { Hct } from "../../src/domain/hospitalization/parameters/hct.ts";
+import { HeartRate } from "../../src/domain/hospitalization/parameters/heart_rate.ts";
+import { Mucosas } from "../../src/domain/hospitalization/parameters/mucosas.ts";
+import { RespiratoryRate } from "../../src/domain/hospitalization/parameters/respiratore_rate.ts";
+import { Temperature } from "../../src/domain/hospitalization/parameters/temperature.ts";
+import { Trc } from "../../src/domain/hospitalization/parameters/trc.ts";
+import { Round } from "../../src/domain/hospitalization/rounds/round.ts";
 
 Deno.test("Rounds", async (t) => {
 	await t.step("Deve criar uma ronda.", () => {

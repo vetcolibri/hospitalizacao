@@ -1,9 +1,9 @@
 import { ID } from "shared/id.ts";
-import { HeartRate } from "../../src/domain/exams/parameters/heart_rate.ts";
-import { Parameter, ParameterName } from "../../src/domain/exams/parameters/parameter.ts";
-import { Trc } from "../../src/domain/exams/parameters/trc.ts";
-import { Round } from "../../src/domain/exams/rounds/round.ts";
-import { RoundRepository } from "../../src/domain/exams/rounds/round_repository.ts";
+import { HeartRate } from "../../src/domain/hospitalization/parameters/heart_rate.ts";
+import { Parameter, ParameterName } from "../../src/domain/hospitalization/parameters/parameter.ts";
+import { Trc } from "../../src/domain/hospitalization/parameters/trc.ts";
+import { Round } from "../../src/domain/hospitalization/rounds/round.ts";
+import { RoundRepository } from "../../src/domain/hospitalization/rounds/round_repository.ts";
 import { PATIENTS } from "../fake_data.ts";
 
 export class RoundRepositoryStub implements RoundRepository {

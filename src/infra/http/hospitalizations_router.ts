@@ -1,6 +1,6 @@
 import { HospitalizationService } from "application/hospitalization_service.ts";
 import { Context, Router } from "deps";
-import { Hospitalization } from "domain/patients/hospitalizations/hospitalization.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { sendOk } from "infra/http/responses.ts";
 
 interface HospitalizationDTO {

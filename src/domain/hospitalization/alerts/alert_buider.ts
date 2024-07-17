@@ -1,8 +1,8 @@
-import { Alert } from "domain/alerts/alert.ts";
-import { ID } from "shared/id.ts";
+import { Alert } from "domain/hospitalization/alerts/alert.ts";
+import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
+import { InvalidRepeatEvery } from "domain/hospitalization/alerts/repeat_every_error.ts";
 import { Either, left, right } from "shared/either.ts";
-import { InvalidRepeatEvery } from "domain/alerts/repeat_every_error.ts";
-import { RepeatEvery } from "domain/alerts/repeat_every.ts";
+import { ID } from "shared/id.ts";
 
 export class AlertBuider {
 	#patientId?: ID;

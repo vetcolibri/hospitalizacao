@@ -1,14 +1,10 @@
-import { HospitalizationRepository } from "domain/patients/hospitalizations/hospitalization_repository.ts";
-import {
-	Hospitalization,
-	HospitalizationStatus,
-} from "domain/patients/hospitalizations/hospitalization.ts";
-import { ID } from "shared/id.ts";
 import { DB } from "deps";
+import { Hospitalization, HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
+import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
+import { Either, left, right } from "shared/either.ts";
 import { EntityFactory } from "shared/factory.ts";
-import { Either, left } from "shared/either.ts";
-import { HospitalizationAlreadyClosed } from "domain/patients/hospitalizations/hospitalization_already_closed_error.ts";
-import { right } from "shared/either.ts";
+import { ID } from "shared/id.ts";
 
 const factory = new EntityFactory();
 

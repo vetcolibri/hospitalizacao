@@ -1,14 +1,14 @@
-import { Parameter } from "../../domain/exams/parameters/parameter.ts";
 import { RowObject } from "deps";
-import { HeartRate } from "../../domain/exams/parameters/heart_rate.ts";
-import { RespiratoryRate } from "../../domain/exams/parameters/respiratore_rate.ts";
-import { Trc } from "../../domain/exams/parameters/trc.ts";
-import { Mucosas } from "../../domain/exams/parameters/mucosas.ts";
-import { Avdn } from "../../domain/exams/parameters/avdn.ts";
-import { Temperature } from "../../domain/exams/parameters/temperature.ts";
-import { BloodGlucose } from "../../domain/exams/parameters/blood_glucose.ts";
-import { Hct } from "../../domain/exams/parameters/hct.ts";
-import { BloodPressure } from "../../domain/exams/parameters/blood_pressure.ts";
+import { Avdn } from "../../domain/hospitalization/parameters/avdn.ts";
+import { BloodGlucose } from "../../domain/hospitalization/parameters/blood_glucose.ts";
+import { BloodPressure } from "../../domain/hospitalization/parameters/blood_pressure.ts";
+import { Hct } from "../../domain/hospitalization/parameters/hct.ts";
+import { HeartRate } from "../../domain/hospitalization/parameters/heart_rate.ts";
+import { Mucosas } from "../../domain/hospitalization/parameters/mucosas.ts";
+import { Parameter } from "../../domain/hospitalization/parameters/parameter.ts";
+import { RespiratoryRate } from "../../domain/hospitalization/parameters/respiratore_rate.ts";
+import { Temperature } from "../../domain/hospitalization/parameters/temperature.ts";
+import { Trc } from "../../domain/hospitalization/parameters/trc.ts";
 
 export class ParametersBuilder {
 	private readonly parameters: Parameter[] = [];

@@ -1,10 +1,10 @@
 import { DB } from "deps";
-import { Owner } from "domain/patients/owners/owner.ts";
-import { OwnerNotFound } from "domain/patients/owners/owner_not_found_error.ts";
-import { OwnerRepository } from "domain/patients/owners/owner_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { EntityFactory } from "shared/factory.ts";
 import { ID } from "shared/id.ts";
+import { Owner } from "../../domain/crm/owner/owner.ts";
+import { OwnerNotFound } from "../../domain/crm/owner/owner_not_found_error.ts";
+import { OwnerRepository } from "../../domain/crm/owner/owner_repository.ts";
 
 const factory = new EntityFactory();
 

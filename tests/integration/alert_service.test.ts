@@ -1,10 +1,10 @@
 import { AlertService } from "application/alert_service.ts";
 import { assertEquals, assertInstanceOf, assertSpyCall, assertSpyCalls, spy } from "dev_deps";
-import { Alert, AlertStatus } from "domain/alerts/alert.ts";
-import { AlertAlreadyDisabled } from "domain/alerts/alert_already_disabled_error.ts";
-import { RepeatEvery } from "domain/alerts/repeat_every.ts";
-import { InvalidRepeatEvery } from "domain/alerts/repeat_every_error.ts";
-import { PatientNotFound } from "domain/patients/patient_not_found_error.ts";
+import { Alert, AlertStatus } from "domain/hospitalization/alerts/alert.ts";
+import { AlertAlreadyDisabled } from "domain/hospitalization/alerts/alert_already_disabled_error.ts";
+import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
+import { InvalidRepeatEvery } from "domain/hospitalization/alerts/repeat_every_error.ts";
+import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { InmemAlertRepository } from "persistence/inmem/inmem_alert_repository.ts";
 import { ID } from "shared/id.ts";
 import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";

@@ -1,4 +1,4 @@
-import { HospitalizationStatus } from "../../src/domain/patients/hospitalizations/hospitalization.ts";
+import { HospitalizationStatus } from "../../src/domain/hospitalization/hospitalization.ts";
 import { appyMigrations } from "persistence/sqlite/sqlite_db_factory.ts";
 import { alert1, budgetData, owner, patientData, PATIENTS } from "../fake_data.ts";
 import { DB } from "deps";

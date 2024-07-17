@@ -1,4 +1,4 @@
-import { Budget } from "./budget.ts";
+import { Budget } from "domain/budget/budget.ts";
 import { Either, left, right } from "shared/either.ts";
 
 export class BudgetBuilder {
