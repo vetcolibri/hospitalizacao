@@ -28,7 +28,7 @@ export class CrmService {
 
 	async registerReport(
 		patientId: string,
-		stateOfConsciousness: string,
+		stateOfConsciousness: string[],
 	): Promise<Either<ReportError, void>> {
 		const patientOrErr = await this.#patientRepository.getById(
 			ID.fromString(patientId),

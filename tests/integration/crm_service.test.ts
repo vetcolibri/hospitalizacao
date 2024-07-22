@@ -85,7 +85,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
       const reportRepo: ReportRepository = new InmemReportRepository();
       const service = new CrmService(ownerRepo, patientRepo, reportRepo);
 
-      const err = await service.registerReport(patientId, "Consciente");
+      const err = await service.registerReport(patientId, ["Consciente"]);
 
       assertEquals(err.isLeft(), true);
       assertInstanceOf(err.value, PatientNotHospitalized);
@@ -101,7 +101,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
       const reportRepo: ReportRepository = new InmemReportRepository();
       const service = new CrmService(ownerRepo, patientRepo, reportRepo);
 
-      const err = await service.registerReport(patientId, "Consciente");
+      const err = await service.registerReport(patientId, ["Consciente"]);
 
       assertEquals(err.isLeft(), true);
       assertInstanceOf(err.value, PatientNotFound);
@@ -116,13 +116,31 @@ Deno.test("Crm Service - Register patient report", async (t) => {
       const patientRepo = new PatientRepositoryStub();
       const reportRepo: ReportRepository = new InmemReportRepository();
       const service = new CrmService(ownerRepo, patientRepo, reportRepo);
-      const stateOfConsciousness = "Consciente";
+      const stateOfConsciousness = ["Consciente"];
 
       await service.registerReport(patientId, stateOfConsciousness);
 
       const report = await reportRepo.get(ID.fromString(patientId));
 
       assertEquals(report.patientId.value, patientId);
+      assertEquals(report.stateOfConsciousness, stateOfConsciousness);
+    },
+  );
+
+  await t.step(
+    "Ao criar o **Report** para o Tutor, deve registar mais de um estado de consciência do paciente",
+    async () => {
+      const patientId = "1900BA";
+      const ownerRepo = new InmemOwnerRepository();
+      const patientRepo = new PatientRepositoryStub();
+      const reportRepo: ReportRepository = new InmemReportRepository();
+      const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+      const stateOfConsciousness = ["Consciente", "Alerta"];
+
+      await service.registerReport(patientId, stateOfConsciousness);
+
+      const report = await reportRepo.get(ID.fromString(patientId));
+
       assertEquals(report.stateOfConsciousness, stateOfConsciousness);
     },
   );
