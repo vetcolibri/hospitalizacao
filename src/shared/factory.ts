@@ -1,7 +1,11 @@
 import { RowObject } from "deps";
 import { Budget } from "domain/budget/budget.ts";
+import { Discharge } from "domain/crm/report/discharge.ts";
+import { Food } from "domain/crm/report/food.ts";
+import { Report } from "domain/crm/report/report.ts";
 import { Alert } from "domain/hospitalization/alerts/alert.ts";
 import { Patient } from "domain/patient/patient.ts";
+import { ID } from "shared/id.ts";
 import { Owner } from "../domain/crm/owner/owner.ts";
 import { Hospitalization } from "../domain/hospitalization/hospitalization.ts";
 
@@ -77,5 +81,24 @@ export class EntityFactory {
 		};
 
 		return Budget.restore(data);
+	}
+
+	createReport(row: RowObject): Report {
+		const food = new Food(
+			JSON.parse(String(row.food_type)).split(","),
+			String(row.food_level),
+			String(row.food_date),
+		);
+
+		const discharge = new Discharge(String(row.discharge_type), String(row.discharge_aspect));
+
+		return new Report(
+			ID.fromString(String(row.report_id)),
+			ID.fromString(String(row.system_id)),
+			JSON.parse(String(row.state_of_consciousness)).split(","),
+			food,
+			discharge,
+			String(row.comments),
+		);
 	}
 }

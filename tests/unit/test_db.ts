@@ -1,7 +1,6 @@
-import { HospitalizationStatus } from "../../src/domain/hospitalization/hospitalization.ts";
-import { appyMigrations } from "persistence/sqlite/sqlite_db_factory.ts";
-import { alert1, budgetData, owner, patientData, PATIENTS } from "../fake_data.ts";
 import { DB } from "deps";
+import { HospitalizationStatus } from "../../src/domain/hospitalization/hospitalization.ts";
+import { alert1, budgetData, owner, patientData, PATIENTS } from "../fake_data.ts";
 
 export async function init_test_db(): Promise<DB> {
 	const path = new URL(
@@ -19,6 +18,31 @@ export async function init_test_db(): Promise<DB> {
 
 	return db;
 }
+
+function appyMigrations(db: DB) {
+	_MIGRATIONS_FILES.forEach((file) => {
+		const path = buildPath(file);
+
+		const data = Deno.readTextFileSync(path);
+
+		try {
+			db.execute(data);
+		} catch (error) {
+			console.error(`Error applying migration: ${file}`);
+			console.error(error);
+		}
+	});
+}
+
+function buildPath(file: string): URL {
+	const path = `../../src/persistence/sqlite/migrations/${file}`;
+	return new URL(path, import.meta.url);
+}
+
+const _MIGRATIONS_FILES = [
+	"1_migration.sql",
+	"2_migration.sql",
+];
 
 export function populate(db: DB) {
 	const insert_owner = `INSERT INTO owners (
