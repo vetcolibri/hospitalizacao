@@ -1,6 +1,7 @@
 import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
+import { Discharge } from "domain/crm/report/discharge.ts";
 import { Food } from "domain/crm/report/food.ts";
 import { Report } from "domain/crm/report/report.ts";
 import { ReportRepository } from "domain/crm/report/report_repository.ts";
@@ -52,7 +53,8 @@ export class CrmService {
 		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
 
 		const food = this.#buildFood(data);
-		const report = new Report(patient.systemId, data.stateOfConsciousness, food);
+		const discharge = this.#buildDischarge(data);
+		const report = new Report(patient.systemId, data.stateOfConsciousness, food, discharge);
 
 		await this.#reportRepository.save(report);
 
@@ -61,6 +63,10 @@ export class CrmService {
 
 	#buildFood(data: RegisterReportDTO) {
 		return new Food(data.food.type, data.food.level, data.food.date);
+	}
+
+	#buildDischarge(data: RegisterReportDTO) {
+		return new Discharge(data.discharge.type, data.discharge.aspect);
 	}
 }
 
@@ -71,5 +77,9 @@ type RegisterReportDTO = {
 		type: string[];
 		level: string;
 		date: string;
+	};
+	discharge: {
+		type: string;
+		aspect: string;
 	};
 };

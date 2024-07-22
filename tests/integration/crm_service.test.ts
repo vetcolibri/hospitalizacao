@@ -87,6 +87,10 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					date: "2021-09-01T00:00:00",
 					level: "1",
 				},
+				discharge: {
+					type: "Urina",
+					aspect: "Normal",
+				},
 			};
 
 			const ownerRepo = new InmemOwnerRepository();
@@ -112,6 +116,10 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					date: "2021-09-01T00:00:00",
 					level: "1",
 				},
+				discharge: {
+					type: "Vómito",
+					aspect: "Sangue",
+				},
 			};
 			const ownerRepo = new InmemOwnerRepository();
 			const patientRepo = new InmemPatientRepository();
@@ -135,6 +143,10 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					type: ["Ração"],
 					date: "2021-09-01T00:00:00",
 					level: "1",
+				},
+				discharge: {
+					type: "Urina",
+					aspect: "Escuro",
 				},
 			};
 			const ownerRepo = new InmemOwnerRepository();
@@ -163,6 +175,10 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					date: "2021-09-01T00:00:00",
 					level: "1",
 				},
+				discharge: {
+					type: "Urina",
+					aspect: "Amarelo",
+				},
 			};
 			const ownerRepo = new InmemOwnerRepository();
 			const patientRepo = new PatientRepositoryStub();
@@ -189,6 +205,10 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					date: "2021-09-01T00:00:00",
 					level: "1",
 				},
+				discharge: {
+					type: "Urina",
+					aspect: "Amarelo",
+				},
 			};
 
 			const ownerRepo = new InmemOwnerRepository();
@@ -204,6 +224,38 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 			assertEquals(report.food.level, data.food.level);
 			assertEquals(report.food.date, new Date(data.food.date));
 			assertEquals(report.food.type, data.food.type);
+		},
+	);
+
+	await t.step(
+		"Ao criar o **Report** para o tutor, deve registar as descargas que o paciente teve",
+		async () => {
+			const data = {
+				patientId: "1900BA",
+				stateOfConsciousness: ["Consciente"],
+				food: {
+					type: ["Ração"],
+					date: "2021-09-01T00:00:00",
+					level: "1",
+				},
+				discharge: {
+					type: "Urina",
+					aspect: "Normal",
+				},
+			};
+
+			const ownerRepo = new InmemOwnerRepository();
+			const patientRepo = new PatientRepositoryStub();
+			const reportRepo = new InmemReportRepository();
+
+			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+
+			await service.registerReport(data);
+
+			const report = await reportRepo.get(ID.fromString(data.patientId));
+
+			assertEquals(report.discharge.type, data.discharge.type);
+			assertEquals(report.discharge.aspect, data.discharge.aspect);
 		},
 	);
 });
