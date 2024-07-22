@@ -1,6 +1,7 @@
 import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
+import { Food } from "domain/crm/report/food.ts";
 import { Report } from "domain/crm/report/report.ts";
 import { ReportRepository } from "domain/crm/report/report_repository.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
@@ -26,27 +27,6 @@ export class CrmService {
 		this.#reportRepository = reportRepository;
 	}
 
-	async registerReport(
-		patientId: string,
-		stateOfConsciousness: string[],
-	): Promise<Either<ReportError, void>> {
-		const patientOrErr = await this.#patientRepository.getById(
-			ID.fromString(patientId),
-		);
-
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
-
-		const patient = patientOrErr.value;
-
-		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
-
-		const report = new Report(patient.systemId, stateOfConsciousness);
-
-		await this.#reportRepository.save(report);
-
-		return right(undefined);
-	}
-
 	async getAll(): Promise<Owner[]> {
 		return await this.#ownerRepository.getAll();
 	}
@@ -59,4 +39,37 @@ export class CrmService {
 
 		return right(ownerOrErr.value);
 	}
+
+	async registerReport(data: RegisterReportDTO): Promise<Either<ReportError, void>> {
+		const patientOrErr = await this.#patientRepository.getById(
+			ID.fromString(data.patientId),
+		);
+
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+
+		const patient = patientOrErr.value;
+
+		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
+
+		const food = this.#buildFood(data);
+		const report = new Report(patient.systemId, data.stateOfConsciousness, food);
+
+		await this.#reportRepository.save(report);
+
+		return right(undefined);
+	}
+
+	#buildFood(data: RegisterReportDTO) {
+		return new Food(data.food.type, data.food.level, data.food.date);
+	}
 }
+
+type RegisterReportDTO = {
+	patientId: string;
+	stateOfConsciousness: string[];
+	food: {
+		type: string[];
+		level: string;
+		date: string;
+	};
+};
