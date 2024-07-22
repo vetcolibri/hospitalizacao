@@ -3,7 +3,7 @@ import { Discharge } from "domain/crm/report/discharge.ts";
 import { Food } from "domain/crm/report/food.ts";
 import { Report } from "domain/crm/report/report.ts";
 import { ReportRepository } from "domain/crm/report/report_repository.ts";
-import { SqliteReportRepository } from "persistence/sqlite/sqlite_report_repository.ts";
+import { SQLiteReportRepository } from "persistence/sqlite/sqlite_report_repository.ts";
 import { ID } from "shared/id.ts";
 import { init_test_db, populate } from "./test_db.ts";
 
@@ -27,7 +27,7 @@ Deno.test("Sqlite Report Repository - Save", async (t) => {
 				comments,
 			);
 
-			const reportRepository: ReportRepository = new SqliteReportRepository(db);
+			const reportRepository: ReportRepository = new SQLiteReportRepository(db);
 
 			await reportRepository.save(report);
 

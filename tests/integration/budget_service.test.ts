@@ -1,8 +1,8 @@
 import { assertEquals } from "dev_deps";
 import { Budget } from "domain/budget/budget.ts";
 import { ID } from "shared/id.ts";
-import { BudgetService } from "../../src/application/budget_service.ts";
-import { InmemBudgetRepository } from "../../src/persistence/inmem/inmem_budget_repository.ts";
+import { BudgetService } from "application/budget_service.ts";
+import { InmemBudgetRepository } from "persistence/inmem/inmem_budget_repository.ts";
 
 Deno.test("Budget Service - Deve recuperar os budgets", async (t) => {
 	await t.step("Deve recuperar o orçamento pelo ID da hospitalização", async () => {
