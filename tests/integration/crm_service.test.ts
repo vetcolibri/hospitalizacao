@@ -91,6 +91,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					type: "Urina",
 					aspect: "Normal",
 				},
+				comments: "Paciente está bem",
 			};
 
 			const ownerRepo = new InmemOwnerRepository();
@@ -120,6 +121,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					type: "Vómito",
 					aspect: "Sangue",
 				},
+				comments: "Paciente está bem",
 			};
 			const ownerRepo = new InmemOwnerRepository();
 			const patientRepo = new InmemPatientRepository();
@@ -148,6 +150,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					type: "Urina",
 					aspect: "Escuro",
 				},
+				comments: "Paciente está bem",
 			};
 			const ownerRepo = new InmemOwnerRepository();
 			const patientRepo = new PatientRepositoryStub();
@@ -179,6 +182,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					type: "Urina",
 					aspect: "Amarelo",
 				},
+				comments: "Paciente está bem, e comeu bem",
 			};
 			const ownerRepo = new InmemOwnerRepository();
 			const patientRepo = new PatientRepositoryStub();
@@ -209,6 +213,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					type: "Urina",
 					aspect: "Amarelo",
 				},
+				comments: "Paciente ainda não come muito",
 			};
 
 			const ownerRepo = new InmemOwnerRepository();
@@ -242,6 +247,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					type: "Urina",
 					aspect: "Normal",
 				},
+				comments: "Paciente está bem",
 			};
 
 			const ownerRepo = new InmemOwnerRepository();
@@ -256,6 +262,38 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			assertEquals(report.discharge.type, data.discharge.type);
 			assertEquals(report.discharge.aspect, data.discharge.aspect);
+		},
+	);
+
+	await t.step(
+		"Ao criar o **Report** para o tutor, deve registar o comentário do MedVet sobre o paciente",
+		async () => {
+			const data = {
+				patientId: "1900BA",
+				stateOfConsciousness: ["Consciente"],
+				food: {
+					type: ["Ração"],
+					date: "2021-09-01T00:00:00",
+					level: "1",
+				},
+				discharge: {
+					type: "Urina",
+					aspect: "Normal",
+				},
+				comments: "Paciente está bem",
+			};
+
+			const ownerRepo = new InmemOwnerRepository();
+			const patientRepo = new PatientRepositoryStub();
+			const reportRepo = new InmemReportRepository();
+
+			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+
+			await service.registerReport(data);
+
+			const report = await reportRepo.get(ID.fromString(data.patientId));
+
+			assertEquals(report.comments, data.comments);
 		},
 	);
 });

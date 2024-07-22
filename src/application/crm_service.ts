@@ -3,7 +3,7 @@ import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { Discharge } from "domain/crm/report/discharge.ts";
 import { Food } from "domain/crm/report/food.ts";
-import { Report } from "domain/crm/report/report.ts";
+import { ReportBuilder } from "domain/crm/report/report_builder.ts";
 import { ReportRepository } from "domain/crm/report/report_repository.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
@@ -52,9 +52,17 @@ export class CrmService {
 
 		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
 
-		const food = this.#buildFood(data);
-		const discharge = this.#buildDischarge(data);
-		const report = new Report(patient.systemId, data.stateOfConsciousness, food, discharge);
+		const reportOrErr = new ReportBuilder()
+			.withPatientId(patient.systemId)
+			.withStateOfConsciousness(data.stateOfConsciousness)
+			.withFood(this.#buildFood(data))
+			.withDischarge(this.#buildDischarge(data))
+			.withComments(data.comments)
+			.build();
+
+		if (reportOrErr.isLeft()) return left(reportOrErr.value);
+
+		const report = reportOrErr.value;
 
 		await this.#reportRepository.save(report);
 
@@ -82,4 +90,5 @@ type RegisterReportDTO = {
 		type: string;
 		aspect: string;
 	};
+	comments: string;
 };
