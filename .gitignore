@@ -29,4 +29,5 @@ coverage
 .vscode
 db.sqlite3
 db.sqlite
+*.db
 data/
