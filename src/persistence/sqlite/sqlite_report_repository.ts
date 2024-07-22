@@ -6,7 +6,7 @@ import { ID } from "shared/id.ts";
 
 const factory = new EntityFactory();
 
-export class SqliteReportRepository implements ReportRepository {
+export class SQLiteReportRepository implements ReportRepository {
     #db: DB;
 
     constructor(db: DB) {
