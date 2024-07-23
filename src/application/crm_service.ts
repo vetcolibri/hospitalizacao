@@ -13,9 +13,8 @@ import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
+import { ReportError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
-
-export type ReportError = PatientNotHospitalized | PatientNotFound;
 
 export class CrmService {
 	#ownerRepository: OwnerRepository;
