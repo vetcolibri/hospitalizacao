@@ -1,24 +1,24 @@
 import { PatientService } from "application/patient_service.ts";
 import { assert, assertEquals, assertInstanceOf, assertSpyCalls, spy } from "dev_deps";
+import { Budget, BudgetStatus } from "domain/budget/budget.ts";
 import { BudgetRepository } from "domain/budget/budget_repository.ts";
+import { Owner } from "domain/crm/owner/owner.ts";
+import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
+import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
+import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
 import { Patient, PatientStatus } from "domain/patient/patient.ts";
 import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
+import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
+import { InmemBudgetRepository } from "persistence/inmem/inmem_budget_repository.ts";
+import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
+import { InmemOwnerRepository } from "persistence/inmem/inmem_owner_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
 import { ID } from "shared/id.ts";
-import { BudgetStatus } from "../../src/domain/budget/budget.ts";
-import { Owner } from "../../src/domain/crm/owner/owner.ts";
-import { OwnerRepository } from "../../src/domain/crm/owner/owner_repository.ts";
-import { HospitalizationRepository } from "../../src/domain/hospitalization/hospitalization_repository.ts";
-import { InvalidDate } from "../../src/domain/hospitalization/invalid_date_error.ts";
-import { InvalidNumber } from "../../src/domain/hospitalization/invalid_number_error.ts";
-import { PatientIdAlreadyExists } from "../../src/domain/patient/patient_id_already_exists_error.ts";
-import { InmemBudgetRepository } from "../../src/persistence/inmem/inmem_budget_repository.ts";
-import { InmemHospitalizationRepository } from "../../src/persistence/inmem/inmem_hospitalization_repository.ts";
-import { InmemOwnerRepository } from "../../src/persistence/inmem/inmem_owner_repository.ts";
 import {
 	hospitalizationData,
 	invalidComplaints,
@@ -504,9 +504,11 @@ Deno.test("Patient Service - End Budget", async (t) => {
 		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
 
-		const budget = await budgetRepository.getByHospitalizationId(
+		const budgetOrErr = await budgetRepository.get(
 			ID.fromString(hospitalizationId),
 		);
+
+		const budget = <Budget> budgetOrErr.value;
 
 		assertEquals(patient.status, PatientStatus.Discharged);
 		assertEquals(budget.status, BudgetStatus.Paid);
@@ -569,9 +571,11 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budget = await budgetRepository.getByHospitalizationId(
+			const budgetOrErr = await budgetRepository.get(
 				ID.fromString(hospitalizationId),
 			);
+
+			const budget = <Budget> budgetOrErr.value;
 
 			assertEquals(patient.status, PatientStatus.DischargedWithUnpaidBudget);
 			assertEquals(budget.status, BudgetStatus.UnPaid);
@@ -596,9 +600,11 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budget = await budgetRepository.getByHospitalizationId(
+			const budgetOrErr = await budgetRepository.get(
 				ID.fromString(hospitalizationId),
 			);
+
+			const budget = <Budget> budgetOrErr.value;
 
 			assertEquals(patient.status, PatientStatus.DischargedWithPendingBudget);
 			assertEquals(budget.status, BudgetStatus.Pending);
@@ -623,9 +629,11 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budget = await budgetRepository.getByHospitalizationId(
+			const budgetOrErr = await budgetRepository.get(
 				ID.fromString(hospitalizationId),
 			);
+
+			const budget = <Budget> budgetOrErr.value;
 
 			assertEquals(patient.status, PatientStatus.DischargedWithBudgetSent);
 			assertEquals(budget.status, BudgetStatus.PendingWithBudgetSent);

@@ -1,6 +1,16 @@
+import { BudgetBuilder } from "domain/budget/budget_builder.ts";
+import { BudgetRepository } from "domain/budget/budget_repository.ts";
+import { Owner } from "domain/crm/owner/owner.ts";
+import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { HospitalizationBuilder } from "domain/hospitalization/hospitalization_builder.ts";
+import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
+import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
+import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
 import { Patient } from "domain/patient/patient.ts";
 import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
+import { PatientBuilder } from "domain/patient/patient_builder.ts";
+import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ErrorMessage } from "shared/error_messages.ts";
@@ -11,16 +21,6 @@ import {
 	NewPatientError,
 } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
-import { BudgetBuilder } from "../domain/budget/budget_builder.ts";
-import { BudgetRepository } from "../domain/budget/budget_repository.ts";
-import { Owner } from "../domain/crm/owner/owner.ts";
-import { OwnerRepository } from "../domain/crm/owner/owner_repository.ts";
-import { HospitalizationBuilder } from "../domain/hospitalization/hospitalization_builder.ts";
-import { HospitalizationRepository } from "../domain/hospitalization/hospitalization_repository.ts";
-import { InvalidDate } from "../domain/hospitalization/invalid_date_error.ts";
-import { InvalidNumber } from "../domain/hospitalization/invalid_number_error.ts";
-import { PatientBuilder } from "../domain/patient/patient_builder.ts";
-import { PatientIdAlreadyExists } from "../domain/patient/patient_id_already_exists_error.ts";
 
 export class PatientService {
 	#patientRepository: PatientRepository;
@@ -169,23 +169,24 @@ export class PatientService {
 		const patient = <Patient> patientOrErr.value;
 		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
 
-		const budget = await this.#budgetRepository.getByHospitalizationId(
+		const budgetOrErr = await this.#budgetRepository.get(
 			hospitalization.hospitalizationId,
 		);
+		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
 		patient.discharge();
 
 		hospitalization.close();
 
-		if (budget.unpaid()) {
+		if (budgetOrErr.value.unpaid()) {
 			patient.dischargeWithUnpaidBudget();
 		}
 
-		if (budget.pending()) {
+		if (budgetOrErr.value.pending()) {
 			patient.dischargeWithPendingBudget();
 		}
 
-		if (budget.itWasSent()) {
+		if (budgetOrErr.value.itWasSent()) {
 			patient.dischargeWithBudgetSent();
 		}
 
@@ -208,29 +209,31 @@ export class PatientService {
 
 		if (patient.alreadyDischarged()) return left(new Error("Patient already discharged"));
 
-		const budget = await this.#budgetRepository.getByHospitalizationId(
+		const budgetOrErr = await this.#budgetRepository.get(
 			ID.fromString(hospitalizationId),
 		);
 
-		budget.changeStatus(status);
+		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-		if (budget.unpaid() && patient.hasDischarged()) {
+		budgetOrErr.value.changeStatus(status);
+
+		if (budgetOrErr.value.unpaid() && patient.hasDischarged()) {
 			patient.dischargeWithUnpaidBudget();
 		}
 
-		if (budget.pending() && patient.hasDischarged()) {
+		if (budgetOrErr.value.pending() && patient.hasDischarged()) {
 			patient.dischargeWithPendingBudget();
 		}
 
-		if (budget.itWasSent() && patient.hasDischarged()) {
+		if (budgetOrErr.value.itWasSent() && patient.hasDischarged()) {
 			patient.dischargeWithBudgetSent();
 		}
 
-		if (budget.isPaid() && patient.hasDischarged()) {
+		if (budgetOrErr.value.isPaid() && patient.hasDischarged()) {
 			patient.discharge();
 		}
 
-		await this.#budgetRepository.update(budget);
+		await this.#budgetRepository.update(budgetOrErr.value);
 
 		await this.#patientRepository.update(patient);
 

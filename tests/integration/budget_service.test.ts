@@ -25,4 +25,4 @@ Deno.test("Budget Service - Deve recuperar os budgets", async (t) => {
 	});
 });
 
-const budget = new Budget(ID.random().value, "2024-04-10", "2024-04-15", "PEDENTE");
+const budget = new Budget(ID.random().value, "2024-04-10", "2024-04-15", "PENDENTE");

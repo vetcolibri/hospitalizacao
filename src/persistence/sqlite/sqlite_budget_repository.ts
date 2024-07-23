@@ -1,8 +1,10 @@
+import { DB } from "deps";
+import { Budget } from "domain/budget/budget.ts";
+import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
+import { BudgetRepository } from "domain/budget/budget_repository.ts";
+import { Either, left, right } from "shared/either.ts";
 import { EntityFactory } from "shared/factory.ts";
-import { DB } from "../../../deps.ts";
-import { Budget } from "../../domain/budget/budget.ts";
-import { BudgetRepository } from "../../domain/budget/budget_repository.ts";
-import { ID } from "../../shared/id.ts";
+import { ID } from "shared/id.ts";
 
 const factory = new EntityFactory();
 
@@ -13,7 +15,7 @@ export class SQLiteBudgetRepository implements BudgetRepository {
 		this.#db = db;
 	}
 
-	getByHospitalizationId(hospitalizationId: ID): Promise<Budget> {
+	get(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>> {
 		const rows = this.#db.queryEntries(
 			"SELECT * FROM budgets WHERE hospitalization_id = :hospitalizationId LIMIT 1",
 			{
@@ -21,9 +23,11 @@ export class SQLiteBudgetRepository implements BudgetRepository {
 			},
 		);
 
+		if (rows.length === 0) return Promise.resolve(left(new BudgetNotFound()));
+
 		const budget = factory.createBudget(rows[0]);
 
-		return Promise.resolve(budget);
+		return Promise.resolve(right(budget));
 	}
 
 	getAll(): Promise<Budget[]> {
