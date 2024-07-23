@@ -4,7 +4,7 @@ import { Owner } from "domain/crm/owner/owner.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
 import { ContextWithParams } from "infra/http/context_with_params.ts";
-import { sendBadRequest, sendNotFound, sendOk, sendResponse } from "infra/http/responses.ts";
+import { sendBadRequest, sendNotFound, sendOk, sendServerError } from "infra/http/responses.ts";
 import { reportSchema } from "infra/http/schemas/report_schema.ts";
 import { validate } from "shared/tools.ts";
 
@@ -54,17 +54,42 @@ export default function (service: CrmService) {
 			return;
 		}
 
-		if (voidOrErr.isLeft()) {
-			sendResponse(ctx, 500, "Não foi possível registrar o relatório");
+		if (voidOrErr.value instanceof Error) {
+			sendServerError(ctx, voidOrErr.value.message);
 			return;
 		}
 
 		sendOk(ctx);
 	};
 
+	const lastReportHandler = async (ctx: Context) => {
+		const patientId = ctx.request.url.searchParams.get("patientId");
+		const hospitalizationId = ctx.request.url.searchParams.get("hospitalizationId");
+		const ownerId = ctx.request.url.searchParams.get("ownerId");
+
+		if (!ownerId || !patientId || !hospitalizationId) {
+			sendBadRequest(ctx);
+			return;
+		}
+
+		const dataOrErr = await service.lastReport(
+			patientId,
+			ownerId,
+			hospitalizationId,
+		);
+
+		if (dataOrErr.isLeft()) {
+			sendNotFound(ctx, dataOrErr.value.message);
+			return;
+		}
+
+		sendOk(ctx, dataOrErr.value);
+	};
+
 	const router = new Router({ prefix: "/owners" });
-	router.get("/", listOwnerHandler);
+	router.get("/last-report", lastReportHandler);
 	router.get("/:ownerId", findOwnerHandler);
 	router.post("/register-report", validate(reportSchema), registerReportHandler);
+	router.get("/", listOwnerHandler);
 	return router;
 }

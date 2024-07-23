@@ -47,7 +47,12 @@ const hospitalizationService = new HospitalizationService(
 	hospitalizationRepository,
 );
 const budgetService = new BudgetService(budgetRepository);
-const crmService = new CrmService(ownerRepository, patientRepository, reportRepository);
+const crmService = new CrmService(
+	ownerRepository,
+	patientRepository,
+	reportRepository,
+	budgetRepository,
+);
 
 startHttpServer({
 	alertService,
