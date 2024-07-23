@@ -1,8 +1,7 @@
 import { assertEquals } from "dev_deps";
-import { BudgetStatus } from "domain/budget/budget.ts";
+import { Budget, BudgetStatus } from "domain/budget/budget.ts";
+import { SQLiteBudgetRepository } from "persistence/sqlite/sqlite_budget_repository.ts";
 import { ID } from "shared/id.ts";
-import { Budget } from "../../src/domain/budget/budget.ts";
-import { SQLiteBudgetRepository } from "../../src/persistence/sqlite/sqlite_budget_repository.ts";
 import { budgetData } from "../fake_data.ts";
 import { init_test_db, populate } from "./test_db.ts";
 
@@ -38,9 +37,11 @@ Deno.test("SQLite - Budget Repository", async (t) => {
 
 		const repository = new SQLiteBudgetRepository(db);
 
-		const budget = await repository.getByHospitalizationId(
+		const budgetOrErr = await repository.get(
 			ID.fromString("some-hospitalization-id"),
 		);
+
+		const budget = <Budget> budgetOrErr.value;
 
 		assertEquals(budget.hospitalizationId.value, "some-hospitalization-id");
 		assertEquals(budget.startOn.toISOString(), budgetData.startOn);
@@ -54,17 +55,21 @@ Deno.test("SQLite - Budget Repository", async (t) => {
 
 		const repository = new SQLiteBudgetRepository(db);
 
-		const budget = await repository.getByHospitalizationId(
+		const budgetOrErr = await repository.get(
 			ID.fromString("some-hospitalization-id"),
 		);
+
+		const budget = <Budget> budgetOrErr.value;
 
 		budget.changeStatus(BudgetStatus.Paid);
 
 		await repository.update(budget);
 
-		const updatedBudget = await repository.getByHospitalizationId(
+		const updatedBudgetOrErr = await repository.get(
 			ID.fromString("some-hospitalization-id"),
 		);
+
+		const updatedBudget = <Budget> updatedBudgetOrErr.value;
 
 		assertEquals(updatedBudget.status, BudgetStatus.Paid);
 	});
