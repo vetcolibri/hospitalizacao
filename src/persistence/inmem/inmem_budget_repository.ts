@@ -1,6 +1,8 @@
-import { Budget } from "../../domain/budget/budget.ts";
-import { BudgetRepository } from "../../domain/budget/budget_repository.ts";
-import { ID } from "../../shared/id.ts";
+import { Budget } from "domain/budget/budget.ts";
+import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
+import { BudgetRepository } from "domain/budget/budget_repository.ts";
+import { Either, left, right } from "shared/either.ts";
+import { ID } from "shared/id.ts";
 
 export class InmemBudgetRepository implements BudgetRepository {
 	#budgets: Record<string, Budget> = {};
@@ -13,9 +15,10 @@ export class InmemBudgetRepository implements BudgetRepository {
 		return Promise.resolve(this.records);
 	}
 
-	getByHospitalizationId(hospitalizationId: ID): Promise<Budget> {
-		const budget = this.records.find((b) => b.hospitalizationId.equals(hospitalizationId))!;
-		return Promise.resolve(budget);
+	get(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>> {
+		const budget = this.records.find((b) => b.hospitalizationId.equals(hospitalizationId));
+		if (!budget) return Promise.resolve(left(new BudgetNotFound()));
+		return Promise.resolve(right(budget));
 	}
 
 	save(budget: Budget): Promise<void> {
