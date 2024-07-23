@@ -1,9 +1,11 @@
+import { Budget } from "domain/budget/budget.ts";
+import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
+import { Either } from "shared/either.ts";
 import { ID } from "shared/id.ts";
-import { Budget } from "./budget.ts";
 
 export interface BudgetRepository {
+	get(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>>;
 	getAll(): Promise<Budget[]>;
-	getByHospitalizationId(hospitalizationId: ID): Promise<Budget>;
 	save(budget: Budget): Promise<void>;
 	update(budget: Budget): Promise<void>;
 	last(): Promise<Budget>;

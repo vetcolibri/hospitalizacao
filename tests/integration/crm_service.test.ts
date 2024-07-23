@@ -1,23 +1,27 @@
-import { assertEquals, assertInstanceOf } from "dev_deps";
+import { CrmService, LastReportData } from "application/crm_service.ts";
+import { assertEquals, assertInstanceOf, assertObjectMatch } from "dev_deps";
+import { Budget } from "domain/budget/budget.ts";
+import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
-import { ReportRepository } from "domain/crm/report/report_repository.ts";
+import { Discharge } from "domain/crm/report/discharge.ts";
+import { Food } from "domain/crm/report/food.ts";
+import { Report } from "domain/crm/report/report.ts";
+import { ReportNotFound } from "domain/crm/report/report_not_found_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
+import { PatientRepository } from "domain/patient/patient_repository.ts";
+import { InmemBudgetRepository } from "persistence/inmem/inmem_budget_repository.ts";
 import { InmemOwnerRepository } from "persistence/inmem/inmem_owner_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
 import { InmemReportRepository } from "persistence/inmem/inmem_report_repository.ts";
 import { ID } from "shared/id.ts";
-import { CrmService } from "../../src/application/crm_service.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 
 Deno.test("Crm Service - List Owners", async (t) => {
 	await t.step("Deve recuperar os proprietários do repositório", async () => {
-		const ownerRepo = new InmemOwnerRepository();
+		const { service, ownerRepo } = makeService();
 		await ownerRepo.save(john);
-		const patientRepo = new InmemPatientRepository();
-		const reportRepo: ReportRepository = new InmemReportRepository();
-		const service = new CrmService(ownerRepo, patientRepo, reportRepo);
 
 		const owners = await service.getAll();
 
@@ -27,10 +31,7 @@ Deno.test("Crm Service - List Owners", async (t) => {
 	await t.step(
 		"Deve retornar uma lista vazia se não houver proprietários",
 		async () => {
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new InmemPatientRepository();
-			const reportRepo: ReportRepository = new InmemReportRepository();
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+			const { service } = makeService();
 
 			const owners = await service.getAll();
 
@@ -44,11 +45,8 @@ Deno.test("Crm Service - Find Owner", async (t) => {
 	await t.step(
 		"Deve recuperar o dono do paciente se ele existir no repositório.",
 		async () => {
-			const ownerRepo = new InmemOwnerRepository();
+			const { service, ownerRepo } = makeService();
 			await ownerRepo.save(john);
-			const patientRepo = new InmemPatientRepository();
-			const reportRepo: ReportRepository = new InmemReportRepository();
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
 
 			const ownerOrErr = await service.findOwner("1001");
 
@@ -62,10 +60,7 @@ Deno.test("Crm Service - Find Owner", async (t) => {
 	await t.step(
 		"Deve retornar @OwnerNotFound se o dono não existir no repositório.",
 		async () => {
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new InmemPatientRepository();
-			const reportRepo: ReportRepository = new InmemReportRepository();
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+			const { service } = makeService();
 
 			const err = await service.findOwner("1002");
 
@@ -94,10 +89,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				comments: "Paciente está bem",
 			};
 
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new PatientRepositoryStub();
-			const reportRepo: ReportRepository = new InmemReportRepository();
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+			const { service } = makeService({ patientRepository: new PatientRepositoryStub() });
 
 			const err = await service.registerReport(data);
 
@@ -123,10 +115,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				},
 				comments: "Paciente está bem",
 			};
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new InmemPatientRepository();
-			const reportRepo: ReportRepository = new InmemReportRepository();
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+			const { service } = makeService();
 
 			const err = await service.registerReport(data);
 
@@ -152,18 +141,16 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				},
 				comments: "Paciente está bem",
 			};
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new PatientRepositoryStub();
-			const reportRepo: ReportRepository = new InmemReportRepository();
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
-			const stateOfConsciousness = ["Consciente"];
+			const { service, reportRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
 
 			await service.registerReport(data);
 
 			const report = await reportRepo.get(ID.fromString(data.patientId));
 
 			assertEquals(report.patientId.value, data.patientId);
-			assertEquals(report.stateOfConsciousness, stateOfConsciousness);
+			assertEquals(report.stateOfConsciousness, ["Consciente"]);
 		},
 	);
 
@@ -184,17 +171,16 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				},
 				comments: "Paciente está bem, e comeu bem",
 			};
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new PatientRepositoryStub();
-			const reportRepo: ReportRepository = new InmemReportRepository();
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
-			const stateOfConsciousness = ["Consciente", "Alerta"];
+
+			const { service, reportRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
 
 			await service.registerReport(data);
 
 			const report = await reportRepo.get(ID.fromString(data.patientId));
 
-			assertEquals(report.stateOfConsciousness, stateOfConsciousness);
+			assertEquals(report.stateOfConsciousness, ["Consciente", "Alerta"]);
 		},
 	);
 
@@ -216,11 +202,9 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				comments: "Paciente ainda não come muito",
 			};
 
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new PatientRepositoryStub();
-			const reportRepo = new InmemReportRepository();
-
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+			const { service, reportRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
 
 			await service.registerReport(data);
 
@@ -250,11 +234,9 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				comments: "Paciente está bem",
 			};
 
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new PatientRepositoryStub();
-			const reportRepo = new InmemReportRepository();
-
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+			const { service, reportRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
 
 			await service.registerReport(data);
 
@@ -283,11 +265,9 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				comments: "Paciente está bem",
 			};
 
-			const ownerRepo = new InmemOwnerRepository();
-			const patientRepo = new PatientRepositoryStub();
-			const reportRepo = new InmemReportRepository();
-
-			const service = new CrmService(ownerRepo, patientRepo, reportRepo);
+			const { service, reportRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
 
 			await service.registerReport(data);
 
@@ -298,4 +278,166 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 	);
 });
 
+Deno.test("Crm Service - Get Last Report", async (t) => {
+	await t.step("Deve recuperar o último relatório do paciente", async () => {
+		const { service, ownerRepo, reportRepo, budgetRepo } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		await budgetRepo.save(budget);
+		await ownerRepo.save(john);
+		await reportRepo.save(report);
+
+		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+
+		const output = <LastReportData> lastReportOrErr.value;
+
+		assertObjectMatch(output, payload);
+	});
+
+	await t.step("Deve adicionar o estado do orçamento ao relatório", async () => {
+		const { service, ownerRepo, reportRepo, budgetRepo } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await budgetRepo.save(budget);
+		await ownerRepo.save(john);
+		await reportRepo.save(report);
+
+		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+
+		const output = <LastReportData> lastReportOrErr.value;
+
+		assertEquals(output.budgetStatus, "PENDENTE");
+	});
+
+	await t.step(
+		"Deve retornar @PatientNotFound se o paciente não pertencer ao tutor",
+		async () => {
+			const { service, ownerRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+			await ownerRepo.save(huston);
+
+			const err = await service.lastReport("1900BA", "1002", "111");
+
+			assertEquals(err.isLeft(), true);
+			assertInstanceOf(err.value, PatientNotFound);
+		},
+	);
+
+	await t.step(
+		"Deve retornar @PatientNotHospitalized se o paciente não estiver hospitalizado",
+		async () => {
+			const { service, ownerRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+			await ownerRepo.save(john);
+
+			const err = await service.lastReport("1927BA", "1001", "111");
+
+			assertEquals(err.isLeft(), true);
+			assertInstanceOf(err.value, PatientNotHospitalized);
+		},
+	);
+
+	await t.step("Deve retornar @OwnerNotFound se o dono não for encontrado", async () => {
+		const { service } = makeService();
+
+		const err = await service.lastReport("1001", "1001", "111");
+
+		assertEquals(err.isLeft(), true);
+		assertInstanceOf(err.value, OwnerNotFound);
+	});
+
+	await t.step("Deve retornar @PatientNotFound se o paciente não for encontrado", async () => {
+		const { service, ownerRepo } = makeService();
+		await ownerRepo.save(john);
+
+		const err = await service.lastReport("1900BA", "1001", "111");
+
+		assertEquals(err.isLeft(), true);
+		assertInstanceOf(err.value, PatientNotFound);
+	});
+
+	await t.step("Deve retornar @ReportNotFound se o relatório não for encontrado", async () => {
+		const { service, ownerRepo } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		await ownerRepo.save(john);
+
+		const err = await service.lastReport("1900BA", "1001", "111");
+
+		assertEquals(err.isLeft(), true);
+		assertInstanceOf(err.value, ReportNotFound);
+	});
+
+	await t.step("Deve retornar @BudgetNotFound se o orçamento não for encontrado", async () => {
+		const { service, ownerRepo, reportRepo } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+		await ownerRepo.save(john);
+		await reportRepo.save(report);
+
+		const err = await service.lastReport("1900BA", "1001", "111");
+
+		assertEquals(err.isLeft(), true);
+		assertInstanceOf(err.value, BudgetNotFound);
+	});
+});
+
 const john = new Owner("1001", "John", "933001122");
+const huston = new Owner("1002", "Huston", "933843893");
+const food = new Food(["Ração"], "1", "2021-09-01T00:00:00");
+const discharge = new Discharge("Urina", "Normal");
+const report = new Report(
+	ID.random(),
+	ID.fromString("1900BA"),
+	["Consciente"],
+	food,
+	discharge,
+	"Paciente está bem",
+);
+
+const budget = new Budget("111", "2020-01-01T00:00:00", "2020-01-10T00:00:00", "PENDENTE");
+
+const payload = {
+	ownerName: "John",
+	patientName: "Rex",
+	stateOfConsciousness: ["Consciente"],
+	food: {
+		type: ["Ração"],
+		level: "1",
+		date: new Date("2021-09-01T00:00:00").toISOString(),
+	},
+	discharge: {
+		type: "Urina",
+		aspect: "Normal",
+	},
+	comments: "Paciente está bem",
+};
+
+interface Options {
+	patientRepository: PatientRepository;
+}
+
+function makeService(opts?: Options) {
+	const ownerRepo = new InmemOwnerRepository();
+	const reportRepo = new InmemReportRepository();
+	const patientRepo = opts?.patientRepository ?? new InmemPatientRepository();
+	const budgetRepo = new InmemBudgetRepository();
+
+	const service = new CrmService(
+		ownerRepo,
+		patientRepo,
+		reportRepo,
+		budgetRepo,
+	);
+
+	return {
+		service,
+		ownerRepo,
+		patientRepo,
+		reportRepo,
+		budgetRepo,
+	};
+}
