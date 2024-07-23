@@ -6,6 +6,7 @@ import { HospitalizationService } from "application/hospitalization_service.ts";
 import { PatientService } from "application/patient_service.ts";
 import { RoundService } from "application/round_service.ts";
 import { Application, oakCors } from "deps";
+import { logger } from "infra/http/logger.ts";
 import { makeTodayFormat } from "shared/tools.ts";
 import alerts_router from "./alerts_router.ts";
 import budgets_router from "./budgets_router.ts";
@@ -38,6 +39,7 @@ export function startHttpServer(opts: {
 	const crmRouter = crm_router(opts.crmService);
 
 	app.use(oakCors());
+	app.use(logger);
 	app.use(patientRouter.routes());
 	app.use(alertRouter.routes());
 	app.use(roundRouter.routes());
