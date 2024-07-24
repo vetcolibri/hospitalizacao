@@ -111,7 +111,7 @@ export class CrmService {
 	}
 
 	#buildFood(data: RegisterReportData) {
-		return new Food(data.food.type, data.food.level, data.food.date);
+		return new Food(data.food.types, data.food.level, data.food.datetime);
 	}
 
 	#buildDischarge(data: RegisterReportData) {
@@ -124,9 +124,9 @@ export class CrmService {
 			patientName: patient.name,
 			stateOfConsciousness: report.stateOfConsciousness,
 			food: {
-				type: report.food.type,
+				types: report.food.types,
 				level: report.food.level,
-				date: report.food.date.toISOString(),
+				datetime: report.food.datetime.toISOString(),
 			},
 			discharge: {
 				type: report.discharge.type,
@@ -141,9 +141,9 @@ export class CrmService {
 interface ReportData {
 	stateOfConsciousness: string[];
 	food: {
-		type: string[];
+		types: string[];
 		level: string;
-		date: string;
+		datetime: string;
 	};
 	discharge: {
 		type: string;

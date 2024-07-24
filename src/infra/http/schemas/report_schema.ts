@@ -4,9 +4,9 @@ export const reportSchema = z.object({
     patientId: z.string(),
     stateOfConsciousness: z.string().array(),
     food: z.object({
-        type: z.string().array(),
+        types: z.string().array(),
         level: z.string(),
-        date: z.string(),
+        datetime: z.string(),
     }),
     discharge: z.object({
         type: z.string(),

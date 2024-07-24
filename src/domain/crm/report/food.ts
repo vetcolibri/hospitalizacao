@@ -1,11 +1,11 @@
 export class Food {
-    readonly type: string[];
+    readonly types: string[];
     readonly level: string;
-    readonly date: Date;
+    readonly datetime: Date;
 
-    constructor(type: string[], level: string, date: string) {
-        this.type = [...type];
+    constructor(types: string[], level: string, date: string) {
+        this.types = [...types];
         this.level = level;
-        this.date = new Date(date);
+        this.datetime = new Date(date);
     }
 }

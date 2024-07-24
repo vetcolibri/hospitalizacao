@@ -78,8 +78,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientId: "1927BA",
 				stateOfConsciousness: ["Consciente"],
 				food: {
-					type: ["Ração"],
-					date: "2021-09-01T00:00:00",
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
 				discharge: {
@@ -105,8 +105,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientId: "1001",
 				stateOfConsciousness: ["Consciente"],
 				food: {
-					type: ["Ração"],
-					date: "2021-09-01T00:00:00",
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
 				discharge: {
@@ -131,8 +131,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientId: "1900BA",
 				stateOfConsciousness: ["Consciente"],
 				food: {
-					type: ["Ração"],
-					date: "2021-09-01T00:00:00",
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
 				discharge: {
@@ -161,8 +161,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientId: "1900BA",
 				stateOfConsciousness: ["Consciente", "Alerta"],
 				food: {
-					type: ["Ração"],
-					date: "2021-09-01T00:00:00",
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
 				discharge: {
@@ -191,8 +191,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientId: "1900BA",
 				stateOfConsciousness: ["Consciente"],
 				food: {
-					type: ["Ração"],
-					date: "2021-09-01T00:00:00",
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
 				discharge: {
@@ -211,8 +211,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 			const report = await reportRepo.get(ID.fromString(data.patientId));
 
 			assertEquals(report.food.level, data.food.level);
-			assertEquals(report.food.date, new Date(data.food.date));
-			assertEquals(report.food.type, data.food.type);
+			assertEquals(report.food.datetime, new Date(data.food.datetime));
+			assertEquals(report.food.types, data.food.types);
 		},
 	);
 
@@ -223,8 +223,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientId: "1900BA",
 				stateOfConsciousness: ["Consciente"],
 				food: {
-					type: ["Ração"],
-					date: "2021-09-01T00:00:00",
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
 				discharge: {
@@ -254,8 +254,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientId: "1900BA",
 				stateOfConsciousness: ["Consciente"],
 				food: {
-					type: ["Ração"],
-					date: "2021-09-01T00:00:00",
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
 				discharge: {
@@ -405,9 +405,9 @@ const payload = {
 	patientName: "Rex",
 	stateOfConsciousness: ["Consciente"],
 	food: {
-		type: ["Ração"],
+		types: ["Ração"],
 		level: "1",
-		date: new Date("2021-09-01T00:00:00").toISOString(),
+		datetime: new Date("2021-09-01T00:00:00").toISOString(),
 	},
 	discharge: {
 		type: "Urina",
