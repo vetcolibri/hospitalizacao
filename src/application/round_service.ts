@@ -1,14 +1,14 @@
+import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
+import { RoundBuilder } from "domain/hospitalization/rounds/round_builder.ts";
+import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
-import { Parameter } from "../domain/hospitalization/parameters/parameter.ts";
-import { RoundBuilder } from "../domain/hospitalization/rounds/round_builder.ts";
-import { RoundRepository } from "../domain/hospitalization/rounds/round_repository.ts";
 
 export class RoundService {
-	readonly #roundRepository: RoundRepository;
-	readonly #patientRepository: PatientRepository;
+	#roundRepository: RoundRepository;
+	#patientRepository: PatientRepository;
 
 	constructor(
 		roundRepository: RoundRepository,
