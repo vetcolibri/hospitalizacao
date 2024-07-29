@@ -15,8 +15,15 @@ export class EntityFactory {
 			ownerId: String(row.owner_id),
 			name: String(row.owner_name),
 			phoneNumber: String(row.phone_number),
+			whatsapp: Boolean(row.whatsapp),
 		};
-		return new Owner(ownerData.ownerId, ownerData.name, ownerData.phoneNumber);
+
+		return new Owner(
+			ownerData.ownerId,
+			ownerData.name,
+			ownerData.phoneNumber,
+			ownerData.whatsapp,
+		);
 	}
 
 	createPatient(row: RowObject): Patient {

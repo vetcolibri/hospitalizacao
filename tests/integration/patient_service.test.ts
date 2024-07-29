@@ -189,6 +189,7 @@ Deno.test("Patient Service - New Patient", async (t) => {
 			ownerId: "1956C",
 			name: "John",
 			phoneNumber: "933001122",
+			whatsapp: true,
 		};
 
 		await service.newPatient({ ...newPatientData, ownerData });
@@ -206,6 +207,7 @@ Deno.test("Patient Service - New Patient", async (t) => {
 			ownerId: "1956B",
 			name: "John",
 			phoneNumber: "933001122",
+			whatsapp: true,
 		};
 
 		await service.newPatient({ ...newPatientData, ownerData });
@@ -218,7 +220,7 @@ Deno.test("Patient Service - New Patient", async (t) => {
 	await t.step("Deve registrar o paciente com o ID de um proprietário existente.", async () => {
 		const patientRepository = new InmemPatientRepository();
 		const { service, ownerRepository } = makeService({ patientRepository });
-		const owner = new Owner("1956B", "John", "933001122");
+		const owner = new Owner("1956B", "John", "933001122", true);
 
 		await ownerRepository.save(owner);
 
@@ -228,6 +230,7 @@ Deno.test("Patient Service - New Patient", async (t) => {
 				ownerId: "1956B",
 				name: "John",
 				phoneNumber: "933001122",
+				whatsapp: true,
 			},
 		});
 
@@ -364,6 +367,46 @@ Deno.test("Patient Service - New Patient", async (t) => {
 
 		assert(budget.hospitalizationId.value !== undefined);
 		assertEquals(budget.status, BudgetStatus.UnPaid);
+	});
+
+	await t.step("Deve marcar se o tutor tem WhatsApp", async () => {
+		const patientRepository = new InmemPatientRepository();
+		const { service, ownerRepository } = makeService({ patientRepository });
+		const ownerData = {
+			ownerId: "1956B",
+			name: "John",
+			phoneNumber: "933001122",
+			whatsapp: true,
+		};
+
+		const data = { ...newPatientData, ownerData: ownerData };
+
+		await service.newPatient(data);
+
+		const ownerOrErr = await ownerRepository.getById(ID.fromString("1956B"));
+		const owner = <Owner> ownerOrErr.value;
+
+		assertEquals(owner.hasWhatsApp(), true);
+	});
+
+	await t.step("Deve marcar se o tutor não tem WhatsApp", async () => {
+		const patientRepository = new InmemPatientRepository();
+		const { service, ownerRepository } = makeService({ patientRepository });
+		const ownerData = {
+			ownerId: "1956B",
+			name: "John",
+			phoneNumber: "933001122",
+			whatsapp: false,
+		};
+
+		const data = { ...newPatientData, ownerData: ownerData };
+
+		await service.newPatient(data);
+
+		const ownerOrErr = await ownerRepository.getById(ID.fromString("1956B"));
+		const owner = <Owner> ownerOrErr.value;
+
+		assertEquals(owner.hasWhatsApp(), false);
 	});
 });
 

@@ -1,10 +1,10 @@
 import { Budget } from "domain/budget/budget.ts";
+import { Owner } from "domain/crm/owner/owner.ts";
 import { Alert } from "domain/hospitalization/alerts/alert.ts";
 import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { Patient } from "domain/patient/patient.ts";
 import { ID } from "shared/id.ts";
-import { Owner } from "../src/domain/crm/owner/owner.ts";
 
 export const patientData = {
 	patientId: "some-id",
@@ -20,6 +20,7 @@ export const ownerData = {
 	ownerId: "PR - 101002/2012",
 	name: "Huston",
 	phoneNumber: "933843893",
+	whatsapp: true,
 };
 
 export const hospitalizationData = {
@@ -61,7 +62,7 @@ const generateArrayString = (size: number) => {
 
 export const invalidComplaints = generateArrayString(11);
 export const invalidDiagnostics = generateArrayString(6);
-export const owner = new Owner("1001", "John", "933001122");
+export const owner = new Owner("1001", "John", "933001122", false);
 
 export const alert1 = new Alert(
 	ID.fromString("10001"),

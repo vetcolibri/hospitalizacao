@@ -12,6 +12,7 @@ interface OwnerDTO {
 	ownerId: string;
 	name: string;
 	phoneNumber: string;
+	whatsapp: boolean;
 }
 
 function toOwnerDTO(owner: Owner): OwnerDTO {
@@ -19,6 +20,7 @@ function toOwnerDTO(owner: Owner): OwnerDTO {
 		ownerId: owner.ownerId.value,
 		name: owner.name,
 		phoneNumber: owner.phoneNumber,
+		whatsapp: owner.whatsapp,
 	};
 }
 

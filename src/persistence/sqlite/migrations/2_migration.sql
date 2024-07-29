@@ -22,4 +22,11 @@ CREATE TABLE IF NOT EXISTS "reports" (
 --
 CREATE INDEX IF NOT EXISTS "reports_system_id_idx" ON "reports" ("system_id");
 
+
+--
+-- Adicionar a coluna "whatsapp" na tabela "owners"
+--
+
+ALTER TABLE "owners" ADD COLUMN "whatsapp" boolean NOT NULL DEFAULT 0;
+
 COMMIT;

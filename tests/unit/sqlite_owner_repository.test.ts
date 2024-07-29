@@ -1,7 +1,7 @@
 import { assertEquals } from "dev_deps";
+import { Owner } from "domain/crm/owner/owner.ts";
+import { SQLiteOwnerRepository } from "persistence/sqlite/sqlite_owner_repository.ts";
 import { ID } from "shared/id.ts";
-import { Owner } from "../../src/domain/crm/owner/owner.ts";
-import { SQLiteOwnerRepository } from "../../src/persistence/sqlite/sqlite_owner_repository.ts";
 import { init_test_db, populate } from "./test_db.ts";
 
 Deno.test("SQLite - Owner Repository", async (t) => {
@@ -49,7 +49,39 @@ Deno.test("SQLite - Owner Repository", async (t) => {
 
 		assertEquals(owner.ownerId.value, "1991AB");
 		assertEquals(owner.name, "John Doe");
-		assertEquals(owner.phoneNumber, "555-5555");
+		assertEquals(owner.phoneNumber, "911000000");
+	});
+
+	await t.step("Deve salvar o dono com WhatsApp.", async () => {
+		const db = await init_test_db();
+
+		const repository = new SQLiteOwnerRepository(db);
+
+		const owner = new Owner("1991AB", "John Doe", "911000000", true);
+
+		await repository.save(owner);
+
+		const ownerOrErr = await repository.getById(ID.fromString("1991AB"));
+
+		const savedOwner = <Owner> ownerOrErr.value;
+
+		assertEquals(savedOwner.whatsapp, true);
+	});
+
+	await t.step("Deve salvar o dono sem WhatsApp.", async () => {
+		const db = await init_test_db();
+
+		const repository = new SQLiteOwnerRepository(db);
+
+		const owner = new Owner("1991AB", "John Doe", "911000000", false);
+
+		await repository.save(owner);
+
+		const ownerOrErr = await repository.getById(ID.fromString("1991AB"));
+
+		const savedOwner = <Owner> ownerOrErr.value;
+
+		assertEquals(savedOwner.whatsapp, false);
 	});
 
 	await t.step("Deve listar os proprietários.", async () => {
@@ -65,4 +97,4 @@ Deno.test("SQLite - Owner Repository", async (t) => {
 	});
 });
 
-const newOwner = new Owner("1991AB", "John Doe", "555-5555");
+const newOwner = new Owner("1991AB", "John Doe", "911000000");

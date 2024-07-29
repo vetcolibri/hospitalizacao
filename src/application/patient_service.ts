@@ -269,7 +269,12 @@ export class PatientService {
 
 		if (ownerOrErr.isRight()) return;
 
-		const owner = new Owner(ownerData.ownerId, ownerData.name, ownerData.phoneNumber);
+		const owner = new Owner(
+			ownerData.ownerId,
+			ownerData.name,
+			ownerData.phoneNumber,
+			ownerData.whatsapp,
+		);
 
 		await this.#ownerRepository.save(owner);
 
@@ -296,6 +301,7 @@ type OwnerData = {
 	ownerId: string;
 	name: string;
 	phoneNumber: string;
+	whatsapp: boolean;
 };
 
 type HospitalizationData = {

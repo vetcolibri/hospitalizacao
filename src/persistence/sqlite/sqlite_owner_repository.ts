@@ -38,11 +38,12 @@ export class SQLiteOwnerRepository implements OwnerRepository {
 
 	save(owner: Owner): Promise<void> {
 		this.#db.queryEntries(
-			"INSERT INTO owners (owner_id, owner_name, phone_number) VALUES (:ownerId, :name, :phoneNumber)",
+			"INSERT INTO owners (owner_id, owner_name, phone_number, whatsapp) VALUES (:ownerId, :name, :phoneNumber, :whatsapp)",
 			{
 				ownerId: owner.ownerId.value,
 				name: owner.name,
 				phoneNumber: owner.phoneNumber,
+				whatsapp: owner.whatsapp,
 			},
 		);
 

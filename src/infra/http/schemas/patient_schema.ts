@@ -12,6 +12,7 @@ const ownerSchema = z.object({
 	ownerId: z.string(),
 	name: z.string(),
 	phoneNumber: z.string(),
+	whatsapp: z.boolean().optional(),
 });
 
 const hospitalizationSchema = z.object({
