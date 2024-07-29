@@ -1,9 +1,11 @@
 import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
 import { RoundBuilder } from "domain/hospitalization/rounds/round_builder.ts";
 import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
+import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
+import { RoundError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
 
 export class RoundService {
@@ -28,11 +30,15 @@ export class RoundService {
 	async new(
 		patientId: string,
 		data: ParametersData,
-	): Promise<Either<Error, void>> {
+	): Promise<Either<RoundError, void>> {
 		const patientOrErr = await this.#patientRepository.getById(
 			ID.fromString(patientId),
 		);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+
+		if (patientOrErr.value.hasBeenDischarged()) {
+			return left(new PatientAlreadyDischarged(patientOrErr.value.name));
+		}
 
 		const patient = patientOrErr.value;
 		const roundBuilderOrErr = new RoundBuilder(patient.systemId)
@@ -48,7 +54,6 @@ export class RoundService {
 			.build();
 
 		if (roundBuilderOrErr.isLeft()) return left(roundBuilderOrErr.value);
-
 		const round = roundBuilderOrErr.value;
 
 		await this.#roundRepository.save(round);

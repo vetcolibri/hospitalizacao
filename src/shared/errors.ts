@@ -23,3 +23,4 @@ export type NewHospitalizationError =
 export type EndHospitalizationError = PatientNotFound | HospitalizationAlreadyClosed;
 export type EndBudgetError = PatientNotFound | PatientAlreadyDischarged;
 export type ReportError = PatientNotHospitalized | PatientNotFound | OwnerNotFound;
+export type RoundError = PatientNotFound | PatientAlreadyDischarged;

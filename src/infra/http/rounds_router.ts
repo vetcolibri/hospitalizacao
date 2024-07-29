@@ -1,9 +1,11 @@
 import { RoundService } from "application/round_service.ts";
 import { Context, Router } from "deps";
+import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
+import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
+import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { validate } from "shared/tools.ts";
-import { Parameter } from "../../domain/hospitalization/parameters/parameter.ts";
 import { ContextWithParams } from "./context_with_params.ts";
-import { sendBadRequest, sendOk } from "./responses.ts";
+import { sendBadRequest, sendNotFound, sendOk } from "./responses.ts";
 import { roundSchema } from "./schemas/round_schema.ts";
 
 interface ParameterDTO {
@@ -25,7 +27,12 @@ export default function (service: RoundService) {
 		const { patientId, parameters } = ctx.state.validatedData;
 		const voidOrErr = await service.new(patientId, parameters);
 
-		if (voidOrErr.isLeft()) {
+		if (voidOrErr.value instanceof PatientNotFound) {
+			sendNotFound(ctx, voidOrErr.value.message);
+			return;
+		}
+
+		if (voidOrErr.value instanceof PatientAlreadyDischarged) {
 			sendBadRequest(ctx, voidOrErr.value.message);
 			return;
 		}

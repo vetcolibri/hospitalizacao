@@ -226,8 +226,6 @@ export class PatientService {
 
 		const patient = patientOrErr.value;
 
-		if (patient.alreadyDischarged()) return left(new Error("Patient already discharged"));
-
 		const budgetOrErr = await this.#budgetRepository.get(
 			ID.fromString(hospitalizationId),
 		);
@@ -236,19 +234,19 @@ export class PatientService {
 
 		budgetOrErr.value.changeStatus(status);
 
-		if (budgetOrErr.value.unpaid() && patient.hasDischarged()) {
+		if (budgetOrErr.value.unpaid() && patient.hasBeenDischarged()) {
 			patient.dischargeWithUnpaidBudget();
 		}
 
-		if (budgetOrErr.value.pending() && patient.hasDischarged()) {
+		if (budgetOrErr.value.pending() && patient.hasBeenDischarged()) {
 			patient.dischargeWithPendingBudget();
 		}
 
-		if (budgetOrErr.value.itWasSent() && patient.hasDischarged()) {
+		if (budgetOrErr.value.itWasSent() && patient.hasBeenDischarged()) {
 			patient.dischargeWithBudgetSent();
 		}
 
-		if (budgetOrErr.value.isPaid() && patient.hasDischarged()) {
+		if (budgetOrErr.value.isPaid() && patient.hasBeenDischarged()) {
 			patient.discharge();
 		}
 

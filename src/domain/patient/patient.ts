@@ -100,16 +100,14 @@ export class Patient {
 		return this.#status === PatientStatus.Hospitalized;
 	}
 
-	alreadyDischarged() {
-		return this.status === PatientStatus.Discharged;
-	}
-
-	hasDischarged() {
+	hasBeenDischarged() {
 		if (this.status === PatientStatus.DischargedWithUnpaidBudget) return true;
 
 		if (this.status === PatientStatus.DischargedWithPendingBudget) return true;
 
 		if (this.status === PatientStatus.DischargedWithBudgetSent) return true;
+
+		if (this.status === PatientStatus.Discharged) return true;
 
 		return false;
 	}
