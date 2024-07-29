@@ -29,6 +29,12 @@ import {
 import { BudgetRepositoryStub } from "../stubs/budget_repository_stub.ts";
 import { HospitalizationRepositoryStub } from "../stubs/hospitalization_repository_stub.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
+import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
+import { InmemAlertRepository } from "persistence/inmem/inmem_alert_repository.ts";
+import { Alert } from "domain/hospitalization/alerts/alert.ts";
+import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
+import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";
+import { AlertNotifier } from "application/alert_notifier.ts";
 
 Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 	await t.step(
@@ -528,6 +534,48 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 			assertInstanceOf(error.value, HospitalizationAlreadyClosed);
 		},
 	);
+
+	await t.step("Deve cancelar os alertas quando a hospitalização é encerrada", async () => {
+		const hospitalizationRepository = new HospitalizationRepositoryStub();
+		const alertRepository = new InmemAlertRepository();
+		await alertRepository.save(alert1);
+		await alertRepository.save(alert2);
+		const budgetRepository = new BudgetRepositoryStub();
+		const { service } = makeService({
+			hospitalizationRepository,
+			budgetRepository,
+			alertRepository,
+		});
+
+		await service.endHospitalization("1901BA");
+
+		const alerts = await alertRepository.findAll(ID.fromString("1901BA"));
+
+		assertEquals(alerts.length, 2);
+		alerts.every((a) => assert(a.isDisabled() === true));
+	});
+
+	await t.step(
+		"Deve notificar o worker para remover os jobs para os alertas do paciente",
+		async () => {
+			const hospitalizationRepository = new HospitalizationRepositoryStub();
+			const alertRepository = new InmemAlertRepository();
+			await alertRepository.save(alert1);
+			await alertRepository.save(alert3);
+			const budgetRepository = new BudgetRepositoryStub();
+			const { service, alertNotifier } = makeService({
+				hospitalizationRepository,
+				budgetRepository,
+				alertRepository,
+				alertNotifier: new AlertNotifierDummy(),
+			});
+			const alertSpy = spy(alertNotifier, "cancel");
+
+			await service.endHospitalization("1902BA");
+
+			assertSpyCalls(alertSpy, 1);
+		},
+	);
 });
 
 Deno.test("Patient Service - End Budget", async (t) => {
@@ -684,11 +732,40 @@ Deno.test("Patient Service - End Budget", async (t) => {
 	);
 });
 
+const alert1 = new Alert(
+	ID.random(),
+	ID.fromString("1901BA"),
+	["1"],
+	new Date(),
+	new RepeatEvery(1),
+	"comments",
+);
+
+const alert2 = new Alert(
+	ID.random(),
+	ID.fromString("1901BA"),
+	["2"],
+	new Date(),
+	new RepeatEvery(1),
+	"comments",
+);
+
+const alert3 = new Alert(
+	ID.random(),
+	ID.fromString("1902BA"),
+	["3"],
+	new Date(),
+	new RepeatEvery(1),
+	"Comments",
+);
+
 interface Options {
 	patientRepository?: PatientRepository;
 	ownerRepository?: OwnerRepository;
 	hospitalizationRepository?: HospitalizationRepository;
 	budgetRepository?: BudgetRepository;
+	alertRepository?: AlertRepository;
+	alertNotifier?: AlertNotifier;
 }
 
 function makeService(options?: Options) {
@@ -697,12 +774,16 @@ function makeService(options?: Options) {
 	const hospitalizationRepository = options?.hospitalizationRepository ??
 		new InmemHospitalizationRepository();
 	const budgetRepository = options?.budgetRepository ?? new InmemBudgetRepository();
+	const alertRepository = options?.alertRepository ?? new InmemAlertRepository();
+	const alertNotifier = options?.alertNotifier ?? new AlertNotifierDummy();
 
 	const service = new PatientService(
 		patientRepository,
 		ownerRepository,
 		hospitalizationRepository,
 		budgetRepository,
+		alertRepository,
+		alertNotifier,
 	);
 	return {
 		service,
@@ -710,5 +791,7 @@ function makeService(options?: Options) {
 		ownerRepository,
 		hospitalizationRepository,
 		budgetRepository,
+		alertRepository,
+		alertNotifier,
 	};
 }

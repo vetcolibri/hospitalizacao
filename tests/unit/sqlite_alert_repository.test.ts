@@ -136,6 +136,38 @@ Deno.test("SQLite - Alert Repository", async (t) => {
 
 		assertEquals(alerts.every((a) => !a.isDisabled()), true);
 	});
+
+	await t.step("Deve recuperar os alertas activos de um paciente", async () => {
+		const db = await init_test_db();
+
+		populate(db);
+
+		const repository = new SQLiteAlertRepository(db);
+
+		await repository.save(secondAlert);
+
+		const alerts = await repository.findActives(secondAlert.patientId);
+
+		assertEquals(alerts.every((a) => !a.isDisabled()), true);
+	});
+
+	await t.step("Deve atualizar todos os alertas", async () => {
+		const db = await init_test_db();
+
+		populate(db);
+
+		const repository = new SQLiteAlertRepository(db);
+		await repository.save(firstAlert);
+		await repository.save(secondAlert);
+		const alerts = await repository.getActives();
+		alerts.forEach((a) => a.cancel());
+
+		await repository.updateAll(alerts);
+
+		const disabledAlerts = await repository.getActives();
+
+		assertEquals(disabledAlerts.every((a) => a.isDisabled()), true);
+	});
 });
 
 const alertData = {
