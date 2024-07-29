@@ -153,7 +153,7 @@ patientDischarged5.dischargeWithBudgetSent();
 
 export const PATIENTS = {
 	hospitalized: {
-		[ID.fromString("1918BA").value]: new Patient(
+		["1918BA"]: new Patient(
 			ID.fromString("1918BA"),
 			ID.random().value,
 			patientData.name,
@@ -162,7 +162,7 @@ export const PATIENTS = {
 			patientData.birthDate,
 			patientData.ownerId,
 		),
-		[ID.fromString("1919BA").value]: new Patient(
+		["1919BA"]: new Patient(
 			ID.fromString("1919BA"),
 			ID.fromString("some-id").value,
 			patientData.name,
@@ -171,7 +171,7 @@ export const PATIENTS = {
 			patientData.birthDate,
 			patientData.ownerId,
 		),
-		[ID.fromString("1920BA").value]: new Patient(
+		["1920BA"]: new Patient(
 			ID.fromString("1920BA"),
 			ID.random().value,
 			patientData.name,
@@ -180,7 +180,7 @@ export const PATIENTS = {
 			patientData.birthDate,
 			patientData.ownerId,
 		),
-		[ID.fromString("1921BA").value]: new Patient(
+		["1921BA"]: new Patient(
 			ID.fromString("1921BA"),
 			ID.random().value,
 			patientData.name,
@@ -189,7 +189,7 @@ export const PATIENTS = {
 			patientData.birthDate,
 			patientData.ownerId,
 		),
-		[ID.fromString("1922BA").value]: new Patient(
+		["1922BA"]: new Patient(
 			ID.fromString("1922BA"),
 			ID.random().value,
 			patientData.name,
@@ -228,6 +228,15 @@ export const PATIENTS = {
 		["1903BA"]: new Patient(
 			ID.fromString("1903BA"),
 			ID.fromString("some-id-13").value,
+			patientData.name,
+			patientData.specie,
+			patientData.breed,
+			patientData.birthDate,
+			patientData.ownerId,
+		),
+		["1904BA"]: new Patient(
+			ID.fromString("1904BA"),
+			ID.fromString("some-id-14").value,
 			patientData.name,
 			patientData.specie,
 			patientData.breed,

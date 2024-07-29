@@ -1,12 +1,13 @@
 import { RoundService } from "application/round_service.ts";
 import { assertEquals, assertInstanceOf, assertNotEquals } from "dev_deps";
+import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
+import { InvalidParameter } from "domain/hospitalization/parameters/parameter_error.ts";
+import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
+import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
 import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.ts";
-import { Parameter } from "../../src/domain/hospitalization/parameters/parameter.ts";
-import { InvalidParameter } from "../../src/domain/hospitalization/parameters/parameter_error.ts";
-import { RoundRepository } from "../../src/domain/hospitalization/rounds/round_repository.ts";
 import { PATIENTS } from "../fake_data.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
@@ -29,6 +30,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			assertNotEquals(round.patientId.value, undefined);
 		},
 	);
+
 	await t.step(
 		"Deve adicionar o parâmetro da Frequência cardiaca a ronda de exames",
 		async () => {
@@ -197,41 +199,9 @@ Deno.test("Round Service - New Round", async (t) => {
 		assertEquals(bloodPressure?.name, "bloodPressure");
 		assertEquals(bloodPressure?.value, "120/80 (56)");
 	});
-});
 
-Deno.test("Round Service - Latest Measurements", async (t) => {
-	await t.step("Deve retornar as ultimas medições do paciente", async () => {
-		const roundRepository = new RoundRepositoryStub();
-		const { service } = makeService({ roundRepository });
-
-		const paramsOrErr = await service.latestMeasurements(
-			PATIENTS.hospitalized["1918BA"].systemId.value,
-		);
-
-		const parameters = <Parameter[]> paramsOrErr.value;
-
-		assertEquals(parameters.length, 2);
-	});
-});
-
-Deno.test("Round Service - List Measurements", async (t) => {
-	await t.step("Deve listar as medições.", async () => {
-		const roundRepository = new RoundRepositoryStub();
-		const { service } = makeService({ roundRepository });
-
-		const paramsOrErr = await service.measurements(
-			PATIENTS.hospitalized["1918BA"].systemId.value,
-		);
-
-		const parameters = <Parameter[]> paramsOrErr.value;
-
-		assertEquals(parameters.length, 3);
-	});
-});
-
-Deno.test("Round Service - Errors", async (t) => {
 	await t.step(
-		"Deve retornar @PatientNofFoundError se o paciente não existir.",
+		"Deve retornar @PatientNotFoundError se o paciente não existir.",
 		async () => {
 			const parameters = {
 				heartRate: {
@@ -434,7 +404,7 @@ Deno.test("Round Service - Errors", async (t) => {
 			const { service } = makeService();
 
 			const error = await service.new(
-				PATIENTS.hospitalized["1918BA"].systemId.value,
+				PATIENTS.hospitalized["1904BA"].systemId.value,
 				parameters,
 			);
 
@@ -444,17 +414,40 @@ Deno.test("Round Service - Errors", async (t) => {
 	);
 
 	await t.step(
-		"Deve retornar @PatientNotFound se o paciente não existir.",
+		"Deve retornar @PatientAlreadyDischarged se o paciente já recebeu alta.",
 		async () => {
-			const patientRepository = new InmemPatientRepository();
-			const { service } = makeService({ patientRepository });
+			const parameters = {
+				heartRate: {
+					name: "heartRate",
+					value: 78,
+				},
+			};
+			const { service } = makeService();
 
-			const error = await service.measurements("some-patient-id");
+			const error = await service.new(
+				"1923BA",
+				parameters,
+			);
 
 			assertEquals(error.isLeft(), true);
-			assertInstanceOf(error.value, PatientNotFound);
+			assertInstanceOf(error.value, PatientAlreadyDischarged);
 		},
 	);
+});
+
+Deno.test("Round Service - Latest Measurements", async (t) => {
+	await t.step("Deve retornar as ultimas medições do paciente", async () => {
+		const roundRepository = new RoundRepositoryStub();
+		const { service } = makeService({ roundRepository });
+
+		const paramsOrErr = await service.latestMeasurements(
+			PATIENTS.hospitalized["1918BA"].systemId.value,
+		);
+
+		const parameters = <Parameter[]> paramsOrErr.value;
+
+		assertEquals(parameters.length, 2);
+	});
 
 	await t.step(
 		"Deve retornar @PatientNotFound se o paciente não existir.",
@@ -470,7 +463,35 @@ Deno.test("Round Service - Errors", async (t) => {
 	);
 });
 
-const patientId = PATIENTS.hospitalized["1918BA"].systemId.value;
+Deno.test("Round Service - List Measurements", async (t) => {
+	await t.step("Deve listar as medições.", async () => {
+		const roundRepository = new RoundRepositoryStub();
+		const { service } = makeService({ roundRepository });
+
+		const paramsOrErr = await service.measurements(
+			PATIENTS.hospitalized["1918BA"].systemId.value,
+		);
+
+		const parameters = <Parameter[]> paramsOrErr.value;
+
+		assertEquals(parameters.length, 3);
+	});
+
+	await t.step(
+		"Deve retornar @PatientNotFound se o paciente não existir.",
+		async () => {
+			const patientRepository = new InmemPatientRepository();
+			const { service } = makeService({ patientRepository });
+
+			const error = await service.measurements("some-patient-id");
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PatientNotFound);
+		},
+	);
+});
+
+const patientId = PATIENTS.hospitalized["1904BA"].systemId.value;
 
 interface options {
 	roundRepository?: RoundRepository;
