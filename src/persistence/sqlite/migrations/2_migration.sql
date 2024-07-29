@@ -28,5 +28,6 @@ CREATE INDEX IF NOT EXISTS "reports_system_id_idx" ON "reports" ("system_id");
 --
 
 ALTER TABLE "owners" ADD COLUMN "whatsapp" boolean NOT NULL DEFAULT 0;
+ALTER TABLE "reports" ADD COLUMN "created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 COMMIT;

@@ -40,6 +40,7 @@ export class SQLiteReportRepository implements ReportRepository {
 				food_date,
 				discharge_type,
 				discharge_aspect,
+                created_at,
 				comments
 			)
 			VALUES (
@@ -51,6 +52,7 @@ export class SQLiteReportRepository implements ReportRepository {
 				:foodDate,
 				:dischargeType,
 				:dischargeAspect,
+                :createdAt,
 				:comments
 			)
 		`,
@@ -63,6 +65,7 @@ export class SQLiteReportRepository implements ReportRepository {
                 foodDate: report.food.datetime,
                 dischargeType: report.discharge.type,
                 dischargeAspect: report.discharge.aspect,
+                createdAt: report.createdAt,
                 comments: report.comments,
             },
         );

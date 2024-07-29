@@ -123,6 +123,7 @@ export class CrmService {
 			ownerName: owner.name,
 			patientName: patient.name,
 			patientId: patient.patientId.value,
+			createdAt: report.createdAt.toISOString(),
 			stateOfConsciousness: report.stateOfConsciousness,
 			food: {
 				types: report.food.types,
@@ -161,5 +162,6 @@ export interface LastReportData extends ReportData {
 	ownerName: string;
 	patientName: string;
 	patientId: string;
+	createdAt: string;
 	budgetStatus: string;
 }

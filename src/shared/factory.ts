@@ -106,6 +106,7 @@ export class EntityFactory {
 			food,
 			discharge,
 			String(row.comments),
+			new Date(String(row.created_at)),
 		);
 	}
 }

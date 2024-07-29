@@ -9,6 +9,7 @@ export class Report {
 	readonly discharge: Discharge;
 	readonly stateOfConsciousness: string[];
 	readonly comments: string;
+	readonly createdAt: Date;
 
 	constructor(
 		reportId: ID,
@@ -17,6 +18,7 @@ export class Report {
 		food: Food,
 		discharge: Discharge,
 		comments: string,
+		createdAt?: Date,
 	) {
 		this.reportId = reportId;
 		this.patientId = patientId;
@@ -24,5 +26,12 @@ export class Report {
 		this.food = food;
 		this.discharge = discharge;
 		this.comments = comments;
+
+		if (createdAt) {
+			this.createdAt = createdAt;
+			return;
+		}
+
+		this.createdAt = new Date();
 	}
 }

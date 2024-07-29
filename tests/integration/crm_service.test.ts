@@ -276,6 +276,36 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 			assertEquals(report.comments, data.comments);
 		},
 	);
+
+	await t.step(
+		"Ao criar o **Report** para o tutor, o sistema deve salvar o momento em que o **Report** foi criado",
+		async () => {
+			const data = {
+				patientId: "1900BA",
+				stateOfConsciousness: ["Consciente"],
+				food: {
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
+					level: "1",
+				},
+				discharge: {
+					type: "Urina",
+					aspect: "Normal",
+				},
+				comments: "Paciente está bem",
+			};
+
+			const { service, reportRepo } = makeService({
+				patientRepository: new PatientRepositoryStub(),
+			});
+
+			await service.registerReport(data);
+
+			const report = await reportRepo.get(ID.fromString(data.patientId));
+
+			assertEquals(report.createdAt, new Date());
+		},
+	);
 });
 
 Deno.test("Crm Service - Get Last Report", async (t) => {
@@ -324,6 +354,22 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		const output = <LastReportData> lastReportOrErr.value;
 
 		assertEquals(output.patientId, "some-id-10");
+	});
+
+	await t.step("Deve constar o momento em que o relatório foi criado", async () => {
+		const { service, ownerRepo, reportRepo, budgetRepo } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await budgetRepo.save(budget);
+		await ownerRepo.save(john);
+		await reportRepo.save(report);
+
+		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+
+		const output = <LastReportData> lastReportOrErr.value;
+
+		assertEquals(new Date(output.createdAt).getDate(), new Date().getDate());
 	});
 
 	await t.step(
