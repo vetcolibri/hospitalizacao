@@ -310,6 +310,22 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		assertEquals(output.budgetStatus, "PENDENTE");
 	});
 
+	await t.step("Deve constar o identificador do paciente no relatório", async () => {
+		const { service, ownerRepo, reportRepo, budgetRepo } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await budgetRepo.save(budget);
+		await ownerRepo.save(john);
+		await reportRepo.save(report);
+
+		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+
+		const output = <LastReportData> lastReportOrErr.value;
+
+		assertEquals(output.patientId, "some-id-10");
+	});
+
 	await t.step(
 		"Deve retornar @PatientNotFound se o paciente não pertencer ao tutor",
 		async () => {

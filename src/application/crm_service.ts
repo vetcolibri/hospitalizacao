@@ -122,6 +122,7 @@ export class CrmService {
 		return {
 			ownerName: owner.name,
 			patientName: patient.name,
+			patientId: patient.patientId.value,
 			stateOfConsciousness: report.stateOfConsciousness,
 			food: {
 				types: report.food.types,
@@ -159,5 +160,6 @@ interface RegisterReportData extends ReportData {
 export interface LastReportData extends ReportData {
 	ownerName: string;
 	patientName: string;
+	patientId: string;
 	budgetStatus: string;
 }
