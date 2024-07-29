@@ -1,7 +1,9 @@
+import { AlertNotifier } from "application/alert_notifier.ts";
 import { BudgetBuilder } from "domain/budget/budget_builder.ts";
 import { BudgetRepository } from "domain/budget/budget_repository.ts";
 import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
+import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { HospitalizationBuilder } from "domain/hospitalization/hospitalization_builder.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
@@ -27,17 +29,23 @@ export class PatientService {
 	#ownerRepository: OwnerRepository;
 	#hospitalizationRepository: HospitalizationRepository;
 	#budgetRepository: BudgetRepository;
+	#alertRepository: AlertRepository;
+	#alertNotifier: AlertNotifier;
 
 	constructor(
 		partientRepository: PatientRepository,
 		ownerRepository: OwnerRepository,
 		hospitalizationRepository: HospitalizationRepository,
 		budgetRepository: BudgetRepository,
+		alertRepository: AlertRepository,
+		alertNotifier: AlertNotifier,
 	) {
 		this.#patientRepository = partientRepository;
 		this.#ownerRepository = ownerRepository;
 		this.#hospitalizationRepository = hospitalizationRepository;
 		this.#budgetRepository = budgetRepository;
+		this.#alertRepository = alertRepository;
+		this.#alertNotifier = alertNotifier;
 	}
 
 	/**
@@ -193,6 +201,17 @@ export class PatientService {
 		await this.#hospitalizationRepository.update(hospitalization);
 
 		await this.#patientRepository.update(patient);
+
+		const alerts = await this.#alertRepository.findActives(ID.fromString(patientId));
+
+		if (alerts.length === 0) return right(undefined);
+
+		for (const alert of alerts) {
+			alert.cancel();
+			this.#alertNotifier.cancel(alert.alertId.value);
+		}
+
+		await this.#alertRepository.updateAll(alerts);
 
 		return right(undefined);
 	}

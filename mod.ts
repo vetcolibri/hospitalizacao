@@ -36,6 +36,8 @@ const patientService = new PatientService(
 	ownerRepository,
 	hospitalizationRepository,
 	budgetRepository,
+	alertRepository,
+	notifier,
 );
 const alertService = new AlertService(
 	alertRepository,

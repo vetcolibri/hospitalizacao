@@ -21,7 +21,7 @@ export class SQLiteAlertRepository implements AlertRepository {
 			{ status: AlertStatus.Enabled },
 		);
 
-		const alerts = rows.map((row) => factory.createAlert(row));
+		const alerts = rows.map(factory.createAlert);
 
 		return Promise.resolve(alerts);
 	}
@@ -32,7 +32,18 @@ export class SQLiteAlertRepository implements AlertRepository {
 			{ systemId: patientId.value },
 		);
 
-		const alerts = rows.map((row) => factory.createAlert(row));
+		const alerts = rows.map(factory.createAlert);
+
+		return Promise.resolve(alerts);
+	}
+
+	findActives(patientId: ID): Promise<Alert[]> {
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM alerts WHERE system_id = :systemId AND status = :status",
+			{ systemId: patientId.value, status: AlertStatus.Enabled },
+		);
+
+		const alerts = rows.map(factory.createAlert);
 
 		return Promise.resolve(alerts);
 	}
@@ -106,6 +117,11 @@ export class SQLiteAlertRepository implements AlertRepository {
 			status: AlertStatus.Disabled,
 		});
 
+		return Promise.resolve(undefined);
+	}
+
+	updateAll(alerts: Alert[]): Promise<void> {
+		alerts.forEach((alert) => this.update(alert));
 		return Promise.resolve(undefined);
 	}
 }

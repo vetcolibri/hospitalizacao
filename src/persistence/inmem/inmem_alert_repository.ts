@@ -41,6 +41,11 @@ export class InmemAlertRepository implements AlertRepository {
 		return Promise.resolve(alerts);
 	}
 
+	findActives(patientId: ID): Promise<Alert[]> {
+		const alerts = this.records.filter((a) => a.patientId.equals(patientId) && !a.isDisabled());
+		return Promise.resolve(alerts);
+	}
+
 	last(): Promise<Alert> {
 		const last = this.records[this.records.length - 1];
 		return Promise.resolve(last);
@@ -48,6 +53,11 @@ export class InmemAlertRepository implements AlertRepository {
 
 	update(alert: Alert): Promise<void> {
 		this.#data[alert.alertId.value] = alert;
+		return Promise.resolve(undefined);
+	}
+
+	updateAll(alerts: Alert[]): Promise<void> {
+		alerts.forEach((alert) => this.update(alert));
 		return Promise.resolve(undefined);
 	}
 
