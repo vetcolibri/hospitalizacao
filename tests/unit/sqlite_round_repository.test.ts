@@ -1,15 +1,15 @@
 import { assertEquals } from "dev_deps";
+import { Avdn } from "domain/hospitalization/parameters/avdn.ts";
+import { BloodGlucose } from "domain/hospitalization/parameters/blood_glucose.ts";
+import { BloodPressure } from "domain/hospitalization/parameters/blood_pressure.ts";
+import { Hct } from "domain/hospitalization/parameters/hct.ts";
+import { HeartRate } from "domain/hospitalization/parameters/heart_rate.ts";
+import { Mucosas } from "domain/hospitalization/parameters/mucosas.ts";
+import { RespiratoryRate } from "domain/hospitalization/parameters/respiratore_rate.ts";
+import { Temperature } from "domain/hospitalization/parameters/temperature.ts";
+import { Trc } from "domain/hospitalization/parameters/trc.ts";
+import { Round } from "domain/hospitalization/rounds/round.ts";
 import { SQLiteRoundRepository } from "persistence/sqlite/sqlite_round_repository.ts";
-import { Avdn } from "../../src/domain/hospitalization/parameters/avdn.ts";
-import { BloodGlucose } from "../../src/domain/hospitalization/parameters/blood_glucose.ts";
-import { BloodPressure } from "../../src/domain/hospitalization/parameters/blood_pressure.ts";
-import { Hct } from "../../src/domain/hospitalization/parameters/hct.ts";
-import { HeartRate } from "../../src/domain/hospitalization/parameters/heart_rate.ts";
-import { Mucosas } from "../../src/domain/hospitalization/parameters/mucosas.ts";
-import { RespiratoryRate } from "../../src/domain/hospitalization/parameters/respiratore_rate.ts";
-import { Temperature } from "../../src/domain/hospitalization/parameters/temperature.ts";
-import { Trc } from "../../src/domain/hospitalization/parameters/trc.ts";
-import { Round } from "../../src/domain/hospitalization/rounds/round.ts";
 import { PATIENTS } from "../fake_data.ts";
 import { init_test_db, populate } from "./test_db.ts";
 

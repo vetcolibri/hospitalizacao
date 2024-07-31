@@ -1,14 +1,14 @@
 import { RowObject } from "deps";
-import { Avdn } from "../../domain/hospitalization/parameters/avdn.ts";
-import { BloodGlucose } from "../../domain/hospitalization/parameters/blood_glucose.ts";
-import { BloodPressure } from "../../domain/hospitalization/parameters/blood_pressure.ts";
-import { Hct } from "../../domain/hospitalization/parameters/hct.ts";
-import { HeartRate } from "../../domain/hospitalization/parameters/heart_rate.ts";
-import { Mucosas } from "../../domain/hospitalization/parameters/mucosas.ts";
-import { Parameter } from "../../domain/hospitalization/parameters/parameter.ts";
-import { RespiratoryRate } from "../../domain/hospitalization/parameters/respiratore_rate.ts";
-import { Temperature } from "../../domain/hospitalization/parameters/temperature.ts";
-import { Trc } from "../../domain/hospitalization/parameters/trc.ts";
+import { Avdn } from "domain/hospitalization/parameters/avdn.ts";
+import { BloodGlucose } from "domain/hospitalization/parameters/blood_glucose.ts";
+import { BloodPressure } from "domain/hospitalization/parameters/blood_pressure.ts";
+import { Hct } from "domain/hospitalization/parameters/hct.ts";
+import { HeartRate } from "domain/hospitalization/parameters/heart_rate.ts";
+import { Mucosas } from "domain/hospitalization/parameters/mucosas.ts";
+import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
+import { RespiratoryRate } from "domain/hospitalization/parameters/respiratore_rate.ts";
+import { Temperature } from "domain/hospitalization/parameters/temperature.ts";
+import { Trc } from "domain/hospitalization/parameters/trc.ts";
 
 export class ParametersBuilder {
 	private readonly parameters: Parameter[] = [];
@@ -107,7 +107,7 @@ export class ParametersBuilder {
 		return this.parameters;
 	}
 
-	private composeMeasurementData(name: PARAMETERS, row: RowObject) {
+	private composeMeasurementData(name: Parameters, row: RowObject) {
 		const data = {
 			name: String(row.name),
 			value: row.value,
@@ -118,7 +118,7 @@ export class ParametersBuilder {
 	}
 }
 
-type PARAMETERS =
+type Parameters =
 	| "heartRate"
 	| "respiratoryRate"
 	| "trc"
