@@ -64,17 +64,17 @@ export default function (service: CrmService) {
 		sendOk(ctx);
 	};
 
-	const lastReportHandler = async (ctx: Context) => {
+	const findReportsHandler = async (ctx: Context) => {
 		const patientId = ctx.request.url.searchParams.get("patientId");
 		const hospitalizationId = ctx.request.url.searchParams.get("hospitalizationId");
 		const ownerId = ctx.request.url.searchParams.get("ownerId");
 
 		if (!ownerId || !patientId || !hospitalizationId) {
-			sendBadRequest(ctx);
+			sendBadRequest(ctx, "Link inválido");
 			return;
 		}
 
-		const dataOrErr = await service.lastReport(
+		const dataOrErr = await service.findReports(
 			patientId,
 			ownerId,
 			hospitalizationId,
@@ -89,7 +89,7 @@ export default function (service: CrmService) {
 	};
 
 	const router = new Router({ prefix: "/owners" });
-	router.get("/last-report", lastReportHandler);
+	router.get("/reports", findReportsHandler);
 	router.get("/:ownerId", findOwnerHandler);
 	router.post("/register-report", validate(reportSchema), registerReportHandler);
 	router.get("/", listOwnerHandler);

@@ -1,8 +1,6 @@
 import { DB } from "deps";
 import { Report } from "domain/crm/report/report.ts";
-import { ReportNotFound } from "domain/crm/report/report_not_found_error.ts";
 import { ReportRepository } from "domain/crm/report/report_repository.ts";
-import { Either, left, right } from "shared/either.ts";
 import { EntityFactory } from "shared/factory.ts";
 import { ID } from "shared/id.ts";
 
@@ -71,20 +69,5 @@ export class SQLiteReportRepository implements ReportRepository {
         );
 
         return Promise.resolve(undefined);
-    }
-
-    last(patientId: ID): Promise<Either<ReportNotFound, Report>> {
-        const rows = this.#db.queryEntries(
-            "SELECT * FROM reports WHERE system_id = :systemId",
-            {
-                systemId: patientId.value,
-            },
-        );
-
-        if (rows.length === 0) return Promise.resolve(left(new ReportNotFound()));
-
-        const report = factory.createReport(rows[rows.length - 1]);
-
-        return Promise.resolve(right(report));
     }
 }

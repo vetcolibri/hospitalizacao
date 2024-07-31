@@ -1,4 +1,4 @@
-import { CrmService, LastReportData } from "application/crm_service.ts";
+import { CrmService } from "application/crm_service.ts";
 import { assertEquals, assertInstanceOf, assertObjectMatch } from "dev_deps";
 import { Budget } from "domain/budget/budget.ts";
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
@@ -7,7 +7,7 @@ import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
 import { Discharge } from "domain/crm/report/discharge.ts";
 import { Food } from "domain/crm/report/food.ts";
 import { Report } from "domain/crm/report/report.ts";
-import { ReportNotFound } from "domain/crm/report/report_not_found_error.ts";
+import { ReportDTO } from "domain/crm/report/report_service.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
@@ -308,7 +308,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 	);
 });
 
-Deno.test("Crm Service - Get Last Report", async (t) => {
+Deno.test("Crm Service - Get Reports", async (t) => {
 	await t.step("Deve recuperar o último relatório do paciente", async () => {
 		const { service, ownerRepo, reportRepo, budgetRepo } = makeService({
 			patientRepository: new PatientRepositoryStub(),
@@ -317,11 +317,11 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
 
-		const output = <LastReportData> lastReportOrErr.value;
+		const output = <ReportDTO[]> reportsOrErr.value;
 
-		assertObjectMatch(output, payload);
+		assertObjectMatch(output[0], payload);
 	});
 
 	await t.step("Deve adicionar o estado do orçamento ao relatório", async () => {
@@ -333,11 +333,11 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
 
-		const output = <LastReportData> lastReportOrErr.value;
+		const output = <ReportDTO[]> reportsOrErr.value;
 
-		assertEquals(output.budgetStatus, "PENDENTE");
+		assertEquals(output[0].budgetStatus, "PENDENTE");
 	});
 
 	await t.step("Deve constar o identificador do paciente no relatório", async () => {
@@ -349,11 +349,11 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
 
-		const output = <LastReportData> lastReportOrErr.value;
+		const output = <ReportDTO[]> reportsOrErr.value;
 
-		assertEquals(output.patientId, "some-id-10");
+		assertEquals(output[0].patientId, "some-id-10");
 	});
 
 	await t.step("Deve constar o momento em que o relatório foi criado", async () => {
@@ -365,11 +365,28 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const lastReportOrErr = await service.lastReport("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
 
-		const output = <LastReportData> lastReportOrErr.value;
+		const output = <ReportDTO[]> reportsOrErr.value;
 
-		assertEquals(new Date(output.createdAt).getDate(), new Date().getDate());
+		assertEquals(new Date(output[0].createdAt).getDate(), new Date().getDate());
+	});
+
+	await t.step("Deve recuperar os relatórios do paciente", async () => {
+		const { service, ownerRepo, reportRepo, budgetRepo, reportService } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await budgetRepo.save(budget);
+		await ownerRepo.save(john);
+		await reportRepo.save(report);
+
+		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
+
+		const output = <ReportDTO[]> reportsOrErr.value;
+		const reports = await reportService.getAll("1900BA", "some-id");
+
+		assertEquals(output.length, reports.length);
 	});
 
 	await t.step(
@@ -380,7 +397,7 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 			});
 			await ownerRepo.save(huston);
 
-			const err = await service.lastReport("1900BA", "1002", "111");
+			const err = await service.findReports("1900BA", "1002", "111");
 
 			assertEquals(err.isLeft(), true);
 			assertInstanceOf(err.value, PatientNotFound);
@@ -395,7 +412,7 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 			});
 			await ownerRepo.save(john);
 
-			const err = await service.lastReport("1927BA", "1001", "111");
+			const err = await service.findReports("1927BA", "1001", "111");
 
 			assertEquals(err.isLeft(), true);
 			assertInstanceOf(err.value, PatientNotHospitalized);
@@ -405,7 +422,7 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 	await t.step("Deve retornar @OwnerNotFound se o dono não for encontrado", async () => {
 		const { service } = makeService();
 
-		const err = await service.lastReport("1001", "1001", "111");
+		const err = await service.findReports("1001", "1001", "111");
 
 		assertEquals(err.isLeft(), true);
 		assertInstanceOf(err.value, OwnerNotFound);
@@ -415,22 +432,10 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		const { service, ownerRepo } = makeService();
 		await ownerRepo.save(john);
 
-		const err = await service.lastReport("1900BA", "1001", "111");
+		const err = await service.findReports("1900BA", "1001", "111");
 
 		assertEquals(err.isLeft(), true);
 		assertInstanceOf(err.value, PatientNotFound);
-	});
-
-	await t.step("Deve retornar @ReportNotFound se o relatório não for encontrado", async () => {
-		const { service, ownerRepo } = makeService({
-			patientRepository: new PatientRepositoryStub(),
-		});
-		await ownerRepo.save(john);
-
-		const err = await service.lastReport("1900BA", "1001", "111");
-
-		assertEquals(err.isLeft(), true);
-		assertInstanceOf(err.value, ReportNotFound);
 	});
 
 	await t.step("Deve retornar @BudgetNotFound se o orçamento não for encontrado", async () => {
@@ -440,7 +445,7 @@ Deno.test("Crm Service - Get Last Report", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const err = await service.lastReport("1900BA", "1001", "111");
+		const err = await service.findReports("1900BA", "1001", "111");
 
 		assertEquals(err.isLeft(), true);
 		assertInstanceOf(err.value, BudgetNotFound);
@@ -487,12 +492,38 @@ function makeService(opts?: Options) {
 	const reportRepo = new InmemReportRepository();
 	const patientRepo = opts?.patientRepository ?? new InmemPatientRepository();
 	const budgetRepo = new InmemBudgetRepository();
+	const reportService = {
+		getAll: (_patientId: string, _hospitalization_id: string) => {
+			return Promise.resolve([
+				{
+					reportId: "some-id-1",
+					ownerName: "John",
+					patientName: "Rex",
+					patientId: "some-id-10",
+					createdAt: new Date().toISOString(),
+					stateOfConsciousness: ["Consciente"],
+					food: {
+						types: ["Ração"],
+						level: "1",
+						datetime: new Date("2021-09-01T00:00:00").toISOString(),
+					},
+					discharge: {
+						type: "Urina",
+						aspect: "Normal",
+					},
+					budgetStatus: "PENDENTE",
+					comments: "Paciente está bem",
+				},
+			]);
+		},
+	};
 
 	const service = new CrmService(
 		ownerRepo,
 		patientRepo,
 		reportRepo,
 		budgetRepo,
+		reportService,
 	);
 
 	return {
@@ -501,5 +532,6 @@ function makeService(opts?: Options) {
 		patientRepo,
 		reportRepo,
 		budgetRepo,
+		reportService,
 	};
 }

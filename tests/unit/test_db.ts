@@ -1,6 +1,7 @@
 import { DB } from "deps";
-import { HospitalizationStatus } from "../../src/domain/hospitalization/hospitalization.ts";
+import { HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
 import { alert1, budgetData, owner, patientData, PATIENTS } from "../fake_data.ts";
+import { ID } from "shared/id.ts";
 
 export async function init_test_db(): Promise<DB> {
 	const path = new URL(
@@ -56,7 +57,7 @@ export function populate(db: DB) {
 			'${owner.phoneNumber}'
 		)`;
 
-	const insert_patient = `INSERT INTO patients (
+	const insert_patient_1 = `INSERT INTO patients (
 			system_id,
 			patient_id,
 			name,
@@ -78,7 +79,7 @@ export function populate(db: DB) {
 		)
 	`;
 
-	const insert_patient_1 = `INSERT INTO patients (
+	const insert_patient_2 = `INSERT INTO patients (
 			system_id,
 			patient_id,
 			name,
@@ -100,7 +101,7 @@ export function populate(db: DB) {
 		)
 	`;
 
-	const insert_patient_2 = `INSERT INTO patients (
+	const insert_patient_3 = `INSERT INTO patients (
 			system_id,
 			patient_id,
 			name,
@@ -122,7 +123,7 @@ export function populate(db: DB) {
 		)
 	`;
 
-	const insert_patient_3 = `INSERT INTO patients (
+	const insert_patient_4 = `INSERT INTO patients (
 			system_id,
 			patient_id,
 			name,
@@ -144,7 +145,7 @@ export function populate(db: DB) {
 		)
 	`;
 
-	const insert_hospitalization = `INSERT INTO hospitalizations (
+	const insert_hospitalization_1 = `INSERT INTO hospitalizations (
 			weight,
 			entry_date,
 			discharge_date,
@@ -165,7 +166,7 @@ export function populate(db: DB) {
 		)
 	`;
 
-	const insert_hospitalization_1 = `INSERT INTO hospitalizations (
+	const insert_hospitalization_2 = `INSERT INTO hospitalizations (
 			weight,
 			entry_date,
 			discharge_date,
@@ -220,9 +221,61 @@ export function populate(db: DB) {
 		)
 	`;
 
-	db.execute(insert_owner);
+	const insert_report_1 = `
+		INSERT INTO reports (
+			report_id,
+			system_id,
+			state_of_consciousness,
+			food_type,
+			food_level,
+			food_date,
+			discharge_type,
+			discharge_aspect,
+			created_at,
+			comments
+		)
+		VALUES (
+			'${ID.random().value}',
+			'${PATIENTS.hospitalized["1918BA"].systemId.value}',
+			'${JSON.stringify(["some-state-of-consciousness"].join(","))}',
+			'${JSON.stringify(["some-food-type"].join(","))}',
+			'${"some-food-level"}',
+			'${new Date().toISOString()}',
+			'${"some-discharge-type"}',
+			'${"some-discharge-aspect"}',
+			'${new Date().toISOString()}',
+			'${"some-comments"}'
+		)
 
-	db.execute(insert_patient);
+	`;
+
+	const insert_report_2 = `
+		INSERT INTO reports (
+			report_id,
+			system_id,
+			state_of_consciousness,
+			food_type,
+			food_level,
+			food_date,
+			discharge_type,
+			discharge_aspect,
+			created_at,
+			comments
+		)
+		VALUES (
+			'${"1"}',
+			'${PATIENTS.hospitalized["1918BA"].systemId.value}',
+			'${JSON.stringify(["some-state-of-consciousness"].join(","))}',
+			'${JSON.stringify(["some-food-type"].join(","))}',
+			'${"some-food-level"}',
+			'${new Date().toISOString()}',
+			'${"some-discharge-type"}',
+			'${"some-discharge-aspect"}',
+			'${new Date().toISOString()}',
+			'${"some-comments"}'
+		)`;
+
+	db.execute(insert_owner);
 
 	db.execute(insert_patient_1);
 
@@ -230,11 +283,17 @@ export function populate(db: DB) {
 
 	db.execute(insert_patient_3);
 
-	db.execute(insert_hospitalization);
+	db.execute(insert_patient_4);
 
 	db.execute(insert_hospitalization_1);
+
+	db.execute(insert_hospitalization_2);
 
 	db.execute(insert_budget);
 
 	db.execute(insert_alert);
+
+	db.execute(insert_report_1);
+
+	db.execute(insert_report_2);
 }
