@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "dev_deps";
 import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
-import { HospitalizationService } from "../../src/application/hospitalization_service.ts";
+import { HospitalizationService } from "application/hospitalization_service.ts";
 import { HospitalizationRepositoryStub } from "../stubs/hospitalization_repository_stub.ts";
 
 Deno.test("Hospitalization Service - Get all hospitalizations", async (t) => {
