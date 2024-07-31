@@ -1,8 +1,8 @@
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
-import { Owner } from "../../domain/crm/owner/owner.ts";
-import { OwnerNotFound } from "../../domain/crm/owner/owner_not_found_error.ts";
-import { OwnerRepository } from "../../domain/crm/owner/owner_repository.ts";
+import { Owner } from "domain/crm/owner/owner.ts";
+import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
+import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 
 export class InmemOwnerRepository implements OwnerRepository {
 	#data: Record<string, Owner> = {};

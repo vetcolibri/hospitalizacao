@@ -1,8 +1,8 @@
 import { DB } from "deps";
 import { ID } from "shared/id.ts";
-import { Parameter, ParameterName } from "../../domain/hospitalization/parameters/parameter.ts";
-import { Round } from "../../domain/hospitalization/rounds/round.ts";
-import { RoundRepository } from "../../domain/hospitalization/rounds/round_repository.ts";
+import { Parameter, ParameterName } from "domain/hospitalization/parameters/parameter.ts";
+import { Round } from "domain/hospitalization/rounds/round.ts";
+import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
 import { ParametersBuilder } from "./parameters_builder.ts";
 
 export class SQLiteRoundRepository implements RoundRepository {

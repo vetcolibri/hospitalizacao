@@ -6,7 +6,7 @@ import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { CancelError, ScheduleError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
-import { AlertBuider } from "../domain/hospitalization/alerts/alert_buider.ts";
+import { AlertBuider } from "domain/hospitalization/alerts/alert_buider.ts";
 import { AlertNotifier, AlertPayload } from "./alert_notifier.ts";
 
 export class AlertService {
