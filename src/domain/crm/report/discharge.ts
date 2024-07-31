@@ -1,9 +1,9 @@
 export class Discharge {
-    readonly type: string;
-    readonly aspect: string;
+    readonly types: string[];
+    readonly aspects: string[];
 
-    constructor(type: string, aspect: string) {
-        this.type = type;
-        this.aspect = aspect;
+    constructor(types: string[], aspects: string[]) {
+        this.types = types;
+        this.aspects = aspects;
     }
 }

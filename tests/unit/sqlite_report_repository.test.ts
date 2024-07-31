@@ -27,7 +27,7 @@ Deno.test("SQLite Report Repository - Save", async (t) => {
 
 const stateOfConsiousness = ["Alerta"];
 const food = new Food(["Ração"], "1", "2021-09-01T00:00:00Z");
-const discharge = new Discharge("Urina", "Normal");
+const discharge = new Discharge(["Urina"], ["Normal"]);
 const comments = "Comentários";
 const report = new Report(
 	ID.random(),

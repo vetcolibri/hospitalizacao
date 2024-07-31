@@ -9,8 +9,8 @@ export const reportSchema = z.object({
         datetime: z.string(),
     }),
     discharge: z.object({
-        type: z.string(),
-        aspect: z.string(),
+        types: z.string().array(),
+        aspects: z.string().array(),
     }),
     comments: z.string(),
 });

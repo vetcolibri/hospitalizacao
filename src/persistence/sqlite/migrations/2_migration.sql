@@ -8,11 +8,11 @@ BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS "reports" (
     "report_id" varchar(50) NOT NULL UNIQUE,
     "state_of_consciousness" text NOT NULL CHECK ((JSON_VALID("state_of_consciousness") OR "state_of_consciousness" IS NULL)),
-    "food_type" text NOT NULL CHECK ((JSON_VALID("food_type") OR "food_type" IS NULL)),
+    "food_types" text NOT NULL CHECK ((JSON_VALID("food_types") OR "food_types" IS NULL)),
     "food_level" varchar(1) NOT NULL,
     "food_date" datetime NOT NULL,
-    "discharge_type" varchar(25) NOT NULL,
-    "discharge_aspect" varchar(25) NOT NULL,
+    "discharge_types" text NOT NULL CHECK ((JSON_VALID("discharge_types") OR "discharge_types" IS NULL)),
+    "discharge_aspects" text NOT NULL CHECK ((JSON_VALID("discharge_aspects") OR "discharge_aspects" IS NULL)),
     "comments" text NOT NULL,
     "system_id" varchar(50) NOT NULL REFERENCES "patients" ("system_id") DEFERRABLE INITIALLY DEFERRED
 );

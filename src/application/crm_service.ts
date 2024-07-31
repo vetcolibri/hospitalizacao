@@ -108,7 +108,7 @@ export class CrmService {
 	}
 
 	#buildDischarge(data: RegisterReportData) {
-		return new Discharge(data.discharge.type, data.discharge.aspect);
+		return new Discharge(data.discharge.types, data.discharge.aspects);
 	}
 }
 
@@ -120,8 +120,8 @@ export interface ReportData {
 		datetime: string;
 	};
 	discharge: {
-		type: string;
-		aspect: string;
+		types: string[];
+		aspects: string[];
 	};
 	comments: string;
 }

@@ -1,13 +1,13 @@
 import { RowObject } from "deps";
 import { Budget } from "domain/budget/budget.ts";
+import { Owner } from "domain/crm/owner/owner.ts";
 import { Discharge } from "domain/crm/report/discharge.ts";
 import { Food } from "domain/crm/report/food.ts";
 import { Report } from "domain/crm/report/report.ts";
 import { Alert } from "domain/hospitalization/alerts/alert.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { Patient } from "domain/patient/patient.ts";
 import { ID } from "shared/id.ts";
-import { Owner } from "../domain/crm/owner/owner.ts";
-import { Hospitalization } from "../domain/hospitalization/hospitalization.ts";
 
 export class EntityFactory {
 	createOwner(row: RowObject): Owner {
@@ -92,12 +92,15 @@ export class EntityFactory {
 
 	createReport(row: RowObject): Report {
 		const food = new Food(
-			JSON.parse(String(row.food_type)).split(","),
+			JSON.parse(String(row.food_types)).split(","),
 			String(row.food_level),
 			String(row.food_date),
 		);
 
-		const discharge = new Discharge(String(row.discharge_type), String(row.discharge_aspect));
+		const discharge = new Discharge(
+			JSON.parse(String(row.discharge_types)).split(","),
+			JSON.parse(String(row.discharge_aspects)).split(","),
+		);
 
 		return new Report(
 			ID.fromString(String(row.report_id)),

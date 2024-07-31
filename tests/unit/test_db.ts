@@ -226,11 +226,11 @@ export function populate(db: DB) {
 			report_id,
 			system_id,
 			state_of_consciousness,
-			food_type,
+			food_types,
 			food_level,
 			food_date,
-			discharge_type,
-			discharge_aspect,
+			discharge_types,
+			discharge_aspects,
 			created_at,
 			comments
 		)
@@ -241,8 +241,8 @@ export function populate(db: DB) {
 			'${JSON.stringify(["some-food-type"].join(","))}',
 			'${"some-food-level"}',
 			'${new Date().toISOString()}',
-			'${"some-discharge-type"}',
-			'${"some-discharge-aspect"}',
+			'${JSON.stringify(["some-discharge-type"].join(","))}',
+			'${JSON.stringify(["some-discharge-aspect"].join(","))}',
 			'${new Date().toISOString()}',
 			'${"some-comments"}'
 		)
@@ -254,11 +254,11 @@ export function populate(db: DB) {
 			report_id,
 			system_id,
 			state_of_consciousness,
-			food_type,
+			food_types,
 			food_level,
 			food_date,
-			discharge_type,
-			discharge_aspect,
+			discharge_types,
+			discharge_aspects,
 			created_at,
 			comments
 		)
@@ -269,8 +269,8 @@ export function populate(db: DB) {
 			'${JSON.stringify(["some-food-type"].join(","))}',
 			'${"some-food-level"}',
 			'${new Date().toISOString()}',
-			'${"some-discharge-type"}',
-			'${"some-discharge-aspect"}',
+			'${JSON.stringify(["some-discharge-type"].join(","))}',
+			'${JSON.stringify(["some-discharge-aspect"].join(","))}',
 			'${new Date().toISOString()}',
 			'${"some-comments"}'
 		)`;

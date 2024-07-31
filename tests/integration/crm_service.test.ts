@@ -83,8 +83,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Urina",
-					aspect: "Normal",
+					types: ["Urina"],
+					aspects: ["Normal"],
 				},
 				comments: "Paciente está bem",
 			};
@@ -110,8 +110,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Vómito",
-					aspect: "Sangue",
+					types: ["Vómito"],
+					aspects: ["Sangue"],
 				},
 				comments: "Paciente está bem",
 			};
@@ -136,8 +136,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Urina",
-					aspect: "Escuro",
+					types: ["Urina"],
+					aspects: ["Escuro"],
 				},
 				comments: "Paciente está bem",
 			};
@@ -166,8 +166,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Urina",
-					aspect: "Amarelo",
+					types: ["Urina"],
+					aspects: ["Amarelo"],
 				},
 				comments: "Paciente está bem, e comeu bem",
 			};
@@ -196,8 +196,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Urina",
-					aspect: "Amarelo",
+					types: ["Urina"],
+					aspects: ["Amarelo"],
 				},
 				comments: "Paciente ainda não come muito",
 			};
@@ -228,8 +228,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Urina",
-					aspect: "Normal",
+					types: ["Urina"],
+					aspects: ["Normal"],
 				},
 				comments: "Paciente está bem",
 			};
@@ -242,8 +242,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			const report = await reportRepo.get(ID.fromString(data.patientId));
 
-			assertEquals(report.discharge.type, data.discharge.type);
-			assertEquals(report.discharge.aspect, data.discharge.aspect);
+			assertEquals(report.discharge.types, data.discharge.types);
+			assertEquals(report.discharge.aspects, data.discharge.aspects);
 		},
 	);
 
@@ -259,8 +259,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Urina",
-					aspect: "Normal",
+					types: ["Urina"],
+					aspects: ["Normal"],
 				},
 				comments: "Paciente está bem",
 			};
@@ -289,8 +289,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					level: "1",
 				},
 				discharge: {
-					type: "Urina",
-					aspect: "Normal",
+					types: ["Urina"],
+					aspects: ["Normal"],
 				},
 				comments: "Paciente está bem",
 			};
@@ -306,6 +306,34 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 			assertEquals(report.createdAt, new Date());
 		},
 	);
+
+	await t.step("Deve registar mais de um tipo de descarga e mais de um aspecto", async () => {
+		const data = {
+			patientId: "1900BA",
+			stateOfConsciousness: ["Consciente"],
+			food: {
+				types: ["Ração"],
+				datetime: "2021-09-01T00:00:00",
+				level: "1",
+			},
+			discharge: {
+				types: ["Urina", "Fezes"],
+				aspects: ["Normal"],
+			},
+			comments: "Paciente está bem",
+		};
+
+		const { service, reportRepo } = makeService({
+			patientRepository: new PatientRepositoryStub(),
+		});
+
+		await service.registerReport(data);
+
+		const report = await reportRepo.get(ID.fromString(data.patientId));
+
+		assertEquals(report.discharge.types, data.discharge.types);
+		assertEquals(report.discharge.aspects, data.discharge.aspects);
+	});
 });
 
 Deno.test("Crm Service - Get Reports", async (t) => {
@@ -455,7 +483,7 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 const john = new Owner("1001", "John", "933001122");
 const huston = new Owner("1002", "Huston", "933843893");
 const food = new Food(["Ração"], "1", "2021-09-01T00:00:00");
-const discharge = new Discharge("Urina", "Normal");
+const discharge = new Discharge(["Urina"], ["Normal"]);
 const report = new Report(
 	ID.random(),
 	ID.fromString("1900BA"),
@@ -477,8 +505,8 @@ const payload = {
 		datetime: new Date("2021-09-01T00:00:00").toISOString(),
 	},
 	discharge: {
-		type: "Urina",
-		aspect: "Normal",
+		types: ["Urina"],
+		aspects: ["Normal"],
 	},
 	comments: "Paciente está bem",
 };
@@ -508,8 +536,8 @@ function makeService(opts?: Options) {
 						datetime: new Date("2021-09-01T00:00:00").toISOString(),
 					},
 					discharge: {
-						type: "Urina",
-						aspect: "Normal",
+						types: ["Urina"],
+						aspects: ["Normal"],
 					},
 					budgetStatus: "PENDENTE",
 					comments: "Paciente está bem",
