@@ -1,6 +1,6 @@
 import { assertEquals, assertInstanceOf } from "dev_deps";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
-import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { SQLiteHospitalizationRepository } from "persistence/sqlite/sqlite_hospitalization_repository.ts";
 import { ID } from "shared/id.ts";
 import { hospitalizationData } from "../fake_data.ts";
@@ -84,28 +84,28 @@ Deno.test("SQLite - Hospitalization Repository", async (t) => {
 		assertEquals(hospitalizations[2].isOpen(), false);
 	});
 
-	await t.step("Deve recuperar um hospitalização aberta com base paciente.", async () => {
+	await t.step("Deve recuperar um hospitalização com base no paciente.", async () => {
 		const db = await init_test_db();
 
 		populate(db);
 
 		const repository = new SQLiteHospitalizationRepository(db);
 
-		const hospitalization = await repository.open(ID.fromString("1918BA"));
+		const hospitalization = await repository.getByPatientId(ID.fromString("1918BA"));
 
 		assertEquals(hospitalization.isRight(), true);
 	});
 
-	await t.step("Deve retornar um erro caso a hospitalização já esteja fechada.", async () => {
+	await t.step("Deve retornar um erro caso a hospitalização não for encontrada.", async () => {
 		const db = await init_test_db();
 
 		populate(db);
 
 		const repository = new SQLiteHospitalizationRepository(db);
 
-		const hospitalization = await repository.open(ID.fromString("patient-19200BA"));
+		const hospitalization = await repository.getByPatientId(ID.fromString("patient-19200BA"));
 
 		assertEquals(hospitalization.isLeft(), true);
-		assertInstanceOf(hospitalization.value, HospitalizationAlreadyClosed);
+		assertInstanceOf(hospitalization.value, HospitalizationNotFound);
 	});
 });

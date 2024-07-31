@@ -5,7 +5,7 @@ import { BudgetRepository } from "domain/budget/budget_repository.ts";
 import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
-import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
 import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
@@ -69,7 +69,9 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
 
-		const hospitalizationOrErr = await hospitalizationRepository.open(patient.systemId);
+		const hospitalizationOrErr = await hospitalizationRepository.getByPatientId(
+			patient.systemId,
+		);
 
 		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
 
@@ -425,7 +427,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 		await service.endHospitalization("1918BA");
 
-		const error = await hospitalizationRepository.open(ID.fromString("1918BA"));
+		const error = await hospitalizationRepository.getByPatientId(ID.fromString("1918BA"));
 
 		assertEquals(error.isLeft(), true);
 	});
@@ -531,7 +533,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 			const error = await service.endHospitalization("1918BA");
 
 			assertEquals(error.isLeft(), true);
-			assertInstanceOf(error.value, HospitalizationAlreadyClosed);
+			assertInstanceOf(error.value, HospitalizationNotFound);
 		},
 	);
 

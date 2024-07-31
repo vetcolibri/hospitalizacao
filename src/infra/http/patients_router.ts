@@ -1,6 +1,6 @@
 import { PatientService } from "application/patient_service.ts";
 import { Context, Router } from "deps";
-import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { Patient } from "domain/patient/patient.ts";
 import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
@@ -92,7 +92,7 @@ export default function (service: PatientService) {
 			return;
 		}
 
-		if (voidOrErr.value instanceof HospitalizationAlreadyClosed) {
+		if (voidOrErr.value instanceof HospitalizationNotFound) {
 			sendBadRequest(ctx, voidOrErr.value.message);
 			return;
 		}

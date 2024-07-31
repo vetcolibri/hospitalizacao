@@ -1,6 +1,6 @@
 import { DB } from "deps";
 import { Hospitalization, HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
-import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { EntityFactory } from "shared/factory.ts";
@@ -49,14 +49,14 @@ export class SQLiteHospitalizationRepository implements HospitalizationRepositor
 		return Promise.resolve(hospitalization);
 	}
 
-	open(patientId: ID): Promise<Either<HospitalizationAlreadyClosed, Hospitalization>> {
+	getByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {
 		const rows = this.#db.queryEntries(
-			"SELECT * FROM hospitalizations WHERE system_id = :systemId AND status = :status",
+			"SELECT * FROM hospitalizations WHERE system_id = :systemId  AND status = :status LIMIT 1",
 			{ systemId: patientId.value, status: HospitalizationStatus.Open },
 		);
 
 		if (rows.length === 0) {
-			return Promise.resolve(left(new HospitalizationAlreadyClosed()));
+			return Promise.resolve(left(new HospitalizationNotFound()));
 		}
 
 		const hospitalization = factory.createHospitalization(rows[0]);

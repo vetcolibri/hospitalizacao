@@ -169,7 +169,7 @@ export class PatientService {
 		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const hospitalizationOrErr = await this.#hospitalizationRepository.open(
+		const hospitalizationOrErr = await this.#hospitalizationRepository.getByPatientId(
 			ID.fromString(patientId),
 		);
 		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);

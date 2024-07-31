@@ -1,6 +1,6 @@
 import { Either, left, right } from "shared/either.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
-import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { ID } from "shared/id.ts";
 
@@ -18,12 +18,12 @@ export class InmemHospitalizationRepository implements HospitalizationRepository
 		return Promise.resolve(result);
 	}
 
-	open(patientId: ID): Promise<Either<HospitalizationAlreadyClosed, Hospitalization>> {
+	getByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {
 		const hospitalization = this.records.find((h) =>
 			h.patientId.equals(patientId) && h.isOpen()
 		);
 
-		if (!hospitalization) return Promise.resolve(left(new HospitalizationAlreadyClosed()));
+		if (!hospitalization) return Promise.resolve(left(new HospitalizationNotFound()));
 
 		return Promise.resolve(right(hospitalization));
 	}

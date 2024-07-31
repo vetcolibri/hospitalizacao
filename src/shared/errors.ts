@@ -2,7 +2,7 @@ import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
 import { AlertAlreadyDisabled } from "domain/hospitalization/alerts/alert_already_disabled_error.ts";
 import { AlertNotFound } from "domain/hospitalization/alerts/alert_not_found_error.ts";
 import { InvalidRepeatEvery } from "domain/hospitalization/alerts/repeat_every_error.ts";
-import { HospitalizationAlreadyClosed } from "domain/hospitalization/hospitalization_already_closed_error.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
 import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
 import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
@@ -20,7 +20,7 @@ export type NewHospitalizationError =
 	| InvalidNumber
 	| InvalidDate;
 
-export type EndHospitalizationError = PatientNotFound | HospitalizationAlreadyClosed;
+export type EndHospitalizationError = PatientNotFound | HospitalizationNotFound;
 export type EndBudgetError = PatientNotFound | PatientAlreadyDischarged;
 export type ReportError = PatientNotHospitalized | PatientNotFound | OwnerNotFound;
 export type RoundError = PatientNotFound | PatientAlreadyDischarged;
