@@ -15,7 +15,22 @@ export class SQLiteBudgetRepository implements BudgetRepository {
 		this.#db = db;
 	}
 
-	get(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>> {
+	get(budgetId: ID): Promise<Either<BudgetNotFound, Budget>> {
+		const rows = this.#db.queryEntries(
+			"SELECT * FROM budgets WHERE budget_id = :budgetId LIMIT 1",
+			{
+				budgetId: budgetId.value,
+			},
+		);
+
+		if (rows.length === 0) return Promise.resolve(left(new BudgetNotFound()));
+
+		const budget = factory.createBudget(rows[0]);
+
+		return Promise.resolve(right(budget));
+	}
+
+	findById(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>> {
 		const rows = this.#db.queryEntries(
 			"SELECT * FROM budgets WHERE hospitalization_id = :hospitalizationId LIMIT 1",
 			{
@@ -46,7 +61,7 @@ export class SQLiteBudgetRepository implements BudgetRepository {
 				startOn: budget.startOn.toISOString(),
 				endOn: budget.endOn.toISOString(),
 				status: budget.status,
-				budgetId: budget.budgetId,
+				budgetId: budget.budgetId.value,
 			},
 		);
 
@@ -54,10 +69,15 @@ export class SQLiteBudgetRepository implements BudgetRepository {
 	}
 
 	update(budget: Budget): Promise<void> {
-		this.#db.queryEntries("UPDATE budgets SET status = :status WHERE budget_id = :budgetId", {
-			status: budget.status,
-			budgetId: budget.budgetId,
-		});
+		this.#db.queryEntries(
+			"UPDATE budgets SET status = :status, start_on = :startOn, end_on = :endOn  WHERE budget_id = :budgetId",
+			{
+				status: budget.status,
+				budgetId: budget.budgetId.value,
+				startOn: budget.startOn.toISOString(),
+				endOn: budget.endOn.toISOString(),
+			},
+		);
 
 		return Promise.resolve(undefined);
 	}

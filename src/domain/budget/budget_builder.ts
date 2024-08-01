@@ -1,14 +1,15 @@
 import { Budget } from "domain/budget/budget.ts";
 import { Either, left, right } from "shared/either.ts";
+import { ID } from "shared/id.ts";
 
 export class BudgetBuilder {
-	#hospitalizationId?: string;
+	#hospitalizationId?: ID;
 	#startOn?: string;
 	#endOn?: string;
 	#status?: string;
 
 	withHospitalizationId(id: string): BudgetBuilder {
-		this.#hospitalizationId = id;
+		this.#hospitalizationId = ID.fromString(id);
 		return this;
 	}
 
@@ -37,6 +38,7 @@ export class BudgetBuilder {
 		if (!this.#status) return left(new Error("Status is required"));
 
 		const budget = new Budget(
+			ID.random(),
 			this.#hospitalizationId,
 			this.#startOn,
 			this.#endOn,

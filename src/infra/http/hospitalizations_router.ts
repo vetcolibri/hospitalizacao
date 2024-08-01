@@ -32,10 +32,10 @@ function toHospitalizationDTO(hospitalization: Hospitalization): Hospitalization
 }
 
 export default function (service: HospitalizationService) {
-	const listOpenedHospitalizationHandler = async (context: Context) => {
+	const listOpenedHospitalizationHandler = async (ctx: Context) => {
 		const hospitalizations = await service.getAll();
 		const hospitalizationDTO: HospitalizationDTO[] = hospitalizations.map(toHospitalizationDTO);
-		sendOk(context, hospitalizationDTO);
+		sendOk(ctx, hospitalizationDTO);
 	};
 
 	const router = new Router({ prefix: "/hospitalizations" });

@@ -177,7 +177,7 @@ export class PatientService {
 		const patient = <Patient> patientOrErr.value;
 		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
 
-		const budgetOrErr = await this.#budgetRepository.get(
+		const budgetOrErr = await this.#budgetRepository.findById(
 			hospitalization.hospitalizationId,
 		);
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
@@ -226,7 +226,7 @@ export class PatientService {
 
 		const patient = patientOrErr.value;
 
-		const budgetOrErr = await this.#budgetRepository.get(
+		const budgetOrErr = await this.#budgetRepository.findById(
 			ID.fromString(hospitalizationId),
 		);
 

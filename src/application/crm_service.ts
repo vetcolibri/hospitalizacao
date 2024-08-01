@@ -93,7 +93,7 @@ export class CrmService {
 			return left(new PatientNotFound());
 		}
 
-		const budgetOrErr = await this.#budgetRepository.get(
+		const budgetOrErr = await this.#budgetRepository.findById(
 			ID.fromString(hospitalizationId),
 		);
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);

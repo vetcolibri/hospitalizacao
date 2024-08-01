@@ -597,7 +597,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
 
-		const budgetOrErr = await budgetRepository.get(
+		const budgetOrErr = await budgetRepository.findById(
 			ID.fromString(hospitalizationId),
 		);
 
@@ -664,7 +664,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budgetOrErr = await budgetRepository.get(
+			const budgetOrErr = await budgetRepository.findById(
 				ID.fromString(hospitalizationId),
 			);
 
@@ -693,7 +693,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budgetOrErr = await budgetRepository.get(
+			const budgetOrErr = await budgetRepository.findById(
 				ID.fromString(hospitalizationId),
 			);
 
@@ -722,7 +722,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budgetOrErr = await budgetRepository.get(
+			const budgetOrErr = await budgetRepository.findById(
 				ID.fromString(hospitalizationId),
 			);
 

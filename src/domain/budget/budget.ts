@@ -16,31 +16,41 @@ type Options = {
 };
 
 export class Budget {
+	readonly budgetId: ID;
 	readonly hospitalizationId: ID;
-	readonly startOn: Date;
-	readonly endOn: Date;
-	#budgetId: ID;
+	#startOn: Date;
+	#endOn: Date;
 	#status: BudgetStatus;
 
-	constructor(hospitalizationId: string, startOn: string, endOn: string, status: string) {
-		this.hospitalizationId = ID.fromString(hospitalizationId);
-		this.#budgetId = ID.random();
-		this.startOn = new Date(startOn);
-		this.endOn = new Date(endOn);
+	constructor(
+		budgetId: ID,
+		hospitalizationId: ID,
+		startOn: string,
+		endOn: string,
+		status: string,
+	) {
+		this.budgetId = budgetId;
+		this.hospitalizationId = hospitalizationId;
+		this.#startOn = new Date(startOn);
+		this.#endOn = new Date(endOn);
 		this.#status = this.#setStatus(status);
 	}
 
 	static restore(data: Options): Budget {
 		const budget = new Budget(
-			data.hospitalizationId,
+			ID.fromString(data.budgetId),
+			ID.fromString(data.hospitalizationId),
 			data.startOn,
 			data.endOn,
 			data.status,
 		);
 
-		budget.#budgetId = ID.fromString(data.budgetId);
-
 		return budget;
+	}
+
+	update(startOn: string, endOn: string): void {
+		this.#startOn = new Date(startOn);
+		this.#endOn = new Date(endOn);
 	}
 
 	changeStatus(status: string): void {
@@ -83,7 +93,11 @@ export class Budget {
 		return this.#status.toString();
 	}
 
-	get budgetId(): string {
-		return this.#budgetId.value;
+	get startOn(): Date {
+		return this.#startOn;
+	}
+
+	get endOn(): Date {
+		return this.#endOn;
 	}
 }

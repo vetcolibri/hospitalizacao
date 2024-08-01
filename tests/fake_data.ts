@@ -345,13 +345,19 @@ export const HOSPITALIZATIONS = {
 };
 
 export const BUDGETS = [
-	new Budget("0001", "2024-04-10", "2024-04-20", "NÃO PAGO"),
-	new Budget("0002", "2024-04-10", "2024-04-20", "NÃO PAGO"),
-	new Budget("0003", "2024-04-10", "2024-04-20", "PENDENTE"),
-	new Budget("0004", "2024-04-10", "2024-04-20", "PENDENTE (ORÇAMENTO ENVIADO)"),
-	new Budget("0005", "2024-04-10", "2024-04-20", "PAGO"),
-	new Budget("0006", "2024-04-10", "2024-04-20", "PENDENTE"),
-	new Budget("0007", "2024-04-10", "2024-04-20", "PENDENTE"),
-	new Budget("0008", "2024-04-10", "2024-04-20", "PENDENTE"),
-	new Budget("0009", "2024-04-10", "2024-04-20", "PENDENTE"),
+	new Budget(ID.random(), ID.fromString("0001"), "2024-04-10", "2024-04-20", "NÃO PAGO"),
+	new Budget(ID.random(), ID.fromString("0002"), "2024-04-10", "2024-04-20", "NÃO PAGO"),
+	new Budget(ID.random(), ID.fromString("0003"), "2024-04-10", "2024-04-20", "PENDENTE"),
+	new Budget(
+		ID.random(),
+		ID.fromString("0004"),
+		"2024-04-10",
+		"2024-04-20",
+		"PENDENTE (ORÇAMENTO ENVIADO)",
+	),
+	new Budget(ID.random(), ID.fromString("0005"), "2024-04-10", "2024-04-20", "PAGO"),
+	new Budget(ID.random(), ID.fromString("0006"), "2024-04-10", "2024-04-20", "PENDENTE"),
+	new Budget(ID.random(), ID.fromString("0007"), "2024-04-10", "2024-04-20", "PENDENTE"),
+	new Budget(ID.random(), ID.fromString("0008"), "2024-04-10", "2024-04-20", "PENDENTE"),
+	new Budget(ID.random(), ID.fromString("0009"), "2024-04-10", "2024-04-20", "PENDENTE"),
 ];

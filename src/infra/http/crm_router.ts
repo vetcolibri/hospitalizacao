@@ -25,9 +25,9 @@ function toOwnerDTO(owner: Owner): OwnerDTO {
 }
 
 export default function (service: CrmService) {
-	const listOwnerHandler = async (context: Context) => {
+	const listOwnerHandler = async (ctx: Context) => {
 		const owners = await service.getAll();
-		sendOk(context, owners.map(toOwnerDTO));
+		sendOk(ctx, owners.map(toOwnerDTO));
 	};
 
 	const findOwnerHandler = async (ctx: ContextWithParams) => {

@@ -8,26 +8,32 @@ export class InmemBudgetRepository implements BudgetRepository {
 	#budgets: Record<string, Budget> = {};
 
 	constructor(budgets: Budget[] = []) {
-		budgets.forEach((b) => this.#budgets[b.budgetId] = b);
+		budgets.forEach((b) => this.#budgets[b.budgetId.value] = b);
+	}
+
+	get(budgetId: ID): Promise<Either<BudgetNotFound, Budget>> {
+		const budget = this.#budgets[budgetId.value];
+		if (!budget) return Promise.resolve(left(new BudgetNotFound()));
+		return Promise.resolve(right(budget));
 	}
 
 	getAll(): Promise<Budget[]> {
 		return Promise.resolve(this.records);
 	}
 
-	get(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>> {
+	findById(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>> {
 		const budget = this.records.find((b) => b.hospitalizationId.equals(hospitalizationId));
 		if (!budget) return Promise.resolve(left(new BudgetNotFound()));
 		return Promise.resolve(right(budget));
 	}
 
 	save(budget: Budget): Promise<void> {
-		this.#budgets[budget.budgetId] = budget;
+		this.#budgets[budget.budgetId.value] = budget;
 		return Promise.resolve(undefined);
 	}
 
 	update(budget: Budget): Promise<void> {
-		this.#budgets[budget.budgetId] = budget;
+		this.#budgets[budget.budgetId.value] = budget;
 		return Promise.resolve(undefined);
 	}
 

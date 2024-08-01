@@ -493,7 +493,13 @@ const report = new Report(
 	"Paciente está bem",
 );
 
-const budget = new Budget("111", "2020-01-01T00:00:00", "2020-01-10T00:00:00", "PENDENTE");
+const budget = new Budget(
+	ID.random(),
+	ID.fromString("111"),
+	"2020-01-01T00:00:00",
+	"2020-01-10T00:00:00",
+	"PENDENTE",
+);
 
 const payload = {
 	ownerName: "John",

@@ -14,7 +14,8 @@ Deno.test("SQLite - Budget Repository", async (t) => {
 		const repository = new SQLiteBudgetRepository(db);
 
 		const newBudget = new Budget(
-			"some-hospitalization-id",
+			ID.random(),
+			ID.fromString("some-hospitalization-id"),
 			"2024-04-09",
 			"2024-04-19",
 			BudgetStatus.Pending,
@@ -37,7 +38,7 @@ Deno.test("SQLite - Budget Repository", async (t) => {
 
 		const repository = new SQLiteBudgetRepository(db);
 
-		const budgetOrErr = await repository.get(
+		const budgetOrErr = await repository.findById(
 			ID.fromString("some-hospitalization-id"),
 		);
 
@@ -55,7 +56,7 @@ Deno.test("SQLite - Budget Repository", async (t) => {
 
 		const repository = new SQLiteBudgetRepository(db);
 
-		const budgetOrErr = await repository.get(
+		const budgetOrErr = await repository.findById(
 			ID.fromString("some-hospitalization-id"),
 		);
 
@@ -65,7 +66,7 @@ Deno.test("SQLite - Budget Repository", async (t) => {
 
 		await repository.update(budget);
 
-		const updatedBudgetOrErr = await repository.get(
+		const updatedBudgetOrErr = await repository.findById(
 			ID.fromString("some-hospitalization-id"),
 		);
 

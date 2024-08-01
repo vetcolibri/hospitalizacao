@@ -60,3 +60,8 @@ export const endBudgetSchema = z.object({
 		"PAGO",
 	]),
 });
+
+export const budgetUpdateSchema = z.object({
+	startOn: z.string(),
+	endOn: z.string(),
+});
