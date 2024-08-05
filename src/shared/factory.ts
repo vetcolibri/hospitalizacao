@@ -1,13 +1,13 @@
 import { RowObject } from "deps";
 import { Budget } from "domain/budget/budget.ts";
 import { Owner } from "domain/crm/owner/owner.ts";
-import { Discharge } from "domain/crm/report/discharge.ts";
 import { Food } from "domain/crm/report/food.ts";
 import { Report } from "domain/crm/report/report.ts";
 import { Alert } from "domain/hospitalization/alerts/alert.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { Patient } from "domain/patient/patient.ts";
 import { ID } from "shared/id.ts";
+import { Discharge } from "domain/crm/report/discharge.ts";
 
 export class EntityFactory {
 	createOwner(row: RowObject): Owner {
@@ -90,24 +90,23 @@ export class EntityFactory {
 		return Budget.restore(data);
 	}
 
-	createReport(row: RowObject): Report {
+	createReport(row: RowObject, dischargeData: RowObject[]): Report {
 		const food = new Food(
 			JSON.parse(String(row.food_types)).split(","),
 			String(row.food_level),
 			String(row.food_date),
 		);
 
-		const discharge = new Discharge(
-			JSON.parse(String(row.discharge_types)).split(","),
-			JSON.parse(String(row.discharge_aspects)).split(","),
-		);
+		const discharges = dischargeData.map((d) => {
+			return new Discharge(String(d.type), JSON.parse(String(d.aspects)).split(","));
+		});
 
 		return new Report(
 			ID.fromString(String(row.report_id)),
 			ID.fromString(String(row.system_id)),
 			JSON.parse(String(row.state_of_consciousness)).split(","),
 			food,
-			discharge,
+			discharges,
 			String(row.comments),
 			new Date(String(row.created_at)),
 		);

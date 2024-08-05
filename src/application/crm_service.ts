@@ -108,8 +108,15 @@ export class CrmService {
 	}
 
 	#buildDischarge(data: RegisterReportData) {
-		return new Discharge(data.discharge.types, data.discharge.aspects);
+		return data.discharges.map((discharge) => {
+			return new Discharge(discharge.type, discharge.aspects);
+		});
 	}
+}
+
+interface DischargeData {
+	type: string;
+	aspects: string[];
 }
 
 export interface ReportData {
@@ -119,10 +126,7 @@ export interface ReportData {
 		level: string;
 		datetime: string;
 	};
-	discharge: {
-		types: string[];
-		aspects: string[];
-	};
+	discharges: DischargeData[];
 	comments: string;
 }
 

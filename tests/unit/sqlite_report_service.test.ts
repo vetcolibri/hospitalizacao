@@ -22,6 +22,6 @@ Deno.test("SQLite Report Service - Find Reports", async (t) => {
 
         const reports = await service.getAll("1918BA", "some-hospitalization-id");
 
-        assertEquals(reports[0].reportId, "1");
+        assertEquals(reports[0].reportId, "2");
     });
 });

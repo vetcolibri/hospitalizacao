@@ -21,7 +21,14 @@ export class SQLiteReportRepository implements ReportRepository {
             },
         );
 
-        const report = factory.createReport(rows[0]);
+        const dischargeData = this.#db.queryEntries(
+            `SELECT * FROM discharges WHERE report_id = :reportId`,
+            {
+                reportId: String(rows[0].report_id),
+            },
+        );
+
+        const report = factory.createReport(rows[0], dischargeData);
 
         return Promise.resolve(report);
     }
@@ -36,8 +43,6 @@ export class SQLiteReportRepository implements ReportRepository {
 				food_types,
 				food_level,
 				food_date,
-				discharge_types,
-				discharge_aspects,
                 created_at,
 				comments
 			)
@@ -48,8 +53,6 @@ export class SQLiteReportRepository implements ReportRepository {
 				:foodTypes,
 				:foodLevel,
 				:foodDate,
-				:dischargeTypes,
-				:dischargeAspects,
                 :createdAt,
 				:comments
 			)
@@ -61,12 +64,32 @@ export class SQLiteReportRepository implements ReportRepository {
                 foodTypes: JSON.stringify(report.food.types.join(",")),
                 foodLevel: report.food.level,
                 foodDate: report.food.datetime,
-                dischargeTypes: JSON.stringify(report.discharge.types.join(",")),
-                dischargeAspects: JSON.stringify(report.discharge.aspects.join(",")),
                 createdAt: report.createdAt,
                 comments: report.comments,
             },
         );
+
+        for (const discharge of report.discharges) {
+            this.#db.queryEntries(
+                `
+                INSERT INTO discharges (
+                    report_id,
+                    type,
+                    aspects
+                ) 
+                VALUES (
+                    :reportId,
+                    :type,
+                    :aspects
+                )
+            `,
+                {
+                    reportId: report.reportId.value,
+                    type: discharge.type,
+                    aspects: JSON.stringify(discharge.aspects.join(",")),
+                },
+            );
+        }
 
         return Promise.resolve(undefined);
     }

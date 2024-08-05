@@ -6,7 +6,7 @@ export class Report {
 	readonly reportId: ID;
 	readonly patientId: ID;
 	readonly food: Food;
-	readonly discharge: Discharge;
+	readonly discharges: Discharge[];
 	readonly stateOfConsciousness: string[];
 	readonly comments: string;
 	readonly createdAt: Date;
@@ -16,7 +16,7 @@ export class Report {
 		patientId: ID,
 		statusOfConsciousness: string[],
 		food: Food,
-		discharge: Discharge,
+		discharges: Discharge[],
 		comments: string,
 		createdAt?: Date,
 	) {
@@ -24,7 +24,7 @@ export class Report {
 		this.patientId = patientId;
 		this.stateOfConsciousness = [...statusOfConsciousness];
 		this.food = food;
-		this.discharge = discharge;
+		this.discharges = discharges;
 		this.comments = comments;
 
 		if (createdAt) {

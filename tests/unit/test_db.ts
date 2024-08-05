@@ -1,7 +1,6 @@
 import { DB } from "deps";
 import { HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
 import { alert1, budgetData, owner, patientData, PATIENTS } from "../fake_data.ts";
-import { ID } from "shared/id.ts";
 
 export async function init_test_db(): Promise<DB> {
 	const path = new URL(
@@ -229,20 +228,16 @@ export function populate(db: DB) {
 			food_types,
 			food_level,
 			food_date,
-			discharge_types,
-			discharge_aspects,
 			created_at,
 			comments
 		)
 		VALUES (
-			'${ID.random().value}',
+			'${"1"}',
 			'${PATIENTS.hospitalized["1918BA"].systemId.value}',
 			'${JSON.stringify(["some-state-of-consciousness"].join(","))}',
 			'${JSON.stringify(["some-food-type"].join(","))}',
 			'${"some-food-level"}',
 			'${new Date().toISOString()}',
-			'${JSON.stringify(["some-discharge-type"].join(","))}',
-			'${JSON.stringify(["some-discharge-aspect"].join(","))}',
 			'${new Date().toISOString()}',
 			'${"some-comments"}'
 		)
@@ -257,23 +252,43 @@ export function populate(db: DB) {
 			food_types,
 			food_level,
 			food_date,
-			discharge_types,
-			discharge_aspects,
 			created_at,
 			comments
 		)
 		VALUES (
-			'${"1"}',
+			'${"2"}',
 			'${PATIENTS.hospitalized["1918BA"].systemId.value}',
 			'${JSON.stringify(["some-state-of-consciousness"].join(","))}',
 			'${JSON.stringify(["some-food-type"].join(","))}',
 			'${"some-food-level"}',
 			'${new Date().toISOString()}',
-			'${JSON.stringify(["some-discharge-type"].join(","))}',
-			'${JSON.stringify(["some-discharge-aspect"].join(","))}',
 			'${new Date().toISOString()}',
 			'${"some-comments"}'
 		)`;
+
+	const insert_discharge_1 = `INSERT INTO discharges (
+			report_id,
+			type,
+			aspects
+		)
+		VALUES (
+			'${"1"}',
+			'${"Fezes"}',
+			'${JSON.stringify(["Sangue", "Normal"].join(","))}'
+		)
+	`;
+
+	const insert_discharge_2 = `INSERT INTO discharges (
+			report_id,
+			type,
+			aspects
+		)
+		VALUES (
+			'${"1"}',
+			'${"Urina"}',
+			'${JSON.stringify(["Normal"].join(","))}'
+		)
+	`;
 
 	db.execute(insert_owner);
 
@@ -296,4 +311,8 @@ export function populate(db: DB) {
 	db.execute(insert_report_1);
 
 	db.execute(insert_report_2);
+
+	db.execute(insert_discharge_1);
+
+	db.execute(insert_discharge_2);
 }

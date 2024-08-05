@@ -7,7 +7,7 @@ import { ID } from "shared/id.ts";
 export class ReportBuilder {
     #patientId?: ID;
     #food?: Food;
-    #discharge?: Discharge;
+    #discharges?: Discharge[];
     #stateOfConsciousness?: string[];
     #comments?: string;
 
@@ -21,8 +21,8 @@ export class ReportBuilder {
         return this;
     }
 
-    withDischarge(discharge: Discharge): ReportBuilder {
-        this.#discharge = discharge;
+    withDischarge(discharges: Discharge[]): ReportBuilder {
+        this.#discharges = discharges;
         return this;
     }
 
@@ -45,7 +45,7 @@ export class ReportBuilder {
             throw new Error("Food is required");
         }
 
-        if (!this.#discharge) {
+        if (!this.#discharges) {
             throw new Error("Discharge is required");
         }
 
@@ -62,7 +62,7 @@ export class ReportBuilder {
             this.#patientId,
             this.#stateOfConsciousness,
             this.#food,
-            this.#discharge,
+            this.#discharges,
             this.#comments,
         );
 

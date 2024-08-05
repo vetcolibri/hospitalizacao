@@ -82,10 +82,12 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Urina"],
-					aspects: ["Normal"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente está bem",
 			};
 
@@ -109,10 +111,12 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Vómito"],
-					aspects: ["Sangue"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente está bem",
 			};
 			const { service } = makeService();
@@ -135,10 +139,12 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Urina"],
-					aspects: ["Escuro"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente está bem",
 			};
 			const { service, reportRepo } = makeService({
@@ -165,10 +171,12 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Urina"],
-					aspects: ["Amarelo"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente está bem, e comeu bem",
 			};
 
@@ -195,10 +203,12 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Urina"],
-					aspects: ["Amarelo"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente ainda não come muito",
 			};
 
@@ -227,10 +237,16 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Urina"],
-					aspects: ["Normal"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+					{
+						type: "Fezes",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente está bem",
 			};
 
@@ -242,8 +258,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			const report = await reportRepo.get(ID.fromString(data.patientId));
 
-			assertEquals(report.discharge.types, data.discharge.types);
-			assertEquals(report.discharge.aspects, data.discharge.aspects);
+			assertEquals(report.discharges.length, 2);
 		},
 	);
 
@@ -258,10 +273,12 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Urina"],
-					aspects: ["Normal"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente está bem",
 			};
 
@@ -288,10 +305,12 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 					datetime: "2021-09-01T00:00:00",
 					level: "1",
 				},
-				discharge: {
-					types: ["Urina"],
-					aspects: ["Normal"],
-				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+				],
 				comments: "Paciente está bem",
 			};
 
@@ -316,10 +335,16 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				datetime: "2021-09-01T00:00:00",
 				level: "1",
 			},
-			discharge: {
-				types: ["Urina", "Fezes"],
-				aspects: ["Normal"],
-			},
+			discharges: [
+				{
+					type: "Urina",
+					aspects: ["Normal"],
+				},
+				{
+					type: "Fezes",
+					aspects: ["Normal"],
+				},
+			],
 			comments: "Paciente está bem",
 		};
 
@@ -331,8 +356,8 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 		const report = await reportRepo.get(ID.fromString(data.patientId));
 
-		assertEquals(report.discharge.types, data.discharge.types);
-		assertEquals(report.discharge.aspects, data.discharge.aspects);
+		assertEquals(report.discharges[0].type, data.discharges[0].type);
+		assertEquals(report.discharges[0].aspects, data.discharges[0].aspects);
 	});
 });
 
@@ -483,13 +508,13 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 const john = new Owner("1001", "John", "933001122");
 const huston = new Owner("1002", "Huston", "933843893");
 const food = new Food(["Ração"], "1", "2021-09-01T00:00:00");
-const discharge = new Discharge(["Urina"], ["Normal"]);
+const discharge = new Discharge("Urina", ["Normal"]);
 const report = new Report(
 	ID.random(),
 	ID.fromString("1900BA"),
 	["Consciente"],
 	food,
-	discharge,
+	[discharge],
 	"Paciente está bem",
 );
 
@@ -510,10 +535,12 @@ const payload = {
 		level: "1",
 		datetime: new Date("2021-09-01T00:00:00").toISOString(),
 	},
-	discharge: {
-		types: ["Urina"],
-		aspects: ["Normal"],
-	},
+	discharges: [
+		{
+			type: "Urina",
+			aspects: ["Normal"],
+		},
+	],
 	comments: "Paciente está bem",
 };
 
@@ -541,10 +568,12 @@ function makeService(opts?: Options) {
 						level: "1",
 						datetime: new Date("2021-09-01T00:00:00").toISOString(),
 					},
-					discharge: {
-						types: ["Urina"],
-						aspects: ["Normal"],
-					},
+					discharges: [
+						{
+							type: "Urina",
+							aspects: ["Normal"],
+						},
+					],
 					budgetStatus: "PENDENTE",
 					comments: "Paciente está bem",
 				},
