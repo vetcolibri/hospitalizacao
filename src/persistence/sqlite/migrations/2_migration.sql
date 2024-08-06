@@ -36,6 +36,5 @@ CREATE INDEX IF NOT EXISTS "discharges_report_id_idx" ON "discharges" ("report_i
 --
 
 ALTER TABLE "owners" ADD COLUMN "whatsapp" boolean NOT NULL DEFAULT 0;
--- ALTER TABLE "reports" ADD COLUMN "created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 COMMIT;
