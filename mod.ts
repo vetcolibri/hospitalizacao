@@ -10,14 +10,20 @@ import { SQLiteAlertRepository } from "persistence/sqlite/sqlite_alert_repositor
 import { SQLiteBudgetRepository } from "persistence/sqlite/sqlite_budget_repository.ts";
 import { createSQLiteDB } from "persistence/sqlite/sqlite_db_factory.ts";
 import { SQLiteHospitalizationRepository } from "persistence/sqlite/sqlite_hospitalization_repository.ts";
-import { SQLiteOwnerRepository } from "persistence/sqlite/sqlite_owner_repository.ts";
+// import { SQLiteOwnerRepository } from "persistence/sqlite/sqlite_owner_repository.ts";
 import { SQLitePatientRepository } from "persistence/sqlite/sqlite_patient_repository.ts";
 import { SQLiteReportRepository } from "persistence/sqlite/sqlite_report_repository.ts";
 import { SQLiteReportService } from "persistence/sqlite/sqlite_report_service.ts";
 import { SQLiteRoundRepository } from "persistence/sqlite/sqlite_round_repository.ts";
+import { PostgresOwnerRepository } from "persistence/postgres/postgres_owner_repository.ts";
+import { Client } from "deps";
 
 const DB_PATH = Deno.env.get("DB_PATH") || "/data/db.sqlite";
 const PORT = Deno.env.get("PORT") || "8000";
+
+const DB_URL = "";
+const client = new Client(DB_URL);
+const ownerRepo = new PostgresOwnerRepository(client);
 
 // Initialize adapters
 const db = createSQLiteDB(DB_PATH);
@@ -25,7 +31,7 @@ const db = createSQLiteDB(DB_PATH);
 const patientRepository = new SQLitePatientRepository(db);
 const alertRepository = new SQLiteAlertRepository(db);
 const roundRepository = new SQLiteRoundRepository(db);
-const ownerRepository = new SQLiteOwnerRepository(db);
+// const ownerRepository = new SQLiteOwnerRepository(db);
 const hospitalizationRepository = new SQLiteHospitalizationRepository(db);
 const budgetRepository = new SQLiteBudgetRepository(db);
 const reportRepository = new SQLiteReportRepository(db);
@@ -35,7 +41,7 @@ const reportService = new SQLiteReportService(db);
 // Initialize application services
 const patientService = new PatientService(
 	patientRepository,
-	ownerRepository,
+	ownerRepo,
 	hospitalizationRepository,
 	budgetRepository,
 	alertRepository,
@@ -52,7 +58,7 @@ const hospitalizationService = new HospitalizationService(
 );
 const budgetService = new BudgetService(budgetRepository);
 const crmService = new CrmService(
-	ownerRepository,
+	ownerRepo,
 	patientRepository,
 	reportRepository,
 	budgetRepository,
