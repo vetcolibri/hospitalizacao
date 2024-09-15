@@ -45,9 +45,9 @@ Deno.test("Round Service - New Round", async (t) => {
 			await service.new(patientId, parameters);
 
 			const round = await roundRepository.last();
-			const heartRate = round.getParameter("heartRate");
+			const heartRate = round.get("heartRate");
 
-			assertEquals(round.totalParameters(), 1);
+			assertEquals(round.total(), 1);
 			assertEquals(heartRate?.name, "heartRate");
 			assertEquals(heartRate?.value, 78);
 		},
@@ -67,8 +67,8 @@ Deno.test("Round Service - New Round", async (t) => {
 			await service.new(patientId, parameters);
 
 			const round = await roundRepository.last();
-			const respiratoryRate = round.getParameter("respiratoryRate");
-			assertEquals(round.totalParameters(), 1);
+			const respiratoryRate = round.get("respiratoryRate");
+			assertEquals(round.total(), 1);
 			assertEquals(respiratoryRate?.name, "respiratoryRate");
 			assertEquals(respiratoryRate?.value, 20);
 		},
@@ -86,8 +86,8 @@ Deno.test("Round Service - New Round", async (t) => {
 		await service.new(patientId, parameters);
 
 		const round = await roundRepository.last();
-		const trc = round.getParameter("trc");
-		assertEquals(round.totalParameters(), 1);
+		const trc = round.get("trc");
+		assertEquals(round.total(), 1);
 		assertEquals(trc?.name, "trc");
 		assertEquals(trc?.value, "Menor que 2'");
 	});
@@ -104,8 +104,8 @@ Deno.test("Round Service - New Round", async (t) => {
 		await service.new(patientId, parameters);
 
 		const round = await roundRepository.last();
-		const avdn = round.getParameter("avdn");
-		assertEquals(round.totalParameters(), 1);
+		const avdn = round.get("avdn");
+		assertEquals(round.total(), 1);
 		assertEquals(avdn?.name, "avdn");
 		assertEquals(avdn?.value, "Alerta");
 	});
@@ -122,8 +122,8 @@ Deno.test("Round Service - New Round", async (t) => {
 		await service.new(patientId, parameters);
 
 		const round = await roundRepository.last();
-		const mucosas = round.getParameter("mucosas");
-		assertEquals(round.totalParameters(), 1);
+		const mucosas = round.get("mucosas");
+		assertEquals(round.total(), 1);
 		assertEquals(mucosas?.name, "mucosas");
 		assertEquals(mucosas?.value, "Rosadas");
 	});
@@ -140,8 +140,8 @@ Deno.test("Round Service - New Round", async (t) => {
 		await service.new(patientId, parameters);
 
 		const round = await roundRepository.last();
-		const temperature = round.getParameter("temperature");
-		assertEquals(round.totalParameters(), 1);
+		const temperature = round.get("temperature");
+		assertEquals(round.total(), 1);
 		assertEquals(temperature?.name, "temperature");
 		assertEquals(temperature?.value, 37.5);
 	});
@@ -158,8 +158,8 @@ Deno.test("Round Service - New Round", async (t) => {
 		await service.new(patientId, parameters);
 
 		const round = await roundRepository.last();
-		const bloodGlucose = round.getParameter("bloodGlucose");
-		assertEquals(round.totalParameters(), 1);
+		const bloodGlucose = round.get("bloodGlucose");
+		assertEquals(round.total(), 1);
 		assertEquals(bloodGlucose?.name, "bloodGlucose");
 		assertEquals(bloodGlucose?.value, 100);
 	});
@@ -176,8 +176,8 @@ Deno.test("Round Service - New Round", async (t) => {
 		await service.new(patientId, parameters);
 
 		const round = await roundRepository.last();
-		const hct = round.getParameter("hct");
-		assertEquals(round.totalParameters(), 1);
+		const hct = round.get("hct");
+		assertEquals(round.total(), 1);
 		assertEquals(hct?.name, "hct");
 		assertEquals(hct?.value, 40);
 	});
@@ -194,8 +194,8 @@ Deno.test("Round Service - New Round", async (t) => {
 		await service.new(patientId, parameters);
 
 		const round = await roundRepository.last();
-		const bloodPressure = round.getParameter("bloodPressure");
-		assertEquals(round.totalParameters(), 1);
+		const bloodPressure = round.get("bloodPressure");
+		assertEquals(round.total(), 1);
 		assertEquals(bloodPressure?.name, "bloodPressure");
 		assertEquals(bloodPressure?.value, "120/80 (56)");
 	});

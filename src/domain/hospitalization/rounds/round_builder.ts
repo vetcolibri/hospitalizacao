@@ -1,17 +1,17 @@
-import { Round } from "../rounds/round.ts";
-import { HeartRate } from "../parameters/heart_rate.ts";
-import { Either, left, right } from "shared/either.ts";
-import { RespiratoryRate } from "../parameters/respiratore_rate.ts";
-import { Trc } from "../parameters/trc.ts";
-import { Temperature } from "../parameters/temperature.ts";
-import { Avdn } from "../parameters/avdn.ts";
-import { Mucosas } from "../parameters/mucosas.ts";
-import { BloodGlucose } from "../parameters/blood_glucose.ts";
-import { Hct } from "../parameters/hct.ts";
-import { BloodPressure } from "../parameters/blood_pressure.ts";
-import { InvalidParameter } from "../parameters/parameter_error.ts";
-import { ErrorMessage } from "shared/error_messages.ts";
 import { MeasurementData } from "application/round_service.ts";
+import { Avdn } from "domain/hospitalization/parameters/avdn.ts";
+import { BloodGlucose } from "domain/hospitalization/parameters/blood_glucose.ts";
+import { BloodPressure } from "domain/hospitalization/parameters/blood_pressure.ts";
+import { Hct } from "domain/hospitalization/parameters/hct.ts";
+import { HeartRate } from "domain/hospitalization/parameters/heart_rate.ts";
+import { Mucosas } from "domain/hospitalization/parameters/mucosas.ts";
+import { InvalidParameter } from "domain/hospitalization/parameters/parameter_error.ts";
+import { RespiratoryRate } from "domain/hospitalization/parameters/respiratore_rate.ts";
+import { Temperature } from "domain/hospitalization/parameters/temperature.ts";
+import { Trc } from "domain/hospitalization/parameters/trc.ts";
+import { Round } from "domain/hospitalization/rounds/round.ts";
+import { Either, left, right } from "shared/either.ts";
+import { ErrorMessage } from "shared/error_messages.ts";
 import { ID } from "shared/id.ts";
 
 export class RoundBuilder {
@@ -24,56 +24,56 @@ export class RoundBuilder {
 	withHeartRate(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const heartRate = new HeartRate(Number(data.value));
-		this.#round.addParameter(heartRate);
+		this.#round.add(heartRate);
 		return this;
 	}
 
 	withRespiratoryRate(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const respiratoryRate = new RespiratoryRate(Number(data.value));
-		this.#round.addParameter(respiratoryRate);
+		this.#round.add(respiratoryRate);
 		return this;
 	}
 
 	withTrc(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const trc = new Trc(String(data.value));
-		this.#round.addParameter(trc);
+		this.#round.add(trc);
 		return this;
 	}
 
 	withAvdn(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const avdn = new Avdn(String(data.value));
-		this.#round.addParameter(avdn);
+		this.#round.add(avdn);
 		return this;
 	}
 
 	withMucosas(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const mucosas = new Mucosas(String(data.value));
-		this.#round.addParameter(mucosas);
+		this.#round.add(mucosas);
 		return this;
 	}
 
 	withTemperature(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const temperature = new Temperature(Number(data.value));
-		this.#round.addParameter(temperature);
+		this.#round.add(temperature);
 		return this;
 	}
 
 	withBloodGlucose(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const bloodGlucose = new BloodGlucose(Number(data.value));
-		this.#round.addParameter(bloodGlucose);
+		this.#round.add(bloodGlucose);
 		return this;
 	}
 
 	withHct(data: MeasurementData): RoundBuilder {
 		if (!data) return this;
 		const hct = new Hct(Number(data.value));
-		this.#round.addParameter(hct);
+		this.#round.add(hct);
 		return this;
 	}
 
@@ -81,7 +81,7 @@ export class RoundBuilder {
 		if (!data) return this;
 
 		const bloodPressure = new BloodPressure(String(data.value));
-		this.#round.addParameter(bloodPressure);
+		this.#round.add(bloodPressure);
 		return this;
 	}
 

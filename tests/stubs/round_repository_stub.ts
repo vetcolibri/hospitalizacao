@@ -64,9 +64,9 @@ export class RoundRepositoryStub implements RoundRepository {
 		const round1 = new Round(PATIENTS.hospitalized["1918BA"].systemId);
 		const round2 = new Round(PATIENTS.hospitalized["1918BA"].systemId);
 		const round3 = new Round(PATIENTS.hospitalized["1918BA"].systemId);
-		round1.addParameter(heartRate);
-		round2.addParameter(heartRate);
-		round3.addParameter(trc);
+		round1.add(heartRate);
+		round2.add(heartRate);
+		round3.add(trc);
 		this.save(round1);
 		this.save(round2);
 		this.save(round3);

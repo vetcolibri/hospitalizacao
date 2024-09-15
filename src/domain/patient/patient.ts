@@ -1,4 +1,4 @@
-import { BirthDate } from "./birth_date.ts";
+import { BirthDate } from "domain/patient/birth_date.ts";
 import { ID } from "shared/id.ts";
 
 export enum PatientStatus {

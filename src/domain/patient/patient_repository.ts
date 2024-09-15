@@ -1,6 +1,6 @@
-import { PatientNotFound } from "./patient_not_found_error.ts";
+import { Patient } from "domain/patient/patient.ts";
+import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { Either } from "shared/either.ts";
-import { Patient } from "./patient.ts";
 import { ID } from "shared/id.ts";
 
 export interface PatientRepository {

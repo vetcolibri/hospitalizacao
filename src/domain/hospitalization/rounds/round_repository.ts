@@ -1,6 +1,6 @@
+import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
+import { Round } from "domain/hospitalization/rounds/round.ts";
 import { ID } from "shared/id.ts";
-import { Parameter } from "../parameters/parameter.ts";
-import { Round } from "./round.ts";
 
 export interface RoundRepository {
 	save(round: Round): Promise<void>;

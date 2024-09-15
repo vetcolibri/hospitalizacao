@@ -23,11 +23,11 @@ Deno.test("Rounds", async (t) => {
 			const parameter = new HeartRate(78);
 			const round = new Round(patient.patientId);
 
-			round.addParameter(parameter);
+			round.add(parameter);
 
-			const heartRate = round.getParameter("heartRate")!;
+			const heartRate = round.get("heartRate")!;
 
-			assertEquals(round.totalParameters(), 1);
+			assertEquals(round.total(), 1);
 			assertInstanceOf(heartRate, HeartRate);
 		},
 	);
@@ -38,11 +38,11 @@ Deno.test("Rounds", async (t) => {
 			const parameter = new RespiratoryRate(12);
 			const round = new Round(patient.patientId);
 
-			round.addParameter(heartRate);
-			round.addParameter(parameter);
+			round.add(heartRate);
+			round.add(parameter);
 
-			const respiratoryRate = round.getParameter("respiratoryRate")!;
-			assertEquals(round.totalParameters(), 2);
+			const respiratoryRate = round.get("respiratoryRate")!;
+			assertEquals(round.total(), 2);
 			assertInstanceOf(respiratoryRate, RespiratoryRate);
 		},
 	);
@@ -52,12 +52,12 @@ Deno.test("Rounds", async (t) => {
 		const parameter = new Trc("Maior que 2'");
 		const round = new Round(patient.patientId);
 
-		round.addParameter(heartRate);
-		round.addParameter(respiratoryRate);
-		round.addParameter(parameter);
+		round.add(heartRate);
+		round.add(respiratoryRate);
+		round.add(parameter);
 
-		const trc = round.getParameter("trc")!;
-		assertEquals(round.totalParameters(), 3);
+		const trc = round.get("trc")!;
+		assertEquals(round.total(), 3);
 		assertInstanceOf(trc, Trc);
 	});
 	await t.step("Deve criar uma ronda com a medição da Avdn.", () => {
@@ -68,13 +68,13 @@ Deno.test("Rounds", async (t) => {
 
 		const round = new Round(patient.patientId);
 
-		round.addParameter(heartRate);
-		round.addParameter(respiratoryRate);
-		round.addParameter(trc);
-		round.addParameter(parameter);
+		round.add(heartRate);
+		round.add(respiratoryRate);
+		round.add(trc);
+		round.add(parameter);
 
-		const avdn = round.getParameter("avdn")!;
-		assertEquals(round.totalParameters(), 4);
+		const avdn = round.get("avdn")!;
+		assertEquals(round.total(), 4);
 		assertInstanceOf(avdn, Avdn);
 	});
 	await t.step("Deve criar uma ronda com a medição da Mucosas.", () => {
@@ -86,14 +86,14 @@ Deno.test("Rounds", async (t) => {
 
 		const round = new Round(patient.patientId);
 
-		round.addParameter(heartRate);
-		round.addParameter(respiratoryRate);
-		round.addParameter(trc);
-		round.addParameter(avdn);
-		round.addParameter(parameter);
+		round.add(heartRate);
+		round.add(respiratoryRate);
+		round.add(trc);
+		round.add(avdn);
+		round.add(parameter);
 
-		const mucosas = round.getParameter("mucosas")!;
-		assertEquals(round.totalParameters(), 5);
+		const mucosas = round.get("mucosas")!;
+		assertEquals(round.total(), 5);
 		assertInstanceOf(mucosas, Mucosas);
 	});
 	await t.step("Deve criar uma ronda com a medição da Temperatura.", () => {
@@ -106,14 +106,14 @@ Deno.test("Rounds", async (t) => {
 
 		const round = new Round(patient.patientId);
 
-		round.addParameter(heartRate);
-		round.addParameter(respiratoryRate);
-		round.addParameter(trc);
-		round.addParameter(avdn);
-		round.addParameter(mucosas);
-		round.addParameter(parameter);
-		const temperature = round.getParameter("mucosas")!;
-		assertEquals(round.totalParameters(), 6);
+		round.add(heartRate);
+		round.add(respiratoryRate);
+		round.add(trc);
+		round.add(avdn);
+		round.add(mucosas);
+		round.add(parameter);
+		const temperature = round.get("mucosas")!;
+		assertEquals(round.total(), 6);
 		assertInstanceOf(temperature, Mucosas);
 	});
 	await t.step("Deve criar uma ronda com a medição da Glicemia.", () => {
@@ -127,16 +127,16 @@ Deno.test("Rounds", async (t) => {
 
 		const round = new Round(patient.patientId);
 
-		round.addParameter(heartRate);
-		round.addParameter(respiratoryRate);
-		round.addParameter(trc);
-		round.addParameter(avdn);
-		round.addParameter(mucosas);
-		round.addParameter(temperature);
-		round.addParameter(parameter);
+		round.add(heartRate);
+		round.add(respiratoryRate);
+		round.add(trc);
+		round.add(avdn);
+		round.add(mucosas);
+		round.add(temperature);
+		round.add(parameter);
 
-		const glicemia = round.getParameter("bloodGlucose")!;
-		assertEquals(round.totalParameters(), 7);
+		const glicemia = round.get("bloodGlucose")!;
+		assertEquals(round.total(), 7);
 		assertInstanceOf(glicemia, BloodGlucose);
 	});
 	await t.step("Deve criar uma ronda com a medição da Hct.", () => {
@@ -151,17 +151,17 @@ Deno.test("Rounds", async (t) => {
 
 		const round = new Round(patient.patientId);
 
-		round.addParameter(heartRate);
-		round.addParameter(respiratoryRate);
-		round.addParameter(trc);
-		round.addParameter(avdn);
-		round.addParameter(mucosas);
-		round.addParameter(temperature);
-		round.addParameter(glicemia);
-		round.addParameter(parameter);
+		round.add(heartRate);
+		round.add(respiratoryRate);
+		round.add(trc);
+		round.add(avdn);
+		round.add(mucosas);
+		round.add(temperature);
+		round.add(glicemia);
+		round.add(parameter);
 
-		const hct = round.getParameter("hct")!;
-		assertEquals(round.totalParameters(), 8);
+		const hct = round.get("hct")!;
+		assertEquals(round.total(), 8);
 		assertInstanceOf(hct, Hct);
 	});
 	await t.step(
@@ -179,18 +179,18 @@ Deno.test("Rounds", async (t) => {
 
 			const round = new Round(patient.patientId);
 
-			round.addParameter(heartRate);
-			round.addParameter(respiratoryRate);
-			round.addParameter(trc);
-			round.addParameter(avdn);
-			round.addParameter(mucosas);
-			round.addParameter(temperature);
-			round.addParameter(glicemia);
-			round.addParameter(hct);
-			round.addParameter(parameter);
+			round.add(heartRate);
+			round.add(respiratoryRate);
+			round.add(trc);
+			round.add(avdn);
+			round.add(mucosas);
+			round.add(temperature);
+			round.add(glicemia);
+			round.add(hct);
+			round.add(parameter);
 
-			const bloodPressure = round.getParameter("bloodPressure")!;
-			assertEquals(round.totalParameters(), 9);
+			const bloodPressure = round.get("bloodPressure")!;
+			assertEquals(round.total(), 9);
 			assertInstanceOf(bloodPressure, BloodPressure);
 		},
 	);

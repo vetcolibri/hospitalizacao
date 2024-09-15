@@ -1,6 +1,5 @@
-import { Either, left } from "shared/either.ts";
-import { Patient } from "./patient.ts";
-import { right } from "shared/either.ts";
+import { Patient } from "domain/patient/patient.ts";
+import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
 
 export class PatientBuilder {

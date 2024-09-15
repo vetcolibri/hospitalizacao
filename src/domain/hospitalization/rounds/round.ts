@@ -1,5 +1,5 @@
+import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
 import { ID } from "shared/id.ts";
-import { Parameter } from "../parameters/parameter.ts";
 
 export class Round {
 	readonly #roundId: ID;
@@ -12,15 +12,15 @@ export class Round {
 		this.parameters = [];
 	}
 
-	addParameter(parameter: Parameter): void {
+	add(parameter: Parameter): void {
 		this.parameters.push(parameter);
 	}
 
-	getParameter(name: string) {
+	get(name: string) {
 		return this.parameters.find((parameter) => parameter.name === name);
 	}
 
-	totalParameters(): number {
+	total(): number {
 		return this.parameters.length;
 	}
 

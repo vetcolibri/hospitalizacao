@@ -1,6 +1,6 @@
-import { ID } from "shared/id.ts";
-import { Hospitalization } from "./hospitalization.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { Either, left, right } from "shared/either.ts";
+import { ID } from "shared/id.ts";
 
 export class HospitalizationBuilder {
 	#patientId?: string;

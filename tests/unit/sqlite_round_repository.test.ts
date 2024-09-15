@@ -30,15 +30,15 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			const bloodGlucose = new BloodGlucose(67);
 			const hct = new Hct(40);
 			const bloodPressure = new BloodPressure("120/80(60)");
-			round.addParameter(heartRate);
-			round.addParameter(respiratoryRate);
-			round.addParameter(trc);
-			round.addParameter(avdn);
-			round.addParameter(mucosas);
-			round.addParameter(temperature);
-			round.addParameter(bloodGlucose);
-			round.addParameter(hct);
-			round.addParameter(bloodPressure);
+			round.add(heartRate);
+			round.add(respiratoryRate);
+			round.add(trc);
+			round.add(avdn);
+			round.add(mucosas);
+			round.add(temperature);
+			round.add(bloodGlucose);
+			round.add(hct);
+			round.add(bloodPressure);
 			await persistence.save(round);
 
 			const measurements = await persistence.measurements(
@@ -68,17 +68,17 @@ Deno.test("SQLite - Round Repository", async (t) => {
 			const hct = new Hct(40);
 			const bloodPressure = new BloodPressure("120/80(60)");
 			const heartRate2 = new HeartRate(89);
-			round.addParameter(heartRate);
-			round.addParameter(respiratoryRate);
-			round.addParameter(trc);
-			round.addParameter(avdn);
-			round.addParameter(mucosas);
-			round.addParameter(temperature);
-			round.addParameter(bloodGlucose);
-			round.addParameter(hct);
-			round.addParameter(bloodPressure);
+			round.add(heartRate);
+			round.add(respiratoryRate);
+			round.add(trc);
+			round.add(avdn);
+			round.add(mucosas);
+			round.add(temperature);
+			round.add(bloodGlucose);
+			round.add(hct);
+			round.add(bloodPressure);
 
-			round2.addParameter(heartRate2);
+			round2.add(heartRate2);
 			await persistence.save(round);
 			await persistence.save(round2);
 
