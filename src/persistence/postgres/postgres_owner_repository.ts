@@ -5,6 +5,11 @@ import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
 import { Client } from "deps";
 
+
+function ownerFactory(row: any): Owner {
+    return new Owner(row.owner_id, row.name, row.phone_number, row.whatsapp)
+}
+
 export class PostgresOwnerRepository implements OwnerRepository {
     constructor(private client: Client) {}
 
@@ -18,15 +23,16 @@ export class PostgresOwnerRepository implements OwnerRepository {
 
         if (result.rows.length === 0) return left(new OwnerNotFound());
 
-        return right(result.rows[0]);
+        return right(ownerFactory(result.rows[0]));
     }
 
     async getAll(): Promise<Owner[]> {
-        return (await this.client.queryObject<Owner>("SELECT * FROM owners")).rows;
+        const result = await this.client.queryObject("SELECT * FROM owners");
+        return result.rows.map(ownerFactory);
     }
 
     async save(owner: Owner): Promise<void> {
-        await this.client.queryObject("INSERT INTO owner VALUES ($1, $2, $3, $4)", [
+        await this.client.queryObject("INSERT INTO owners VALUES ($1, $2, $3, $4)", [
             owner.ownerId.value,
             owner.name,
             owner.phoneNumber,
