@@ -11,11 +11,11 @@ export class PostgresMeasurementService implements MeasurementService {
                 SELECT measurements.name as name, value, issued_at FROM measurements
                 JOIN rounds ON rounds.round_id = measurements.round_id
                 JOIN patients ON patients.system_id = rounds.system_id
-                WHERE patients.system_id = $patientId
+                WHERE patients.system_id = $PATIENT_ID
         `;
 
         const result = await this.client.queryObject<ParameterModel>(query, {
-            patientId: patientId,
+            patient_id: patientId,
         });
 
         let parameters: Parameter[] = [];
@@ -46,10 +46,10 @@ export class PostgresMeasurementService implements MeasurementService {
                 SELECT measurements.name as name, value, issued_at FROM measurements
                 JOIN rounds ON rounds.round_id = measurements.round_id
                 JOIN patients ON patients.system_id = rounds.system_id
-                WHERE patients.system_id = $patientId
+                WHERE patients.system_id = $PATIENT_ID
             `;
         const result = await this.client.queryObject<ParameterModel>(sql, {
-            patientId: patientId,
+            patient_id: patientId,
         });
 
         let parameters: Parameter[] = [];

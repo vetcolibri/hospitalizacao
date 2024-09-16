@@ -12,14 +12,14 @@ export class PostgresReportRepository implements ReportRepository {
         const reports = await this.client.queryObject<ReportModel>(
             "SELECT * FROM reports WHERE system_id = $SYSTEM_ID LIMIT 1",
             {
-                systemId: patientId.value,
+                system_id: patientId.value,
             },
         );
 
         const discharges = await this.client.queryObject<DischargeModel>(
             `SELECT * FROM discharges WHERE report_id = $REPORT_ID`,
             {
-                reportId: String(reports.rows[0].report_id),
+                report_id: String(reports.rows[0].report_id),
             },
         );
 
@@ -40,26 +40,26 @@ export class PostgresReportRepository implements ReportRepository {
 				comments
 			)
 			VALUES (
-				$reportId,
-				$systemId,
-				$stateOfConsciousness,
-				$foodTypes,
-				$foodLevel,
-				$foodDate,
-                $createdAt,
-				$comments
+				$1,
+				$2,
+				$3,
+				$4,
+				$5,
+				$6,
+                $7,
+				$8
 			)
 		`,
-            {
-                reportId: report.reportId.value,
-                systemId: report.patientId.value,
-                stateOfConsciousness: JSON.stringify(report.stateOfConsciousness.join(",")),
-                foodTypes: JSON.stringify(report.food.types.join(",")),
-                foodLevel: report.food.level,
-                foodDate: report.food.datetime,
-                createdAt: report.createdAt,
-                comments: report.comments,
-            },
+            [
+                report.reportId.value,
+                report.patientId.value,
+                JSON.stringify(report.stateOfConsciousness.join(",")),
+                JSON.stringify(report.food.types.join(",")),
+                report.food.level,
+                report.food.datetime,
+                report.createdAt,
+                report.comments,
+            ],
         );
 
         const query = `INSERT INTO discharges (report_id, type, aspects) VALUES $VALUES`;

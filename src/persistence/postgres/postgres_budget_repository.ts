@@ -12,7 +12,7 @@ export class PostgresBudgetRepository implements BudgetRepository {
 		const result = await this.client.queryObject<BudgetModel>(
 			"SELECT * FROM budgets WHERE budget_id = $BUDGET_ID LIMIT 1",
 			{
-				budgetId: budgetId.value,
+				budget_id: budgetId.value,
 			},
 		);
 
@@ -25,7 +25,7 @@ export class PostgresBudgetRepository implements BudgetRepository {
 		const result = await this.client.queryObject<BudgetModel>(
 			"SELECT * FROM budgets WHERE hospitalization_id = $HOSPITALIZATION_ID LIMIT 1",
 			{
-				hospitalizationId: hospitalizationId.value,
+				hospitalization_id: hospitalizationId.value,
 			},
 		);
 
@@ -41,15 +41,15 @@ export class PostgresBudgetRepository implements BudgetRepository {
 
 	async save(budget: Budget): Promise<void> {
 		const query =
-			`INSERT INTO budgets (hospitalization_id, start_on, end_on, status, budget_id) VALUES ($HOSPITALIZATION_ID, $START_ON, $END_ON, $STATUS $BUDGET_ID)`;
+			`INSERT INTO budgets (hospitalization_id, start_on, end_on, status, budget_id) VALUES ($1, $2, $3, $4 $5)`;
 
-		await this.client.queryObject(query, {
-			hospitalizationId: budget.hospitalizationId.value,
-			startOn: budget.startOn.toISOString(),
-			endOn: budget.endOn.toISOString(),
-			status: budget.status,
-			budgetId: budget.budgetId.value,
-		});
+		await this.client.queryObject(query, [
+			budget.hospitalizationId.value,
+			budget.startOn.toISOString(),
+			budget.endOn.toISOString(),
+			budget.status,
+			budget.budgetId.value,
+		]);
 	}
 
 	async update(budget: Budget): Promise<void> {
@@ -59,9 +59,9 @@ export class PostgresBudgetRepository implements BudgetRepository {
 			query,
 			{
 				status: budget.status,
-				budgetId: budget.budgetId.value,
-				startOn: budget.startOn.toISOString(),
-				endOn: budget.endOn.toISOString(),
+				budget_id: budget.budgetId.value,
+				start_on: budget.startOn.toISOString(),
+				end_on: budget.endOn.toISOString(),
 			},
 		);
 	}

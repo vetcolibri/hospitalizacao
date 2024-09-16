@@ -35,7 +35,7 @@ export class PostgresPatientRepository implements PatientRepository {
 	async getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
 		const result = await this.client.queryObject<PatientModel>(
 			"SELECT * FROM patients WHERE system_id = $SYSTEM_ID limit 1",
-			{ systemId: patientId.value },
+			{ system_id: patientId.value },
 		);
 
 		if (result.rows.length === 0) return left(new PatientNotFound());
@@ -64,7 +64,7 @@ export class PostgresPatientRepository implements PatientRepository {
 			"UPDATE patients SET status = $STATUS WHERE system_id = $SYSTEM_ID",
 			{
 				status: patient.status,
-				systemId: patient.systemId.value,
+				system_id: patient.systemId.value,
 			},
 		);
 	}
