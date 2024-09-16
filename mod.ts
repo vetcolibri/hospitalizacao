@@ -12,7 +12,7 @@ import { createSQLiteDB } from "persistence/sqlite/sqlite_db_factory.ts";
 import { SQLiteHospitalizationRepository } from "persistence/sqlite/sqlite_hospitalization_repository.ts";
 // import { SQLiteOwnerRepository } from "persistence/sqlite/sqlite_owner_repository.ts";
 import { SQLitePatientRepository } from "persistence/sqlite/sqlite_patient_repository.ts";
-import { SQLiteReportRepository } from "persistence/sqlite/sqlite_report_repository.ts";
+import { PostgresReportRepository } from "persistence/postgres/postgres_report_repository.ts";
 import { SQLiteReportService } from "persistence/sqlite/sqlite_report_service.ts";
 import { SQLiteRoundRepository } from "persistence/sqlite/sqlite_round_repository.ts";
 import { PostgresOwnerRepository } from "persistence/postgres/postgres_owner_repository.ts";
@@ -34,7 +34,7 @@ const roundRepository = new SQLiteRoundRepository(db);
 // const ownerRepository = new SQLiteOwnerRepository(db);
 const hospitalizationRepository = new SQLiteHospitalizationRepository(db);
 const budgetRepository = new SQLiteBudgetRepository(db);
-const reportRepository = new SQLiteReportRepository(db);
+const reportRepository = new PostgresReportRepository(client);
 const notifier = new WebWorkerAlertNotifier();
 const reportService = new SQLiteReportService(db);
 
