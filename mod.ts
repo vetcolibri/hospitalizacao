@@ -25,7 +25,8 @@ if (!DB_URL) {
 	Deno.exit(1);
 }
 
-const client = new Client(DB_URL);
+const databaseUrl = "postgres://192.168.148.109:9000/postgres?user=postgres&password=postgres";
+const client = new Client(databaseUrl);
 
 // Initialize adapters
 

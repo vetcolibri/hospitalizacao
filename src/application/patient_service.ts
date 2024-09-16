@@ -108,6 +108,7 @@ export class PatientService {
 	 * @returns {Promise<Either<NewPatientError, void>>}
 	 */
 	async newPatient(data: NewPatientData): Promise<Either<NewPatientError, void>> {
+		console.log("aaa", data)
 		const { patientData, ownerData, hospitalizationData, budgetData } = data;
 
 		const patientExists = await this.#patientRepository.exists(

@@ -18,13 +18,13 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 			"INSERT INTO hospitalizations (weight, entry_date, discharge_date, complaints, diagnostics, status, hospitalization_id, system_id)  VALUES ($WEIGHT, $ENTRY_DATE, $DISCHARGE_DATE, $COMPLAINTS, $DIAGNISTICS, $STATUS, $HOSPITALIZATION_ID, $SYSTEM_ID)",
 			{
 				weight: hospitalization.weight,
-				entryDate: hospitalization.entryDate.toISOString(),
-				dischargeDate: hospitalization.dischargeDate?.toISOString(),
+				entry_date: hospitalization.entryDate.toISOString(),
+				discharge_date: hospitalization.dischargeDate?.toISOString(),
 				complaints: JSON.stringify(hospitalization.complaints.join(",")),
 				diagnostics: JSON.stringify(hospitalization.diagnostics.join(",")),
 				status: hospitalization.status,
-				hospitalizationId: hospitalization.hospitalizationId.value,
-				systemId: hospitalization.patientId.value,
+				hospitalization_id: hospitalization.hospitalizationId.value,
+				system_id: hospitalization.patientId.value,
 			},
 		);
 	}
@@ -37,7 +37,7 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 	async getByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {
 		const result = await this.client.queryObject<HospModel>(
 			"SELECT * FROM hospitalizations WHERE system_id = $SYSTEM_ID  AND status = $STATUS LIMIT 1",
-			{ systemId: patientId.value, status: HospitalizationStatus.Open },
+			{ system_id: patientId.value, status: HospitalizationStatus.Open },
 		);
 
 		if (result.rows.length === 0) return left(new HospitalizationNotFound());
@@ -50,7 +50,7 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 			"UPDATE hospitalizations SET status = $STATUS WHERE hospitalization_id = $HOSPITALIZATION_ID",
 			{
 				status: HospitalizationStatus.Close,
-				hospitalizationId: hospitalization.hospitalizationId.value,
+				hospitalization_id: hospitalization.hospitalizationId.value,
 			},
 		);
 	}

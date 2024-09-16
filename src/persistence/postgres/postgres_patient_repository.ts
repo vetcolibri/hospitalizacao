@@ -44,20 +44,18 @@ export class PostgresPatientRepository implements PatientRepository {
 	}
 
 	async save(patient: Patient): Promise<void> {
-		const query =
-			"INSERT INTO patients (system_id, patient_id, name, breed, specie, birth_date, owner_id, status) VALUES ($SYSTEM_ID, $PATIENT_ID, $NAME, $BREED, $SPECIE, $BIRTH_DATE, $OWNER_ID, $STATUS)";
 		await this.client.queryObject(
-			query,
-			{
-				systemId: patient.systemId.value,
-				patientId: patient.patientId.value,
-				name: patient.name,
-				breed: patient.breed,
-				specie: patient.specie,
-				birthDate: patient.birthDate.value.toISOString(),
-				ownerId: patient.ownerId.value,
-				status: patient.status,
-			},
+			"INSERT INTO patients (system_id, patient_id, name, breed, specie, birth_date, owner_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+			[
+				patient.systemId.value,
+				patient.patientId.value,
+				patient.name,
+				patient.breed,
+				patient.specie,
+				patient.birthDate.value.toISOString(),
+				patient.ownerId.value,
+				patient.status,
+			],
 		);
 	}
 
@@ -96,7 +94,7 @@ export class PostgresPatientRepository implements PatientRepository {
 	async exists(patientId: ID): Promise<boolean> {
 		const result = await this.client.queryObject<PatientModel>(
 			"SELECT patient_id FROM patients WHERE patient_id = $PATIENT_ID",
-			{ patientId: patientId.value },
+			{ patient_id: patientId.value },
 		);
 
 		return result.rows.some((row) => row.patient_id === patientId.value);
