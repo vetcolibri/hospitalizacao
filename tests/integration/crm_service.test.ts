@@ -153,7 +153,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			await service.registerReport(data);
 
-			const report = await reportRepo.get(ID.fromString(data.patientId));
+			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 			assertEquals(report.patientId.value, data.patientId);
 			assertEquals(report.stateOfConsciousness, ["Consciente"]);
@@ -186,7 +186,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			await service.registerReport(data);
 
-			const report = await reportRepo.get(ID.fromString(data.patientId));
+			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 			assertEquals(report.stateOfConsciousness, ["Consciente", "Alerta"]);
 		},
@@ -218,7 +218,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			await service.registerReport(data);
 
-			const report = await reportRepo.get(ID.fromString(data.patientId));
+			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 			assertEquals(report.food.level, data.food.level);
 			assertEquals(report.food.datetime, new Date(data.food.datetime));
@@ -256,7 +256,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			await service.registerReport(data);
 
-			const report = await reportRepo.get(ID.fromString(data.patientId));
+			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 			assertEquals(report.discharges.length, 2);
 		},
@@ -288,7 +288,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			await service.registerReport(data);
 
-			const report = await reportRepo.get(ID.fromString(data.patientId));
+			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 			assertEquals(report.comments, data.comments);
 		},
@@ -320,7 +320,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			await service.registerReport(data);
 
-			const report = await reportRepo.get(ID.fromString(data.patientId));
+			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 			assertEquals(report.createdAt, new Date());
 		},
@@ -354,7 +354,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 		await service.registerReport(data);
 
-		const report = await reportRepo.get(ID.fromString(data.patientId));
+		const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 		assertEquals(report.discharges[0].type, data.discharges[0].type);
 		assertEquals(report.discharges[0].aspects, data.discharges[0].aspects);

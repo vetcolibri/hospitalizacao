@@ -9,7 +9,7 @@ Deno.test("SQLite Report Service - Find Reports", async (t) => {
 
         const service = new SQLiteReportService(db);
 
-        const reports = await service.getAll("1918BA", "some-hospitalization-id");
+        const reports = await service.findAll("1918BA", "some-hospitalization-id");
 
         assertEquals(reports.length, 2);
     });
@@ -20,7 +20,7 @@ Deno.test("SQLite Report Service - Find Reports", async (t) => {
 
         const service = new SQLiteReportService(db);
 
-        const reports = await service.getAll("1918BA", "some-hospitalization-id");
+        const reports = await service.findAll("1918BA", "some-hospitalization-id");
 
         assertEquals(reports[0].reportId, "2");
     });

@@ -5,7 +5,7 @@ import { ID } from "shared/id.ts";
 export class InmemReportRepository implements ReportRepository {
     #reports: Record<string, Report> = {};
 
-    get(patientId: ID): Promise<Report> {
+    findByPatientId(patientId: ID): Promise<Report> {
         return Promise.resolve(this.#reports[patientId.toString()]);
     }
 

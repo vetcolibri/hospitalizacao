@@ -10,5 +10,5 @@ export interface ReportDTO extends ReportData {
 }
 
 export interface ReportService {
-    getAll(patientId: string, hospitalizationId: string): Promise<ReportDTO[]>;
+    findAll(patientId: string, hospitalizationId: string): Promise<ReportDTO[]>;
 }

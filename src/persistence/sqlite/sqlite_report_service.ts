@@ -2,7 +2,7 @@ import { DB, RowObject } from "deps";
 import { ReportDTO, ReportService } from "domain/crm/report/report_service.ts";
 
 function toReportDTO(row: RowObject): ReportDTO {
-    const result = {
+    return {
         reportId: String(row.report_id),
         stateOfConsciousness: JSON.parse(String(row.state_of_consciousness)).split(","),
         food: {
@@ -18,8 +18,6 @@ function toReportDTO(row: RowObject): ReportDTO {
         createdAt: String(row.created_at),
         budgetStatus: String(row.b_status),
     };
-
-    return result;
 }
 
 function toDischarge(row: RowObject) {
@@ -36,7 +34,7 @@ export class SQLiteReportService implements ReportService {
         this.#db = db;
     }
 
-    getAll(patientId: string, hospitalizationId: string): Promise<ReportDTO[]> {
+    findAll(patientId: string, hospitalizationId: string): Promise<ReportDTO[]> {
         const rows = this.#db.queryEntries(
             "SELECT b.status as b_status, patients.name, patients.patient_id, owners.owner_name, hospitalizations.system_id, reports.report_id, reports.state_of_consciousness, reports.food_types, reports.food_level, reports.food_date, reports.created_at, reports.comments FROM budgets b INNER JOIN hospitalizations ON b.hospitalization_id = :hospitalizationId INNER JOIN reports ON hospitalizations.system_id = reports.system_id INNER JOIN patients ON reports.system_id = patients.system_id INNER JOIN owners ON patients.owner_id = owners.owner_id WHERE reports.system_id = :patientId",
             { patientId, hospitalizationId },

@@ -8,7 +8,7 @@ import { ID } from "shared/id.ts";
 export class PostgresReportRepository implements ReportRepository {
     constructor(private client: Client) {}
 
-    async get(patientId: ID): Promise<Report> {
+    async findByPatientId(patientId: ID): Promise<Report> {
         const reports = await this.client.queryObject<ReportModel>(
             "SELECT * FROM reports WHERE system_id = $SYSTEM_ID LIMIT 1",
             {

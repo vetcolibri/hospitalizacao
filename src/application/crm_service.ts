@@ -98,7 +98,7 @@ export class CrmService {
 		);
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-		const reports = await this.#reportService.getAll(patientId, hospitalizationId);
+		const reports = await this.#reportService.findAll(patientId, hospitalizationId);
 
 		return right(reports);
 	}
