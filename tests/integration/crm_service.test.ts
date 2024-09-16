@@ -437,7 +437,7 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
 
 		const output = <ReportDTO[]> reportsOrErr.value;
-		const reports = await reportService.getAll("1900BA", "some-id");
+		const reports = await reportService.findAll("1900BA", "some-id");
 
 		assertEquals(output.length, reports.length);
 	});
@@ -554,7 +554,7 @@ function makeService(opts?: Options) {
 	const patientRepo = opts?.patientRepository ?? new InmemPatientRepository();
 	const budgetRepo = new InmemBudgetRepository();
 	const reportService = {
-		getAll: (_patientId: string, _hospitalization_id: string) => {
+		findAll: (_patientId: string, _hospitalization_id: string) => {
 			return Promise.resolve([
 				{
 					reportId: "some-id-1",
