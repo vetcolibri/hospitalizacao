@@ -11,6 +11,7 @@ import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.t
 import { PATIENTS } from "../fake_data.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
+import { MeasurementServiceStub } from "../stubs/measurement_service_stub.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step(
@@ -501,7 +502,8 @@ interface options {
 function makeService(options?: options) {
 	const roundRepository = options?.roundRepository ?? new InmemRoundRepository();
 	const patientRepository = options?.patientRepository ?? new PatientRepositoryStub();
+	const measuremntService = new MeasurementServiceStub();
 
-	const service = new RoundService(roundRepository, patientRepository);
+	const service = new RoundService(roundRepository, patientRepository, measuremntService);
 	return { service, patientRepository, roundRepository };
 }

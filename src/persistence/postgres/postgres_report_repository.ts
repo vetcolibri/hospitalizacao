@@ -40,14 +40,14 @@ export class PostgresReportRepository implements ReportRepository {
 				comments
 			)
 			VALUES (
-				:reportId,
-				:systemId,
-				:stateOfConsciousness,
-				:foodTypes,
-				:foodLevel,
-				:foodDate,
-                :createdAt,
-				:comments
+				$reportId,
+				$systemId,
+				$stateOfConsciousness,
+				$foodTypes,
+				$foodLevel,
+				$foodDate,
+                $createdAt,
+				$comments
 			)
 		`,
             {

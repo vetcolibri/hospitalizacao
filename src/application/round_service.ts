@@ -1,3 +1,4 @@
+import { MeasurementService } from "domain/hospitalization/parameters/measurement_service.ts";
 import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
 import { RoundBuilder } from "domain/hospitalization/rounds/round_builder.ts";
 import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
@@ -11,13 +12,16 @@ import { ID } from "shared/id.ts";
 export class RoundService {
 	#roundRepository: RoundRepository;
 	#patientRepository: PatientRepository;
+	#measurementService: MeasurementService;
 
 	constructor(
 		roundRepository: RoundRepository,
 		patientRepository: PatientRepository,
+		measurementService: MeasurementService,
 	) {
 		this.#roundRepository = roundRepository;
 		this.#patientRepository = patientRepository;
+		this.#measurementService = measurementService;
 	}
 
 	/**
@@ -72,7 +76,7 @@ export class RoundService {
 		const patientOrErr = await this.#patientRepository.getById(patientId);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const measurements = await this.#roundRepository.latestMeasurements(patientId);
+		const measurements = await this.#measurementService.latest(id);
 		return right(measurements);
 	}
 
@@ -87,7 +91,7 @@ export class RoundService {
 		const patientOrErr = await this.#patientRepository.getById(patientId);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const measurements = await this.#roundRepository.measurements(patientId);
+		const measurements = await this.#measurementService.findAll(id);
 		return right(measurements);
 	}
 
