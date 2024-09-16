@@ -1,20 +1,19 @@
+import { Client } from "deps";
 import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
-import { Client } from "deps";
 
-
-function ownerFactory(row: any): Owner {
-    return new Owner(row.owner_id, row.name, row.phone_number, row.whatsapp)
+function ownerFactory(row: OwnerModel): Owner {
+    return new Owner(row.owner_id, row.name, row.phone_number, row.whatsapp);
 }
 
 export class PostgresOwnerRepository implements OwnerRepository {
     constructor(private client: Client) {}
 
     async getById(ownerId: ID): Promise<Either<OwnerNotFound, Owner>> {
-        const result = await this.client.queryObject<Owner>(
+        const result = await this.client.queryObject<OwnerModel>(
             "SELECT * FROM owners WHERE owner_id = $ID LIMIT 1",
             {
                 id: ownerId.value,
@@ -27,7 +26,7 @@ export class PostgresOwnerRepository implements OwnerRepository {
     }
 
     async getAll(): Promise<Owner[]> {
-        const result = await this.client.queryObject("SELECT * FROM owners");
+        const result = await this.client.queryObject<OwnerModel>("SELECT * FROM owners");
         return result.rows.map(ownerFactory);
     }
 
@@ -43,4 +42,11 @@ export class PostgresOwnerRepository implements OwnerRepository {
     last(): Promise<Owner> {
         throw new Error("Method not implemented.");
     }
+}
+
+interface OwnerModel {
+    owner_id: string;
+    name: string;
+    phone_number: string;
+    whatsapp: boolean;
 }
