@@ -1,5 +1,4 @@
 import { Client } from "deps";
-import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
 import { Round } from "domain/hospitalization/rounds/round.ts";
 import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
 
@@ -12,12 +11,14 @@ export class PostgresRoundRepository implements RoundRepository {
 			round.roundId.value,
 		]);
 
-		const query = "INSERT INTO measurements (round_id, name, value, issued_at) VALUES $VALUES";
-		const values = round.parameters.map((parameter: Parameter) => {
-			return `(${round.roundId.value}, ${parameter.name}, ${parameter.measurement.toString()}, ${parameter.issuedAt.toISOString()})`;
-		}).join(",");
 
-		await this.client.queryObject(query, { values });
+		for (const parameter of round.parameters) {
+			await this.client.queryObject(
+				"INSERT INTO measurements (round_id, name, value, issued_at) VALUES ($1, $2, $3, $4)",
+				[round.roundId.value, parameter.name, parameter.measurement.toString(), parameter.issuedAt.toISOString()],
+			);
+		}
+
 	}
 
 	last(): Promise<Round> {

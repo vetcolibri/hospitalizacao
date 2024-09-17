@@ -15,7 +15,7 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 
 	async save(hospitalization: Hospitalization): Promise<void> {
 		await this.client.queryObject(
-			"INSERT INTO hospitalizations (weight, entry_date, discharge_date, complaints, diagnostics, status, hospitalization_id, system_id)  VALUES ($WEIGHT, $ENTRY_DATE, $DISCHARGE_DATE, $COMPLAINTS, $DIAGNISTICS, $STATUS, $HOSPITALIZATION_ID, $SYSTEM_ID)",
+			"INSERT INTO hospitalizations (weight, entry_date, discharge_date, complaints, diagnostics, status, hospitalization_id, system_id)  VALUES ($WEIGHT, $ENTRY_DATE, $DISCHARGE_DATE, $COMPLAINTS, $DIAGNOSTICS, $STATUS, $HOSPITALIZATION_ID, $SYSTEM_ID)",
 			{
 				weight: hospitalization.weight,
 				entry_date: hospitalization.entryDate.toISOString(),
@@ -58,10 +58,10 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 
 interface HospModel {
 	hospitalization_id: string;
-	patient_id: string;
+	system_id: string;
 	weight: number;
-	complaints: string[];
-	diagnostics: string[];
+	complaints: string;
+	diagnostics: string;
 	entry_date: string;
 	status: string;
 	discharge_date?: string;
@@ -69,13 +69,13 @@ interface HospModel {
 
 function hospFactory(model: HospModel): Hospitalization {
 	return Hospitalization.restore({
-		patientId: model.patient_id,
+		patientId: model.system_id,
 		hospitalizationId: model.hospitalization_id,
 		entryDate: model.entry_date,
 		dischargeDate: model.discharge_date,
 		weight: model.weight,
-		complaints: model.complaints,
-		diagnostics: model.diagnostics,
+		complaints: model.complaints.split(","),
+		diagnostics: model.diagnostics.split(","),
 		status: model.status,
 	});
 }

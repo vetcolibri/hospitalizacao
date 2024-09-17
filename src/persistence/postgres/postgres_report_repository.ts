@@ -29,27 +29,27 @@ export class PostgresReportRepository implements ReportRepository {
     async save(report: Report): Promise<void> {
         await this.client.queryObject(
             `
-			INSERT INTO reports (
-				report_id,
-				system_id,
-				state_of_consciousness,
-				food_types,
-				food_level,
-				food_date,
+            INSERT INTO reports (
+                report_id,
+                system_id,
+                state_of_consciousness,
+                food_types,
+                food_level,
+                food_date,
                 created_at,
-				comments
-			)
-			VALUES (
-				$1,
-				$2,
-				$3,
-				$4,
-				$5,
-				$6,
+                comments
+            )
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
                 $7,
-				$8
-			)
-		`,
+                $8
+            )
+        `,
             [
                 report.reportId.value,
                 report.patientId.value,
@@ -61,21 +61,15 @@ export class PostgresReportRepository implements ReportRepository {
                 report.comments,
             ],
         );
-
-        const query = `INSERT INTO discharges (report_id, type, aspects) VALUES $VALUES`;
-        const values = report.discharges.map((discharge) =>
-            `(${report.reportId.value}, ${discharge.type}, ${
-                JSON.stringify(discharge.aspects.join(","))
-            })`
-        ).join(",");
-
-        await this.client.queryObject(
-            query,
-            {
-                values,
-            },
-        );
-
+            
+        for (const discharge of report.discharges) {
+            await this.client.queryObject("INSERT INTO discharges (report_id, type, aspects) VALUES ($1, $2, $3)", [
+                report.reportId.value,
+                discharge.type,
+                JSON.stringify(discharge.aspects),
+            ])
+        }
+        
         return undefined;
     }
 }
@@ -101,22 +95,22 @@ function dischargeFactory(row: DischargeModel): Discharge {
     return new Discharge(row.type, JSON.parse(row.aspects).split(","));
 }
 
-function reportFactory(reportRow: ReportModel, dischargeRows: DischargeModel[]): Report {
-    const discharges = dischargeRows.map(dischargeFactory);
+function reportFactory(reportModel: ReportModel, dischargeModel: DischargeModel[]): Report {
+    const discharges = dischargeModel.map(dischargeFactory);
     const food = new Food(
-        JSON.parse(reportRow.food_types).split(","),
-        reportRow.food_level,
-        reportRow.food_date,
+        reportModel.food_types.split(","),
+        reportModel.food_level,
+        reportModel.food_date,
     );
 
     const report = new Report(
-        ID.fromString(reportRow.report_id),
-        ID.fromString(reportRow.patient_id),
-        JSON.parse(reportRow.state_of_consciousness).split(","),
+        ID.fromString(reportModel.report_id),
+        ID.fromString(reportModel.patient_id),
+        reportModel.state_of_consciousness.split(","),
         food,
         discharges,
-        reportRow.comments,
-        new Date(reportRow.created_at),
+        reportModel.comments,
+        new Date(reportModel.created_at),
     );
     return report;
 }

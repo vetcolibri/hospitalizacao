@@ -40,15 +40,13 @@ export class PostgresBudgetRepository implements BudgetRepository {
 	}
 
 	async save(budget: Budget): Promise<void> {
-		const query =
-			`INSERT INTO budgets (hospitalization_id, start_on, end_on, status, budget_id) VALUES ($1, $2, $3, $4 $5)`;
-
-		await this.client.queryObject(query, [
+		await this.client.queryObject("INSERT INTO budgets (hospitalization_id, start_on, end_on, status, budget_id) VALUES ($1, $2, $3, $4, $5)",
+		[
 			budget.hospitalizationId.value,
 			budget.startOn.toISOString(),
 			budget.endOn.toISOString(),
 			budget.status,
-			budget.budgetId.value,
+			budget.budgetId.value
 		]);
 	}
 

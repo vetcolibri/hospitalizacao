@@ -112,7 +112,7 @@ export class PostgresAlertRepository implements AlertRepository {
 
 interface AlertModel {
 	alert_id: string;
-	patient_id: string;
+	system_id: string;
 	parameters: string;
 	rate: number;
 	time: string;
@@ -123,9 +123,9 @@ interface AlertModel {
 function alertFactory(model: AlertModel): Alert {
 	return Alert.restore({
 		alertId: model.alert_id,
-		patientId: model.patient_id,
-		parameters: JSON.parse(model.parameters).split(","),
-		rate: model.rate,
+		patientId: model.system_id,
+		parameters: model.parameters.split(","),
+		rate: model.rate,	
 		time: model.time,
 		comments: model.comments,
 		status: model.status,

@@ -6,7 +6,7 @@ export class PostgresReportService implements ReportService {
 
     async findAll(patientId: string, hospitalizationId: string): Promise<ReportDTO[]> {
         const result = await this.client.queryObject(
-            `SELECT b.status as b_status, patients.name, patients.patient_id, owners.owner_name, hospitalizations.system_id, reports.report_id, reports.state_of_consciousness, reports.food_types, reports.food_level, reports.food_date, reports.created_at, reports.comments FROM budgets b INNER JOIN hospitalizations ON b.hospitalization_id = $HOSPITALIZATION_ID INNER JOIN reports ON hospitalizations.system_id = reports.system_id INNER JOIN patients ON reports.system_id = patients.system_id INNER JOIN owners ON patients.owner_id = owners.owner_id WHERE reports.system_id = $PATIENT_ID`,
+            `SELECT b.status as b_status, patients.name, patients.patient_id, owners.name as owner_name, hospitalizations.system_id, reports.report_id, reports.state_of_consciousness, reports.food_types, reports.food_level, reports.food_date, reports.created_at, reports.comments FROM budgets b INNER JOIN hospitalizations ON b.hospitalization_id = $HOSPITALIZATION_ID INNER JOIN reports ON hospitalizations.system_id = reports.system_id INNER JOIN patients ON reports.system_id = patients.system_id INNER JOIN owners ON patients.owner_id = owners.owner_id WHERE reports.system_id = $PATIENT_ID`,
             { patient_id: patientId, hospitalization_id: hospitalizationId },
         );
 
@@ -29,9 +29,9 @@ export class PostgresReportService implements ReportService {
 function toReportDTO(row: any): ReportDTO {
     return {
         reportId: String(row.report_id),
-        stateOfConsciousness: JSON.parse(String(row.state_of_consciousness)).split(","),
+        stateOfConsciousness: String(row.state_of_consciousness).split(","),
         food: {
-            types: JSON.parse(String(row.food_types)).split(","),
+            types: String(row.food_types).split(","),
             level: String(row.food_level),
             datetime: String(row.food_date),
         },
@@ -49,6 +49,6 @@ function toReportDTO(row: any): ReportDTO {
 function toDischarge(row: any) {
     return {
         type: String(row.type),
-        aspects: JSON.parse(String(row.aspects)).split(","),
+        aspects: String(row.aspects).split(","),
     };
 }

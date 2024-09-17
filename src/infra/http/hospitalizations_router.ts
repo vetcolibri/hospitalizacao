@@ -15,7 +15,7 @@ interface HospitalizationDTO {
 }
 
 function toHospitalizationDTO(hospitalization: Hospitalization): HospitalizationDTO {
-	let dischargeDate: string = "";
+	let dischargeDate = "";
 	if (hospitalization.dischargeDate) {
 		dischargeDate = String(hospitalization.dischargeDate.toISOString());
 	}
