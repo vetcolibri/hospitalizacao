@@ -1,10 +1,9 @@
-FROM denoland/deno:alpine-1.38.3
+FROM denoland/deno:alpine-1.40.5
 
 WORKDIR /api
 
 COPY . .
 
-VOLUME /data
 
 EXPOSE 8000
 

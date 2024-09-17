@@ -17,16 +17,14 @@ import { PostgresReportRepository } from "persistence/postgres/postgres_report_r
 import { PostgresReportService } from "persistence/postgres/postgres_report_service.ts";
 import { PostgresRoundRepository } from "persistence/postgres/postgres_round_repository.ts";
 
-// const DB_PATH = Deno.env.get("DB_PATH") || "/data/db.sqlite";
 const PORT = Deno.env.get("PORT") || "8000";
-const DB_URL = Deno.env.get("DATABASE_URL");
-if (!DB_URL) {
+const DATABASE_URL = Deno.env.get("DATABASE_URL");
+if (!DATABASE_URL) {
 	console.error("DATABASE_URL enviroment variable is required");
 	Deno.exit(1);
 }
 
-const databaseUrl = "postgres://192.168.148.109:9000/postgres?user=postgres&password=postgres";
-const client = new Client(databaseUrl);
+const client = new Client(DATABASE_URL);
 
 // Initialize adapters
 

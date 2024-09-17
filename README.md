@@ -2,7 +2,7 @@
 
 Backoffice para gestão da hospitalização dos pacientes.
 
-### Requisitos
+## Requisitos
 
 - [Deno](https://deno.com)
 - [Docker](https://docker.com)
@@ -11,16 +11,16 @@ Backoffice para gestão da hospitalização dos pacientes.
 
 ### Ambiente de produção
 
-1. Construção da imagem em Docker
+- Construção da imagem em Docker
 
 ```bash
-$ docker build -f ./.build/Dockerfile -t hospitalizacao-api .
+docker build -f ./.build/Dockerfile -t hospitalizacao-api .
 ```
 
-2. Execução do container
+- Execução do container
 
 ```bash
-$ docker run -d -p 3001:8080 hospitalizacao-api
+docker run -d -p 3001:8080 -e DATABASE_URL="db-url" hospitalizacao-api
 ```
 
 ### Ambiente de desenvolvimento
@@ -28,5 +28,5 @@ $ docker run -d -p 3001:8080 hospitalizacao-api
 Execute o servidor com o seguinte comando:
 
 ```bash
-$ deno run -A mod.ts
+deno run -A mod.ts
 ```
