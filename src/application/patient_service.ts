@@ -17,320 +17,328 @@ import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ErrorMessage } from "shared/error_messages.ts";
 import {
-	EndBudgetError,
-	EndHospitalizationError,
-	NewHospitalizationError,
-	NewPatientError,
+    EndBudgetError,
+    EndHospitalizationError,
+    NewHospitalizationError,
+    NewPatientError,
 } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
 
 export class PatientService {
-	#patientRepository: PatientRepository;
-	#ownerRepository: OwnerRepository;
-	#hospitalizationRepository: HospitalizationRepository;
-	#budgetRepository: BudgetRepository;
-	#alertRepository: AlertRepository;
-	#alertNotifier: AlertNotifier;
+    #patientRepository: PatientRepository;
+    #ownerRepository: OwnerRepository;
+    #hospitalizationRepository: HospitalizationRepository;
+    #budgetRepository: BudgetRepository;
+    #alertRepository: AlertRepository;
+    #alertNotifier: AlertNotifier;
 
-	constructor(
-		partientRepository: PatientRepository,
-		ownerRepository: OwnerRepository,
-		hospitalizationRepository: HospitalizationRepository,
-		budgetRepository: BudgetRepository,
-		alertRepository: AlertRepository,
-		alertNotifier: AlertNotifier,
-	) {
-		this.#patientRepository = partientRepository;
-		this.#ownerRepository = ownerRepository;
-		this.#hospitalizationRepository = hospitalizationRepository;
-		this.#budgetRepository = budgetRepository;
-		this.#alertRepository = alertRepository;
-		this.#alertNotifier = alertNotifier;
-	}
+    constructor(
+        partientRepository: PatientRepository,
+        ownerRepository: OwnerRepository,
+        hospitalizationRepository: HospitalizationRepository,
+        budgetRepository: BudgetRepository,
+        alertRepository: AlertRepository,
+        alertNotifier: AlertNotifier,
+    ) {
+        this.#patientRepository = partientRepository;
+        this.#ownerRepository = ownerRepository;
+        this.#hospitalizationRepository = hospitalizationRepository;
+        this.#budgetRepository = budgetRepository;
+        this.#alertRepository = alertRepository;
+        this.#alertNotifier = alertNotifier;
+    }
 
-	/**
-	 * Lista os pacientes hospitalizados
-	 * @returns {Promise<Patient[]>}
-	 */
-	async listHospitalizad(): Promise<Patient[]> {
-		return await this.#patientRepository.hospitalized();
-	}
+    /**
+     * Lista os pacientes hospitalizados
+     * @returns {Promise<Patient[]>}
+     */
+    async listHospitalizad(): Promise<Patient[]> {
+        return await this.#patientRepository.hospitalized();
+    }
 
-	/**
-	 * Lista os pacientes não hospitalizados
-	 * @returns {Promise<Patient[]>}
-	 */
-	async listNonHospitalized(): Promise<Patient[]> {
-		return await this.#patientRepository.nonHospitalized();
-	}
+    /**
+     * Lista os pacientes não hospitalizados
+     * @returns {Promise<Patient[]>}
+     */
+    async listNonHospitalized(): Promise<Patient[]> {
+        return await this.#patientRepository.nonHospitalized();
+    }
 
-	/**
-	 * Cria uma nova hospitalização
-	 * @param patientId
-	 * @param hospitalizationData
-	 * @returns {Promise<Either<Error, void>>}
-	 */
-	async newHospitalization(
-		patientId: string,
-		data: HospitalizationData,
-	): Promise<Either<NewHospitalizationError, void>> {
-		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+    /**
+     * Cria uma nova hospitalização
+     * @param patientId
+     * @param hospitalizationData
+     * @returns {Promise<Either<Error, void>>}
+     */
+    async newHospitalization(
+        patientId: string,
+        data: HospitalizationData,
+    ): Promise<Either<NewHospitalizationError, void>> {
+        const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+        if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const voidOrErr = this.#verifyHospitalizationData(data);
-		if (voidOrErr.isLeft()) return left(voidOrErr.value);
+        const voidOrErr = this.#verifyHospitalizationData(data);
+        if (voidOrErr.isLeft()) return left(voidOrErr.value);
 
-		const patient = patientOrErr.value;
-		if (patient.isHospitalized()) return left(new PatientAlreadyHospitalized(patient.name));
+        const patient = patientOrErr.value;
+        if (patient.isHospitalized()) return left(new PatientAlreadyHospitalized(patient.name));
 
-		const hospitalizationOrErr = new HospitalizationBuilder()
-			.withPatientId(patient.systemId.value)
-			.withEntryDate(data.entryDate)
-			.withDischargeDate(data.dischargeDate)
-			.withWeight(data.weight)
-			.withComplaints(data.complaints)
-			.withDiagnostics(data.diagnostics)
-			.build();
+        const hospitalizationOrErr = new HospitalizationBuilder()
+            .withPatientId(patient.systemId.value)
+            .withEntryDate(data.entryDate)
+            .withDischargeDate(data.dischargeDate)
+            .withWeight(data.weight)
+            .withComplaints(data.complaints)
+            .withDiagnostics(data.diagnostics)
+            .build();
 
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
-		await this.#hospitalizationRepository.save(hospitalizationOrErr.value);
+        if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+        await this.#hospitalizationRepository.save(hospitalizationOrErr.value);
 
-		patient.hospitalize();
+        patient.hospitalize();
 
-		await this.#patientRepository.update(patient);
+        await this.#patientRepository.update(patient);
 
-		return right(undefined);
-	}
+        return right(undefined);
+    }
 
-	/**
-	 * Cria um novo paciente
-	 * @param data
-	 * @returns {Promise<Either<NewPatientError, void>>}
-	 */
-	async newPatient(data: NewPatientData): Promise<Either<NewPatientError, void>> {
-		const { patientData, ownerData, hospitalizationData, budgetData } = data;
+    /**
+     * Cria um novo paciente
+     * @param data
+     * @returns {Promise<Either<NewPatientError, void>>}
+     */
+    async newPatient(data: NewPatientData): Promise<Either<NewPatientError, void>> {
+        const { patientData, ownerData, hospitalizationData, budgetData } = data;
 
-		const patientExists = await this.#patientRepository.exists(
-			ID.fromString(patientData.patientId),
-		);
-		if (patientExists) return left(new PatientIdAlreadyExists());
+        const patientExists = await this.#patientRepository.exists(
+            ID.fromString(patientData.patientId),
+        );
+        if (patientExists) return left(new PatientIdAlreadyExists());
 
-		if (this.#isInvalidDate(patientData.birthDate)) {
-			return left(new InvalidDate(ErrorMessage.InvalidBirthDate));
-		}
+        if (this.#isInvalidDate(patientData.birthDate)) {
+            return left(new InvalidDate(ErrorMessage.InvalidBirthDate));
+        }
 
-		const voidOrErr = this.#verifyHospitalizationData(hospitalizationData);
-		if (voidOrErr.isLeft()) return left(voidOrErr.value);
+        const voidOrErr = this.#verifyHospitalizationData(hospitalizationData);
+        if (voidOrErr.isLeft()) return left(voidOrErr.value);
 
-		await this.#buildOwner(ownerData);
+        await this.#buildOwner(ownerData);
 
-		const patientOrErr = new PatientBuilder()
-			.withPatientId(patientData.patientId)
-			.withName(patientData.name)
-			.withOwnerId(ownerData.ownerId)
-			.withSpecie(patientData.specie)
-			.withBreed(patientData.breed)
-			.withBirthDate(patientData.birthDate)
-			.build();
+        const patientOrErr = new PatientBuilder()
+            .withPatientId(patientData.patientId)
+            .withName(patientData.name)
+            .withOwnerId(ownerData.ownerId)
+            .withSpecie(patientData.specie)
+            .withBreed(patientData.breed)
+            .withBirthDate(patientData.birthDate)
+            .build();
 
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
-		await this.#patientRepository.save(patientOrErr.value);
+        if (patientOrErr.isLeft()) return left(patientOrErr.value);
+        await this.#patientRepository.save(patientOrErr.value);
 
-		const hospitalizationOrErr = new HospitalizationBuilder()
-			.withPatientId(patientOrErr.value.systemId.value)
-			.withEntryDate(hospitalizationData.entryDate)
-			.withDischargeDate(hospitalizationData.dischargeDate)
-			.withWeight(hospitalizationData.weight)
-			.withComplaints(hospitalizationData.complaints)
-			.withDiagnostics(hospitalizationData.diagnostics)
-			.build();
+        const hospitalizationOrErr = new HospitalizationBuilder()
+            .withPatientId(patientOrErr.value.systemId.value)
+            .withEntryDate(hospitalizationData.entryDate)
+            .withDischargeDate(hospitalizationData.dischargeDate)
+            .withWeight(hospitalizationData.weight)
+            .withComplaints(hospitalizationData.complaints)
+            .withDiagnostics(hospitalizationData.diagnostics)
+            .build();
 
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
-		await this.#hospitalizationRepository.save(hospitalizationOrErr.value);
+        if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+        await this.#hospitalizationRepository.save(hospitalizationOrErr.value);
 
-		const hospitalizationId = hospitalizationOrErr.value.hospitalizationId;
-		const budgetOrErr = new BudgetBuilder()
-			.withHospitalizationId(hospitalizationId.value)
-			.withStartOn(budgetData.startOn)
-			.withEndOn(budgetData.endOn)
-			.withStatus(budgetData.status)
-			.build();
+        const hospitalizationId = hospitalizationOrErr.value.hospitalizationId;
+        const budgetOrErr = new BudgetBuilder()
+            .withHospitalizationId(hospitalizationId.value)
+            .withStartOn(budgetData.startOn)
+            .withEndOn(budgetData.endOn)
+            .withStatus(budgetData.status)
+            .build();
 
-		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
+        if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-		await this.#budgetRepository.save(budgetOrErr.value);
+        await this.#budgetRepository.save(budgetOrErr.value);
 
-		return right(undefined);
-	}
+        return right(undefined);
+    }
 
-	async endHospitalization(
-		patientId: string,
-	): Promise<Either<EndHospitalizationError, void>> {
-		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+    async endHospitalization(
+        patientId: string,
+    ): Promise<Either<EndHospitalizationError, void>> {
+        const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+        if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const hospitalizationOrErr = await this.#hospitalizationRepository.getByPatientId(
-			ID.fromString(patientId),
-		);
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+        const hospitalizationOrErr = await this.#hospitalizationRepository.getByPatientId(
+            ID.fromString(patientId),
+        );
+        if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
 
-		const patient = <Patient> patientOrErr.value;
-		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
+        const patient = <Patient> patientOrErr.value;
+        const hospitalization = <Hospitalization> hospitalizationOrErr.value;
 
-		const budgetOrErr = await this.#budgetRepository.findById(
-			hospitalization.hospitalizationId,
-		);
-		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
+        const budgetOrErr = await this.#budgetRepository.findById(
+            hospitalization.hospitalizationId,
+        );
+        if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-		patient.discharge();
+        patient.discharge();
 
-		hospitalization.close();
+        hospitalization.close();
 
-		if (budgetOrErr.value.unpaid()) {
-			patient.dischargeWithUnpaidBudget();
-		}
+        if (budgetOrErr.value.unpaid()) {
+            patient.dischargeWithUnpaidBudget();
+        }
 
-		if (budgetOrErr.value.pending()) {
-			patient.dischargeWithPendingBudget();
-		}
+        if (budgetOrErr.value.pending()) {
+            patient.dischargeWithPendingBudget();
+        }
 
-		if (budgetOrErr.value.itWasSent()) {
-			patient.dischargeWithBudgetSent();
-		}
+        if (budgetOrErr.value.itWasSent()) {
+            patient.dischargeWithBudgetSent();
+        }
 
-		await this.#hospitalizationRepository.update(hospitalization);
+        await this.#hospitalizationRepository.update(hospitalization);
 
-		await this.#patientRepository.update(patient);
+        await this.#patientRepository.update(patient);
 
-		const alerts = await this.#alertRepository.findActives(ID.fromString(patientId));
+        await this.#cancelAlerts(patientId);
 
-		if (alerts.length === 0) return right(undefined);
+        return right(undefined);
+    }
 
-		for (const alert of alerts) {
-			alert.cancel();
-			this.#alertNotifier.cancel(alert.alertId.value);
-		}
+    async endBudget(
+        patientId: string,
+        hospitalizationId: string,
+        status: string,
+    ): Promise<Either<EndBudgetError, void>> {
+        const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+        if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		await this.#alertRepository.updateAll(alerts);
+        const patient = patientOrErr.value;
 
-		return right(undefined);
-	}
+        const budgetOrErr = await this.#budgetRepository.findById(
+            ID.fromString(hospitalizationId),
+        );
 
-	async endBudget(
-		patientId: string,
-		hospitalizationId: string,
-		status: string,
-	): Promise<Either<EndBudgetError, void>> {
-		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+        if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-		const patient = patientOrErr.value;
+        budgetOrErr.value.changeStatus(status);
 
-		const budgetOrErr = await this.#budgetRepository.findById(
-			ID.fromString(hospitalizationId),
-		);
+        if (budgetOrErr.value.unpaid() && patient.hasBeenDischarged()) {
+            patient.dischargeWithUnpaidBudget();
+        }
 
-		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
+        if (budgetOrErr.value.pending() && patient.hasBeenDischarged()) {
+            patient.dischargeWithPendingBudget();
+        }
 
-		budgetOrErr.value.changeStatus(status);
+        if (budgetOrErr.value.itWasSent() && patient.hasBeenDischarged()) {
+            patient.dischargeWithBudgetSent();
+        }
 
-		if (budgetOrErr.value.unpaid() && patient.hasBeenDischarged()) {
-			patient.dischargeWithUnpaidBudget();
-		}
+        if (budgetOrErr.value.isPaid() && patient.hasBeenDischarged()) {
+            patient.discharge();
+        }
 
-		if (budgetOrErr.value.pending() && patient.hasBeenDischarged()) {
-			patient.dischargeWithPendingBudget();
-		}
+        await this.#budgetRepository.update(budgetOrErr.value);
 
-		if (budgetOrErr.value.itWasSent() && patient.hasBeenDischarged()) {
-			patient.dischargeWithBudgetSent();
-		}
+        await this.#patientRepository.update(patient);
 
-		if (budgetOrErr.value.isPaid() && patient.hasBeenDischarged()) {
-			patient.discharge();
-		}
+        return right(undefined);
+    }
 
-		await this.#budgetRepository.update(budgetOrErr.value);
+    #isInvalidNumber(length: number, limit: number): boolean {
+        return length > limit;
+    }
 
-		await this.#patientRepository.update(patient);
+    #isInvalidDate(date: string): boolean {
+        return new Date(date).getTime() > new Date().getTime();
+    }
 
-		return right(undefined);
-	}
+    #verifyHospitalizationData(
+        data: HospitalizationData,
+    ): Either<InvalidDate | InvalidNumber, void> {
+        if (this.#isInvalidNumber(data.complaints.length, 10)) {
+            return left(new InvalidNumber(ErrorMessage.InvalidComplaintsNumber));
+        }
 
-	#isInvalidNumber(length: number, limit: number): boolean {
-		return length > limit;
-	}
+        if (this.#isInvalidNumber(data.diagnostics.length, 5)) {
+            return left(new InvalidNumber(ErrorMessage.InvalidDiagnosticsNumber));
+        }
 
-	#isInvalidDate(date: string): boolean {
-		return new Date(date).getTime() > new Date().getTime();
-	}
+        if (this.#isInvalidDate(data.entryDate)) {
+            return left(new InvalidDate(ErrorMessage.InvalidEntryDate));
+        }
 
-	#verifyHospitalizationData(data: HospitalizationData): Either<Error, void> {
-		if (this.#isInvalidNumber(data.complaints.length, 10)) {
-			return left(new InvalidNumber(ErrorMessage.InvalidComplaintsNumber));
-		}
+        return right(undefined);
+    }
 
-		if (this.#isInvalidNumber(data.diagnostics.length, 5)) {
-			return left(new InvalidNumber(ErrorMessage.InvalidDiagnosticsNumber));
-		}
+    async #buildOwner(ownerData: OwnerData): Promise<void> {
+        const ownerOrErr = await this.#ownerRepository.getById(ID.fromString(ownerData.ownerId));
 
-		if (this.#isInvalidDate(data.entryDate)) {
-			return left(new InvalidDate(ErrorMessage.InvalidEntryDate));
-		}
+        if (ownerOrErr.isRight()) return;
 
-		return right(undefined);
-	}
+        const owner = new Owner(
+            ownerData.ownerId,
+            ownerData.name,
+            ownerData.phoneNumber,
+            ownerData.whatsapp,
+        );
 
-	async #buildOwner(ownerData: OwnerData): Promise<void> {
-		const ownerOrErr = await this.#ownerRepository.getById(ID.fromString(ownerData.ownerId));
+        await this.#ownerRepository.save(owner);
 
-		if (ownerOrErr.isRight()) return;
+        return;
+    }
 
-		const owner = new Owner(
-			ownerData.ownerId,
-			ownerData.name,
-			ownerData.phoneNumber,
-			ownerData.whatsapp,
-		);
+    async #cancelAlerts(patientId: string): Promise<void> {
+        const alerts = await this.#alertRepository.findActives(ID.fromString(patientId));
 
-		await this.#ownerRepository.save(owner);
+        if (alerts.length === 0) return;
 
-		return;
-	}
+        for (const alert of alerts) {
+            alert.cancel();
+            this.#alertNotifier.cancel(alert.alertId.value);
+        }
+
+        await this.#alertRepository.updateAll(alerts);
+
+        return;
+    }
 }
 
 type NewPatientData = {
-	patientData: PatientData;
-	hospitalizationData: HospitalizationData;
-	ownerData: OwnerData;
-	budgetData: BudgetData;
+    patientData: PatientData;
+    hospitalizationData: HospitalizationData;
+    ownerData: OwnerData;
+    budgetData: BudgetData;
 };
 
 type PatientData = {
-	patientId: string;
-	name: string;
-	specie: string;
-	breed: string;
-	birthDate: string;
+    patientId: string;
+    name: string;
+    specie: string;
+    breed: string;
+    birthDate: string;
 };
 
 type OwnerData = {
-	ownerId: string;
-	name: string;
-	phoneNumber: string;
-	whatsapp: boolean;
+    ownerId: string;
+    name: string;
+    phoneNumber: string;
+    whatsapp: boolean;
 };
 
 type HospitalizationData = {
-	weight: number;
-	complaints: string[];
-	diagnostics: string[];
-	entryDate: string;
-	dischargeDate?: string;
+    weight: number;
+    complaints: string[];
+    diagnostics: string[];
+    entryDate: string;
+    dischargeDate?: string;
 };
 
 type BudgetData = {
-	startOn: string;
-	endOn: string;
-	status: string;
+    startOn: string;
+    endOn: string;
+    status: string;
 };

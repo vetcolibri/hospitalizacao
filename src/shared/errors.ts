@@ -10,17 +10,18 @@ import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospi
 import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
+import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 
 export type ScheduleError = PatientNotFound | InvalidRepeatEvery | Error;
-export type NewPatientError = PatientIdAlreadyExists | InvalidNumber | Error;
+export type NewPatientError = PatientIdAlreadyExists | InvalidNumber | InvalidDate | Error;
 export type CancelError = AlertNotFound | AlertAlreadyDisabled;
 export type NewHospitalizationError =
-	| PatientNotFound
-	| PatientAlreadyHospitalized
-	| InvalidNumber
-	| InvalidDate;
+    | PatientNotFound
+    | PatientAlreadyHospitalized
+    | InvalidNumber
+    | InvalidDate;
 
-export type EndHospitalizationError = PatientNotFound | HospitalizationNotFound;
-export type EndBudgetError = PatientNotFound | PatientAlreadyDischarged;
+export type EndHospitalizationError = PatientNotFound | HospitalizationNotFound | BudgetNotFound;
+export type EndBudgetError = PatientNotFound | BudgetNotFound;
 export type ReportError = PatientNotHospitalized | PatientNotFound | OwnerNotFound;
 export type RoundError = PatientNotFound | PatientAlreadyDischarged;

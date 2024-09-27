@@ -16,12 +16,13 @@ import { PostgresPatientRepository } from "persistence/postgres/postgres_patient
 import { PostgresReportRepository } from "persistence/postgres/postgres_report_repository.ts";
 import { PostgresReportService } from "persistence/postgres/postgres_report_service.ts";
 import { PostgresRoundRepository } from "persistence/postgres/postgres_round_repository.ts";
+import { PostgresTransationController } from "persistence/postgres/postgres_transaction_controller.ts";
 
 const PORT = Deno.env.get("PORT") || "8000";
 const DATABASE_URL = Deno.env.get("DATABASE_URL");
 if (!DATABASE_URL) {
-	console.error("DATABASE_URL enviroment variable is required");
-	Deno.exit(1);
+    console.error("DATABASE_URL enviroment variable is required");
+    Deno.exit(1);
 }
 
 const client = new Client(DATABASE_URL);
@@ -37,42 +38,44 @@ const alertRepo = new PostgresAlertRepository(client);
 const reportRepo = new PostgresReportRepository(client);
 const reportService = new PostgresReportService(client);
 const measurementService = new PostgresMeasurementService(client);
+const transationController = new PostgresTransationController(client);
 const notifier = new WebWorkerAlertNotifier();
 
 // Initialize application services
 const patientService = new PatientService(
-	patientRepo,
-	ownerRepo,
-	hospRepo,
-	budgetRepo,
-	alertRepo,
-	notifier,
+    patientRepo,
+    ownerRepo,
+    hospRepo,
+    budgetRepo,
+    alertRepo,
+    notifier,
 );
 const alertService = new AlertService(
-	alertRepo,
-	patientRepo,
-	notifier,
+    alertRepo,
+    patientRepo,
+    notifier,
 );
 const roundService = new RoundService(roundRepo, patientRepo, measurementService);
 const hospitalizationService = new HospitalizationService(
-	hospRepo,
+    hospRepo,
 );
 const budgetService = new BudgetService(budgetRepo);
 const crmService = new CrmService(
-	ownerRepo,
-	patientRepo,
-	reportRepo,
-	budgetRepo,
-	reportService,
+    ownerRepo,
+    patientRepo,
+    reportRepo,
+    budgetRepo,
+    reportService,
 );
 
 startHttpServer({
-	alertService,
-	patientService,
-	roundService,
-	hospitalizationService,
-	budgetService,
-	crmService,
-	notifier,
-	port: parseInt(PORT),
+    alertService,
+    patientService,
+    roundService,
+    hospitalizationService,
+    budgetService,
+    crmService,
+    notifier,
+    transationController,
+    port: parseInt(PORT),
 });

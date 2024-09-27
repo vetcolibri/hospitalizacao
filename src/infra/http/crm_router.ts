@@ -7,91 +7,102 @@ import { ContextWithParams } from "infra/http/context_with_params.ts";
 import { sendBadRequest, sendNotFound, sendOk, sendServerError } from "infra/http/responses.ts";
 import { reportSchema } from "infra/http/schemas/report_schema.ts";
 import { validate } from "shared/tools.ts";
+import { TransactionController } from "shared/transaction_controller.ts";
 
 interface OwnerDTO {
-	ownerId: string;
-	name: string;
-	phoneNumber: string;
-	whatsapp: boolean;
+    ownerId: string;
+    name: string;
+    phoneNumber: string;
+    whatsapp: boolean;
 }
 
 function toOwnerDTO(owner: Owner): OwnerDTO {
-	return {
-		ownerId: owner.ownerId.value,
-		name: owner.name,
-		phoneNumber: owner.phoneNumber,
-		whatsapp: owner.whatsapp,
-	};
+    return {
+        ownerId: owner.ownerId.value,
+        name: owner.name,
+        phoneNumber: owner.phoneNumber,
+        whatsapp: owner.whatsapp,
+    };
 }
 
-export default function (service: CrmService) {
-	const listOwnerHandler = async (ctx: Context) => {
-		const owners = await service.getAll();
-		sendOk(ctx, owners.map(toOwnerDTO));
-	};
+export default function (service: CrmService, transaction: TransactionController) {
+    const listOwnerHandler = async (ctx: Context) => {
+        const owners = await service.getAll();
+        sendOk(ctx, owners.map(toOwnerDTO));
+    };
 
-	const findOwnerHandler = async (ctx: ContextWithParams) => {
-		const ownerId = ctx.params.ownerId;
-		const ownerOrErr = await service.findOwner(ownerId);
+    const findOwnerHandler = async (ctx: ContextWithParams) => {
+        const ownerId = ctx.params.ownerId;
+        const ownerOrErr = await service.findOwner(ownerId);
 
-		if (ownerOrErr.isLeft()) {
-			sendNotFound(ctx, ownerOrErr.value.message);
-			return;
-		}
+        if (ownerOrErr.isLeft()) {
+            sendNotFound(ctx, ownerOrErr.value.message);
+            return;
+        }
 
-		sendOk(ctx, toOwnerDTO(ownerOrErr.value));
-	};
+        sendOk(ctx, toOwnerDTO(ownerOrErr.value));
+    };
 
-	const registerReportHandler = async (ctx: Context) => {
-		const data = ctx.state.validatedData;
-		const voidOrErr = await service.registerReport(data);
+    const registerReportHandler = async (ctx: Context) => {
+        const data = ctx.state.validatedData;
 
-		if (voidOrErr.value instanceof PatientNotFound) {
-			sendNotFound(ctx, voidOrErr.value.message);
-			return;
-		}
+        try {
+            await transaction.begin();
 
-		if (voidOrErr.value instanceof PatientNotHospitalized) {
-			sendBadRequest(ctx, voidOrErr.value.message);
-			return;
-		}
+            const voidOrErr = await service.registerReport(data);
 
-		if (voidOrErr.value instanceof Error) {
-			sendServerError(ctx, voidOrErr.value.message);
-			return;
-		}
+            if (voidOrErr.value instanceof PatientNotFound) {
+                sendNotFound(ctx, voidOrErr.value.message);
+                return;
+            }
 
-		sendOk(ctx);
-	};
+            if (voidOrErr.value instanceof PatientNotHospitalized) {
+                sendBadRequest(ctx, voidOrErr.value.message);
+                return;
+            }
 
-	const findReportsHandler = async (ctx: Context) => {
-		const patientId = ctx.request.url.searchParams.get("patientId");
-		const hospitalizationId = ctx.request.url.searchParams.get("hospitalizationId");
-		const ownerId = ctx.request.url.searchParams.get("ownerId");
+            if (voidOrErr.value instanceof Error) {
+                sendServerError(ctx);
+                return;
+            }
 
-		if (!ownerId || !patientId || !hospitalizationId) {
-			sendBadRequest(ctx, "Link inválido");
-			return;
-		}
+            sendOk(ctx);
 
-		const dataOrErr = await service.findReports(
-			patientId,
-			ownerId,
-			hospitalizationId,
-		);
+            await transaction.commit();
+        } catch (error) {
+            await transaction.rollback();
+            sendServerError(ctx, error);
+        }
+    };
 
-		if (dataOrErr.isLeft()) {
-			sendNotFound(ctx, dataOrErr.value.message);
-			return;
-		}
+    const findReportsHandler = async (ctx: Context) => {
+        const patientId = ctx.request.url.searchParams.get("patientId");
+        const hospitalizationId = ctx.request.url.searchParams.get("hospitalizationId");
+        const ownerId = ctx.request.url.searchParams.get("ownerId");
 
-		sendOk(ctx, dataOrErr.value);
-	};
+        if (!ownerId || !patientId || !hospitalizationId) {
+            sendBadRequest(ctx, "Link inválido");
+            return;
+        }
 
-	const router = new Router({ prefix: "/owners" });
-	router.get("/reports", findReportsHandler);
-	router.get("/:ownerId", findOwnerHandler);
-	router.post("/register-report", validate(reportSchema), registerReportHandler);
-	router.get("/", listOwnerHandler);
-	return router;
+        const dataOrErr = await service.findReports(
+            patientId,
+            ownerId,
+            hospitalizationId,
+        );
+
+        if (dataOrErr.isLeft()) {
+            sendNotFound(ctx, dataOrErr.value.message);
+            return;
+        }
+
+        sendOk(ctx, dataOrErr.value);
+    };
+
+    const router = new Router({ prefix: "/owners" });
+    router.get("/reports", findReportsHandler);
+    router.get("/:ownerId", findOwnerHandler);
+    router.post("/register-report", validate(reportSchema), registerReportHandler);
+    router.get("/", listOwnerHandler);
+    return router;
 }
