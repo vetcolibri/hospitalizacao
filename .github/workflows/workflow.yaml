@@ -36,10 +36,7 @@ jobs:
               run: docker push $IMAGE
 
             - name: Update deployment file with image
-              run: sed -i "s|<IMAGE>|$IMAGE|" $GITHUB_WORKSPACE/.deployments/k8s/deployment.yaml
-
-            - name: Update deployment file with database URL
-              run: sed -i "s|<DATABASE_URL>|$${{ vars.CVL_DATABASE_URL }}|" $GITHUB_WORKSPACE/.deployments/k8s/deployment.yaml
+              run: sed -i "s|<IMAGE>|$IMAGE|" $GITHUB_WORKSPACE/.deployments/k8s/deployment.yaml            
 
             - name: Save DigitalOcean kubeconfig with short-lived credentials
               run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 ${{ vars.DIGITALOCEAN_K8S_CLUSTER_NAME }}
