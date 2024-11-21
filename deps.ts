@@ -7,3 +7,4 @@ export { Cron } from "https://deno.land/x/croner@8.0.0/dist/croner.js";
 export { DB } from "https://deno.land/x/sqlite@v3.8/mod.ts";
 export type { RowObject, SqliteOptions } from "https://deno.land/x/sqlite@v3.8/mod.ts";
 export { Client, Pool, PoolClient } from "https://deno.land/x/postgres@v0.19.3/mod.ts";
+export * as jose from 'https://deno.land/x/jose@v5.9.6/index.ts'

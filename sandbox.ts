@@ -14,8 +14,11 @@ import { InmemBudgetRepository } from "persistence/inmem/inmem_budget_repository
 import { InmemAlertRepository } from "persistence/inmem/inmem_alert_repository.ts";
 import { InmemReportRepository } from "persistence/inmem/inmem_report_repository.ts";
 import { TransationControllerStub } from "./tests/stubs/transation_controller_stub.ts";
-import { InmemMeasurementService } from "./src/persistence/inmem/inmem_measurement_service.ts";
-import { InmemReportService } from "./src/persistence/inmem/inmem_report_service.ts";
+import { InmemMeasurementService } from "persistence/inmem/inmem_measurement_service.ts";
+import { InmemReportService } from "persistence/inmem/inmem_report_service.ts";
+import { AuthService } from "application/auth_service.ts";
+import { FixedUserRepository } from "persistence/fixed/fixed_user_repository.ts";
+import { JwtTokenGenerator } from "infra/jwt/jwt_generator.ts";
 
 const PORT = Deno.env.get("PORT") || "8000";
 const roundRepo = new InmemRoundRepository();
@@ -29,6 +32,8 @@ const reportService = new InmemReportService();
 const measurementService = new InmemMeasurementService();
 const transationController = new TransationControllerStub();
 const notifier = new WebWorkerAlertNotifier();
+const userRepo = new FixedUserRepository()
+const tokenGenerator = new JwtTokenGenerator("secret-key")
 
 // Initialize application services
 const patientService = new PatientService(
@@ -56,6 +61,7 @@ const crmService = new CrmService(
     budgetRepo,
     reportService,
 );
+const authService = new AuthService(userRepo, tokenGenerator)
 
 startHttpServer({
     alertService,
@@ -64,6 +70,7 @@ startHttpServer({
     hospitalizationService,
     budgetService,
     crmService,
+    authService,
     notifier,
     transationController,
     port: parseInt(PORT),

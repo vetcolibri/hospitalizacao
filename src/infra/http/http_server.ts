@@ -15,6 +15,8 @@ import hospitalizations_router from "infra/http/hospitalizations_router.ts";
 import patients_router from "infra/http/patients_router.ts";
 import rounds_router from "infra/http/rounds_router.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
+import { AuthService } from "application/auth_service.ts";
+import auth_router from "infra/http/auth_router.ts";
 
 const PORT = 8000;
 
@@ -26,6 +28,7 @@ export function startHttpServer(opts: {
     budgetService: BudgetService;
     crmService: CrmService;
     notifier: AlertNotifier;
+    authService: AuthService;
     port: number;
     transationController: TransactionController;
 }) {
@@ -37,6 +40,7 @@ export function startHttpServer(opts: {
     const hospitalizationRouter = hospitalizations_router(opts.hospitalizationService);
     const budgetRouter = budgets_router(opts.budgetService, opts.transationController);
     const crmRouter = crm_router(opts.crmService, opts.transationController);
+    const authRouter = auth_router(opts.authService);
 
     app.use(oakCors());
     app.use(logger);
@@ -46,6 +50,7 @@ export function startHttpServer(opts: {
     app.use(hospitalizationRouter.routes());
     app.use(budgetRouter.routes());
     app.use(crmRouter.routes());
+    app.use(authRouter.routes())
 
     console.log(makeTodayFormat());
     console.log(`Starting server at http://localhost:${PORT}/`);

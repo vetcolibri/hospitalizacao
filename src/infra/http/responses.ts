@@ -35,3 +35,7 @@ export function sendServerError(ctx: Context, error?: Error) {
 export function sendOk(ctx: Context, body?: ResponseBody) {
     sendResponse(ctx, Status.OK, body);
 }
+
+export function sendUnauthorized(ctx: Context, body?: ResponseBody) {
+    sendResponse(ctx, Status.Unauthorized, body)
+}
