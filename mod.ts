@@ -17,8 +17,12 @@ import { PostgresReportRepository } from "persistence/postgres/postgres_report_r
 import { PostgresReportService } from "persistence/postgres/postgres_report_service.ts";
 import { PostgresRoundRepository } from "persistence/postgres/postgres_round_repository.ts";
 import { PostgresTransationController } from "persistence/postgres/postgres_transaction_controller.ts";
+import { FixedUserRepository } from "persistence/fixed/fixed_user_repository.ts";
+import { JwtTokenGenerator } from "infra/jwt/jwt_generator.ts";
+import { AuthService } from "application/auth_service.ts";
 
 const PORT = Deno.env.get("PORT") || "8000";
+const SECRET_KEY = Deno.env.get("SECRET_KEY") || "secret-key";
 const DATABASE_URL = Deno.env.get("DATABASE_URL");
 if (!DATABASE_URL) {
     console.error("DATABASE_URL enviroment variable is required");
@@ -41,6 +45,8 @@ const reportRepo = new PostgresReportRepository(client);
 const reportService = new PostgresReportService(client);
 const measurementService = new PostgresMeasurementService(client);
 const transationController = new PostgresTransationController(client);
+const userRepo = new FixedUserRepository()
+const tokenGenerator = new JwtTokenGenerator(SECRET_KEY)
 const notifier = new WebWorkerAlertNotifier();
 
 // Initialize application services
@@ -70,6 +76,8 @@ const crmService = new CrmService(
     reportService,
 );
 
+const authService = new AuthService(userRepo, tokenGenerator)
+
 startHttpServer({
     alertService,
     patientService,
@@ -77,6 +85,7 @@ startHttpServer({
     hospitalizationService,
     budgetService,
     crmService,
+    authService,
     notifier,
     transationController,
     port: parseInt(PORT),
