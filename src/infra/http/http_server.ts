@@ -7,6 +7,7 @@ import { PatientService } from "application/patient_service.ts";
 import { RoundService } from "application/round_service.ts";
 import { Application, oakCors } from "deps";
 import { logger } from "infra/http/logger.ts";
+import { authMiddleware } from "infra/http/auth_middleware.ts"
 import { makeTodayFormat } from "shared/tools.ts";
 import alerts_router from "infra/http/alerts_router.ts";
 import budgets_router from "infra/http/budgets_router.ts";
@@ -44,6 +45,7 @@ export function startHttpServer(opts: {
 
     app.use(oakCors());
     app.use(logger);
+    app.use(authMiddleware(opts.authService));
     app.use(patientRouter.routes());
     app.use(alertRouter.routes());
     app.use(roundRouter.routes());
