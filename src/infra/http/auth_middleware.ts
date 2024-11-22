@@ -4,14 +4,16 @@ import { sendUnauthorized } from "infra/http/responses.ts";
 import { VerifyToken } from "domain/auth/token_generator.ts";
 
 
+const EXEMPT_URLS = [
+    "/auth/login",
+    "/alerts/notifications",
+    "/owners/reports",
+]
+
+
 export const authMiddleware = (service: AuthService) => {
     return async (ctx: Context, next: CallableFunction) => {
-        if (ctx.request.url.pathname === "/auth/login") {
-            await next()
-            return
-        }
-
-        if (ctx.request.url.pathname === "/alerts/notifications") {
+        if (EXEMPT_URLS.includes(ctx.request.url.pathname)) {
             await next()
             return
         }
