@@ -8,19 +8,26 @@ import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { CancelError, ScheduleError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
+import { UserRepository } from "domain/auth/user_repository.ts";
+import { Username } from "domain/auth/username.ts";
+import { User } from "domain/auth/user.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 export class AlertService {
 	#alertRepository: AlertRepository;
 	#patientRepository: PatientRepository;
+	#userRepository: UserRepository;
 	#notifier: AlertNotifier;
 
 	constructor(
 		alertRepository: AlertRepository,
 		patientRepository: PatientRepository,
+		userRepository: UserRepository,
 		notifier: AlertNotifier,
 	) {
 		this.#alertRepository = alertRepository;
 		this.#patientRepository = patientRepository;
+		this.#userRepository = userRepository;
 		this.#notifier = notifier;
 	}
 
@@ -29,9 +36,12 @@ export class AlertService {
 	 * @param alertData
 	 * @returns {Promise<Either<ScheduleError, void>>}
 	 */
-	async schedule(
-		data: AlertData,
-	): Promise<Either<ScheduleError, void>> {
+	async schedule(data: AlertData): Promise<Either<ScheduleError, void>> {
+	    const hasPerm = await this.#checkPermission(data.username)
+		if (!hasPerm) {
+			return left(new PermissionDenied());
+		}
+
 		const patientOrErr = await this.#patientRepository.getById(
 			ID.fromString(data.patientId),
 		);
@@ -89,6 +99,12 @@ export class AlertService {
 		return await this.#alertRepository.getActives();
 	}
 
+	async #checkPermission(username: string): Promise<boolean> {
+		const userOrErr = await this.#userRepository.getByUsername(Username.fromString(username));
+		const user = <User> userOrErr.value;
+		return user.hasAlertWritePermission();
+	}
+
 	#buildAlertPayload(alert: Alert, patient: Patient): AlertPayload {
 		return {
 			alertId: alert.alertId.value,
@@ -109,5 +125,6 @@ type AlertData = {
 	parameters: string[];
 	rate: number;
 	comments: string;
+	username: string;
 	time: string;
 };

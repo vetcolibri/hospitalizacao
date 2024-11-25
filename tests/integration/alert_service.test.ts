@@ -9,6 +9,9 @@ import { InmemAlertRepository } from "persistence/inmem/inmem_alert_repository.t
 import { ID } from "shared/id.ts";
 import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
+import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
+import { Level, User } from "domain/auth/user.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 Deno.test("Alert Service - Schedule Alert", async (t) => {
 	await t.step(
@@ -105,6 +108,26 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 			assertInstanceOf(error.value, InvalidRepeatEvery);
 		},
 	);
+
+	await t.step(
+		"Deve retornar erro se o Utilizador não tiver permissão para agendar alertas",
+		async () => {
+			const { service } = await makeService();
+			const data = {
+				patientId: "1918BA",
+				parameters: ["heartRate", "bloodPressure", "glicemia"],
+				rate: 120,
+				time: new Date().toISOString(),
+				username: "john.doe123",
+				comments: "Some comment.",
+			};
+
+			const error = await service.schedule(data);
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PermissionDenied);
+		},
+	);
 });
 
 Deno.test("Alert Service - Cancel Alert", async (t) => {
@@ -195,6 +218,7 @@ const alertData = {
 	parameters: ["heartRate", "bloodPressure", "glicemia"],
 	rate: 120,
 	time: new Date().toISOString(),
+	username: "john.doe1234",
 	comments: "Some comment.",
 };
 
@@ -207,6 +231,7 @@ async function makeService() {
 		new RepeatEvery(120),
 		alertData.comments,
 	);
+
 	const alertRepository = new InmemAlertRepository();
 	await alertRepository.save(alert);
 
@@ -214,9 +239,14 @@ async function makeService() {
 
 	const notifier = new AlertNotifierDummy();
 
+	const user1 = new User("john.doe123", "john.doe123", Level.Reception);
+	const user2 = new User("john.doe1234", "john.doe1234", Level.MedVet);
+	const userRepo = new InmemUserRepository([user1, user2]);
+
 	const service = new AlertService(
 		alertRepository,
 		patientRepository,
+		userRepo,
 		notifier,
 	);
 	return { alertRepository, patientRepository, notifier, service };
