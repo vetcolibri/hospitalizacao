@@ -1,6 +1,6 @@
 import { AlertNotifier, AlertPayload } from "application/alert_notifier.ts";
 import { Alert } from "domain/hospitalization/alerts/alert.ts";
-import { AlertAlreadyDisabled } from "domain/hospitalization/alerts/alert_already_disabled_error.ts";
+import { AlertAlreadyCanceled } from "domain/hospitalization/alerts/alert_already_canceled_error.ts";
 import { AlertBuider } from "domain/hospitalization/alerts/alert_buider.ts";
 import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
 import { Patient } from "domain/patient/patient.ts";
@@ -39,7 +39,7 @@ export class AlertService {
 	async schedule(data: AlertData): Promise<Either<ScheduleError, void>> {
 	    const hasPerm = await this.#checkPermission(data.username)
 		if (!hasPerm) {
-			return left(new PermissionDenied());
+			return left(new PermissionDenied("O nível de Utilizador não lhe permite agendar alertas."));
 		}
 
 		const patientOrErr = await this.#patientRepository.getById(
@@ -75,12 +75,17 @@ export class AlertService {
 	 * @param alertId
 	 * @returns {Promise<Either<CancelError, void>>}
 	 */
-	async cancel(alertId: string): Promise<Either<CancelError, void>> {
-		const alertOrErr = await this.#alertRepository.active(ID.fromString(alertId));
+	async cancel(alertId: string, username: string): Promise<Either<CancelError, void>> {
+	    const hasPerm = await this.#checkPermission(username)
+		if (!hasPerm) {
+		    return left(new PermissionDenied("O nível de Utilizador não lhe permite cancelar alertas."))
+		}
+
+		const alertOrErr = await this.#alertRepository.findById(ID.fromString(alertId));
 		if (alertOrErr.isLeft()) return left(alertOrErr.value);
 
 		const alert = alertOrErr.value;
-		if (alert.isDisabled()) return left(new AlertAlreadyDisabled());
+		if (alert.isCanceled()) return left(new AlertAlreadyCanceled());
 
 		alert.cancel();
 
@@ -95,8 +100,8 @@ export class AlertService {
 	 * Lista todos os alertas activos
 	 * @returns {Promise<Alert[]>}
 	 */
-	async getActiveAlerts(): Promise<Alert[]> {
-		return await this.#alertRepository.getActives();
+	async findActiveAlerts(): Promise<Alert[]> {
+		return await this.#alertRepository.findActives();
 	}
 
 	async #checkPermission(username: string): Promise<boolean> {

@@ -1,7 +1,7 @@
 import { AlertService } from "application/alert_service.ts";
 import { assertEquals, assertInstanceOf, assertSpyCall, assertSpyCalls, spy } from "dev_deps";
 import { Alert, AlertStatus } from "domain/hospitalization/alerts/alert.ts";
-import { AlertAlreadyDisabled } from "domain/hospitalization/alerts/alert_already_disabled_error.ts";
+import { AlertAlreadyCanceled } from "domain/hospitalization/alerts/alert_already_canceled_error.ts";
 import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
 import { InvalidRepeatEvery } from "domain/hospitalization/alerts/repeat_every_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
@@ -31,7 +31,7 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 
 		await service.schedule(alertData);
 
-		const alerts = await alertRepository.findAll(ID.fromString("1918BA"));
+		const alerts = await alertRepository.findByPatientId(ID.fromString("1918BA"));
 
 		assertEquals(alerts.length, 2);
 		assertEquals(alerts[0].patientId.value, "1918BA");
@@ -43,7 +43,7 @@ Deno.test("Alert Service - Schedule Alert", async (t) => {
 
 		await service.schedule(alertData);
 
-		const alerts = await alertRepository.findAll(ID.fromString("1918BA"));
+		const alerts = await alertRepository.findByPatientId(ID.fromString("1918BA"));
 
 		assertEquals(alerts.length, 2);
 		assertEquals(alerts[1].parameters, alertData.parameters);
@@ -136,7 +136,7 @@ Deno.test("Alert Service - Cancel Alert", async (t) => {
 
 		const alert = await alertRepository.last();
 
-		await service.cancel(alert.alertId.value);
+		await service.cancel(alert.alertId.value, "john.doe1234");
 
 		assertEquals(alert.status, AlertStatus.Disabled);
 	});
@@ -146,7 +146,7 @@ Deno.test("Alert Service - Cancel Alert", async (t) => {
 		const alert = await alertRepository.last();
 		const repoSpy = spy(alertRepository, "update");
 
-		await service.cancel(alert.alertId.value);
+		await service.cancel(alert.alertId.value, "john.doe1234");
 
 		assertSpyCall(repoSpy, 0);
 		assertSpyCalls(repoSpy, 1);
@@ -159,7 +159,7 @@ Deno.test("Alert Service - Cancel Alert", async (t) => {
 			const alert = await alertRepository.last();
 			const notifierSpy = spy(notifier, "cancel");
 
-			await service.cancel(alert.alertId.value);
+			await service.cancel(alert.alertId.value, "john.doe1234");
 
 			assertSpyCall(notifierSpy, 0);
 			assertSpyCalls(notifierSpy, 1);
@@ -171,7 +171,7 @@ Deno.test("Alert Service - Cancel Alert", async (t) => {
 		async () => {
 			const { service } = await makeService();
 
-			const error = await service.cancel("dummy");
+			const error = await service.cancel("dummy", "john.doe1234");
 
 			assertEquals(error.isLeft(), true);
 		},
@@ -184,10 +184,24 @@ Deno.test("Alert Service - Cancel Alert", async (t) => {
 			const alert = await alertRepository.last();
 			alert.cancel();
 
-			const error = await service.cancel(alert.alertId.value);
+			const error = await service.cancel(alert.alertId.value, "john.doe1234");
 
 			assertEquals(error.isLeft(), true);
-			assertInstanceOf(error.value, AlertAlreadyDisabled);
+			assertInstanceOf(error.value, AlertAlreadyCanceled);
+		},
+	);
+
+	await t.step(
+		"Deve retornar erro se o Utilizador não tiver permissão para cancelar alertas",
+		async () => {
+			const { service, alertRepository } = await makeService();
+		    const username = "john.doe123"
+		    const alert = await alertRepository.last();
+
+			const error = await service.cancel(alert.alertId.value, username);
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PermissionDenied);
 		},
 	);
 });
@@ -196,7 +210,7 @@ Deno.test("Alert Service - List all active alerts", async (t) => {
 	await t.step("Deve recuperar os alertas activos", async () => {
 		const { service } = await makeService();
 
-		const alerts = await service.getActiveAlerts();
+		const alerts = await service.findActiveAlerts();
 
 		assertEquals(alerts.length, 1);
 	});
@@ -206,7 +220,7 @@ Deno.test("Alert Service - List all active alerts", async (t) => {
 		const alert = await alertRepository.last();
 		alert.cancel();
 
-		const alerts = await service.getActiveAlerts();
+		const alerts = await service.findActiveAlerts();
 
 		assertEquals(alerts.length, 0);
 		assertEquals(alerts, []);

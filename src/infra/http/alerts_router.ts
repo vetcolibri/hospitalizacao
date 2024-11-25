@@ -34,7 +34,9 @@ export default function (
         try {
             await transaction.begin();
 
-            const voidOrErr = await service.schedule(alertData);
+            const data = {...alertData, username: ctx.state.username}
+
+            const voidOrErr = await service.schedule(data);
 
             if (voidOrErr.isLeft()) {
                 sendBadRequest(ctx, voidOrErr.value.message);
@@ -55,7 +57,7 @@ export default function (
 
         try {
             await transaction.begin();
-            const voidOrErr = await service.cancel(alertId);
+            const voidOrErr = await service.cancel(alertId, ctx.state.username);
 
             if (voidOrErr.isLeft()) {
                 sendBadRequest(ctx, voidOrErr.value.message);
@@ -70,8 +72,8 @@ export default function (
         }
     };
 
-    const listActiveHandler = async (ctx: Context) => {
-        const alerts = await service.getActiveAlerts();
+    const findActivesHandler = async (ctx: Context) => {
+        const alerts = await service.findActiveAlerts();
         sendOk(ctx, alerts.map(toAlertDTO));
     };
 
@@ -105,6 +107,6 @@ export default function (
     router.post("/schedule", validate(scheduleAlertSchema), scheduleHandler);
     router.post("/cancel", validate(cancelAlertSchema), cancelHandler);
     router.get("/notifications", notifyClientsHandler);
-    router.get("/active", listActiveHandler);
+    router.get("/active", findActivesHandler);
     return router;
 }

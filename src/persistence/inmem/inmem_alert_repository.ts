@@ -1,4 +1,4 @@
-import { Alert, AlertStatus } from "domain/hospitalization/alerts/alert.ts";
+import { Alert } from "domain/hospitalization/alerts/alert.ts";
 import { AlertNotFound } from "domain/hospitalization/alerts/alert_not_found_error.ts";
 import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
 import { Either, left, right } from "shared/either.ts";
@@ -7,12 +7,11 @@ import { ID } from "shared/id.ts";
 export class InmemAlertRepository implements AlertRepository {
 	#data: Record<string, Alert> = {};
 
-	getActives(): Promise<Alert[]> {
-		const alerts = this.records.filter((a) => !a.isDisabled());
-		return Promise.resolve(alerts);
+	findActives(): Promise<Alert[]> {
+		return Promise.resolve(this.records.filter((a) => !a.isCanceled()));
 	}
 
-	active(AlertId: ID): Promise<Either<AlertNotFound, Alert>> {
+	findById(AlertId: ID): Promise<Either<AlertNotFound, Alert>> {
 		const alert = this.records.find(
 			(alert) => alert.alertId.value === AlertId.value,
 		);
@@ -20,30 +19,21 @@ export class InmemAlertRepository implements AlertRepository {
 		return Promise.resolve(right(alert));
 	}
 
-	verify(patientId: ID): Promise<boolean> {
-		const hasAlert = this.records.some(
-			(alert) =>
-				alert.patientId.value === patientId.value &&
-				alert.status === AlertStatus.Enabled,
-		);
-		return Promise.resolve(hasAlert);
-	}
-
-	save(alert: Alert): Promise<void> {
-		this.#data[alert.alertId.value] = alert;
-		return Promise.resolve(undefined);
-	}
-
-	findAll(patientId: ID): Promise<Alert[]> {
+	findByPatientId(patientId: ID): Promise<Alert[]> {
 		const alerts = this.records.filter(
 			(alert) => alert.patientId.value === patientId.value,
 		);
 		return Promise.resolve(alerts);
 	}
 
-	findActives(patientId: ID): Promise<Alert[]> {
-		const alerts = this.records.filter((a) => a.patientId.equals(patientId) && !a.isDisabled());
+	findActivesByPatientId(patientId: ID): Promise<Alert[]> {
+		const alerts = this.records.filter((a) => a.patientId.equals(patientId) && !a.isCanceled());
 		return Promise.resolve(alerts);
+	}
+
+	save(alert: Alert): Promise<void> {
+		this.#data[alert.alertId.value] = alert;
+		return Promise.resolve(undefined);
 	}
 
 	last(): Promise<Alert> {

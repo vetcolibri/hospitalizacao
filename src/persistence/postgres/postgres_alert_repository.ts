@@ -8,7 +8,7 @@ import { ID } from "shared/id.ts";
 export class PostgresAlertRepository implements AlertRepository {
 	constructor(private client: Client) {}
 
-	async getActives(): Promise<Alert[]> {
+	async findActives(): Promise<Alert[]> {
 		const result = await this.client.queryObject<AlertModel>(
 			"SELECT * FROM alerts WHERE status = $STATUS",
 			{ status: AlertStatus.Enabled },
@@ -17,7 +17,7 @@ export class PostgresAlertRepository implements AlertRepository {
 		return result.rows.map(alertFactory);
 	}
 
-	async findAll(patientId: ID): Promise<Alert[]> {
+	async findByPatientId(patientId: ID): Promise<Alert[]> {
 		const result = await this.client.queryObject<AlertModel>(
 			"SELECT * FROM alerts WHERE system_id = $SYSTEM_ID",
 			{ system_id: patientId.value },
@@ -26,7 +26,7 @@ export class PostgresAlertRepository implements AlertRepository {
 		return result.rows.map(alertFactory);
 	}
 
-	async findActives(patientId: ID): Promise<Alert[]> {
+	async findActivesByPatientId(patientId: ID): Promise<Alert[]> {
 		const result = await this.client.queryObject<AlertModel>(
 			"SELECT * FROM alerts WHERE system_id = $SYSTEM_ID AND status = $STATUS",
 			{ system_id: patientId.value, status: AlertStatus.Enabled },
@@ -35,32 +35,23 @@ export class PostgresAlertRepository implements AlertRepository {
 		return result.rows.map(alertFactory);
 	}
 
-	async verify(patientId: ID): Promise<boolean> {
-		const result = await this.client.queryObject(
-			"SELECT * FROM alerts WHERE system_id = $SYSTEM_ID AND status = $STATUS LIMIT 1",
-			{ system_id: patientId.value, status: AlertStatus.Enabled },
-		);
-
-		return result.rows.length > 0;
-	}
-
 	async save(alert: Alert): Promise<void> {
 		await this.client.queryObject(
 			`INSERT INTO alerts (
-				alert_id, 
-				system_id, 
-				parameters, 
-				repeat_every, 
-				time, 
-				comments, 
+				alert_id,
+				system_id,
+				parameters,
+				repeat_every,
+				time,
+				comments,
 				status
 			) VALUES (
-				$1, 
-				$2, 
-				$3, 
-				$4, 
-				$5, 
-				$6, 
+				$1,
+				$2,
+				$3,
+				$4,
+				$5,
+				$6,
 				$7
 			)`,
 			[
@@ -83,7 +74,7 @@ export class PostgresAlertRepository implements AlertRepository {
 		return alertFactory(result.rows[0]);
 	}
 
-	async active(alertId: ID): Promise<Either<AlertNotFound, Alert>> {
+	async findById(alertId: ID): Promise<Either<AlertNotFound, Alert>> {
 		const result = await this.client.queryObject<AlertModel>(
 			"SELECT * FROM alerts WHERE alert_id = $ALERT_ID AND status = $STATUS LIMIT 1",
 			{ alert_id: alertId.value, status: AlertStatus.Enabled },
@@ -125,7 +116,7 @@ function alertFactory(model: AlertModel): Alert {
 		alertId: model.alert_id,
 		patientId: model.system_id,
 		parameters: model.parameters.split(","),
-		rate: model.rate,	
+		rate: model.rate,
 		time: model.time,
 		comments: model.comments,
 		status: model.status,

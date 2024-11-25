@@ -1,4 +1,4 @@
-import { RepeatEvery } from "./repeat_every.ts";
+import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
 import { ID } from "shared/id.ts";
 
 type Options = {
@@ -61,7 +61,7 @@ export class Alert {
 		this.#status = AlertStatus.Disabled;
 	}
 
-	isDisabled(): boolean {
+	isCanceled(): boolean {
 		return this.#status === AlertStatus.Disabled;
 	}
 
