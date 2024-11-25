@@ -1,5 +1,5 @@
 import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
-import { AlertAlreadyDisabled } from "domain/hospitalization/alerts/alert_already_disabled_error.ts";
+import { AlertAlreadyCanceled } from "domain/hospitalization/alerts/alert_already_canceled_error.ts";
 import { AlertNotFound } from "domain/hospitalization/alerts/alert_not_found_error.ts";
 import { InvalidRepeatEvery } from "domain/hospitalization/alerts/repeat_every_error.ts";
 import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
@@ -14,7 +14,7 @@ import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 
 export type ScheduleError = PatientNotFound | InvalidRepeatEvery | Error;
 export type NewPatientError = PatientIdAlreadyExists | InvalidNumber | InvalidDate | Error;
-export type CancelError = AlertNotFound | AlertAlreadyDisabled;
+export type CancelError = AlertNotFound | AlertAlreadyCanceled;
 export type NewHospitalizationError =
     | PatientNotFound
     | PatientAlreadyHospitalized

@@ -292,7 +292,7 @@ export class PatientService {
     }
 
     async #cancelAlerts(patientId: string): Promise<void> {
-        const alerts = await this.#alertRepository.findActives(ID.fromString(patientId));
+        const alerts = await this.#alertRepository.findActivesByPatientId(ID.fromString(patientId));
 
         if (alerts.length === 0) return;
 

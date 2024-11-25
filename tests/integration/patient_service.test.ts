@@ -551,10 +551,10 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 		await service.endHospitalization("1901BA");
 
-		const alerts = await alertRepository.findAll(ID.fromString("1901BA"));
+		const alerts = await alertRepository.findByPatientId(ID.fromString("1901BA"));
 
 		assertEquals(alerts.length, 2);
-		alerts.every((a) => assert(a.isDisabled() === true));
+		alerts.every((a) => assert(a.isCanceled() === true));
 	});
 
 	await t.step(
