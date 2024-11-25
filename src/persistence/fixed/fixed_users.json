@@ -1,58 +1,72 @@
 [
   {
     "username": "joaosantos",
-    "password": "joaosantos"
+    "password": "joaosantos",
+    "level": ""
   },
   {
     "username": "Oscar Moraes",
-    "password": "Oscar Moraes"
+    "password": "Oscar Moraes",
+    "level": ""
   },
   {
     "username": "ione Bettencourt",
-    "password": "ione"
+    "password": "ione",
+    "level": ""
   },
   {
     "username": "Jose Sachilepa",
-    "password": "Jose Sachilepa"
+    "password": "Jose Sachilepa",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Dario Lisboa",
-    "password": "Dario Lisboa"
+    "password": "Dario Lisboa",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Valdemar Capitango",
-    "password": "Valdemar Capitango"
+    "password": "Valdemar Capitango",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Emidio Francisco",
-    "password": "Emidio Francisco"
+    "password": "Emidio Francisco",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Catarina Filho",
-    "password": "Catarina Filho"
+    "password": "Catarina Filho",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Mariano Mangonga",
-    "password": "Mariano Mangonga"
+    "password": "Mariano Mangonga",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Adolfo Kassissi",
-    "password": "Adolfo Kassissi"
+    "password": "Adolfo Kassissi",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Ermerson Costa",
-    "password": "Ermerson Costa"
+    "password": "Ermerson Costa",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Thalita Santos",
-    "password": "Thalita Santos"
+    "password": "Thalita Santos",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Madalena Mbengue",
-    "password": "Madalena Mbengue"
+    "password": "Madalena Mbengue",
+    "level": "Médico Veterinário"
   },
   {
     "username": "Manuela Castelhano",
-    "password": "Manuela Castelhano"
+    "password": "Manuela Castelhano",
+    "level": "Médico Veterinário"
   }
 ]
