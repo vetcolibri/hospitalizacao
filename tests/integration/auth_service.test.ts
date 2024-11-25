@@ -113,7 +113,7 @@ Deno.test("Auth Service - VerifyToken", async (t) => {
 
 
 function makeService(tokenGenerator?: TokenGenerator) {
-    const user = new User("johndoe123", "123@Password");
+    const user = new User("johndoe123", "123@Password", "");
     const userRepository: UserRepository = new InmemUserRepository();
     userRepository.save(user);
 
