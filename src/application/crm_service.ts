@@ -15,121 +15,121 @@ import { ReportError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
 
 export class CrmService {
-  #ownerRepository: OwnerRepository;
-  #patientRepository: PatientRepository;
-  #reportRepository: ReportRepository;
-  #budgetRepository: BudgetRepository;
-  #reportService: ReportService;
+	#ownerRepository: OwnerRepository;
+	#patientRepository: PatientRepository;
+	#reportRepository: ReportRepository;
+	#budgetRepository: BudgetRepository;
+	#reportService: ReportService;
 
-  constructor(
-    ownerRepository: OwnerRepository,
-    patientRepository: PatientRepository,
-    reportRepository: ReportRepository,
-    budgetRepository: BudgetRepository,
-    reportService: ReportService,
-  ) {
-    this.#ownerRepository = ownerRepository;
-    this.#patientRepository = patientRepository;
-    this.#reportRepository = reportRepository;
-    this.#budgetRepository = budgetRepository;
-    this.#reportService = reportService;
-  }
+	constructor(
+		ownerRepository: OwnerRepository,
+		patientRepository: PatientRepository,
+		reportRepository: ReportRepository,
+		budgetRepository: BudgetRepository,
+		reportService: ReportService,
+	) {
+		this.#ownerRepository = ownerRepository;
+		this.#patientRepository = patientRepository;
+		this.#reportRepository = reportRepository;
+		this.#budgetRepository = budgetRepository;
+		this.#reportService = reportService;
+	}
 
-  async getAll(): Promise<Owner[]> {
-    return await this.#ownerRepository.getAll();
-  }
+	async getAll(): Promise<Owner[]> {
+		return await this.#ownerRepository.getAll();
+	}
 
-  async findOwner(ownerId: string): Promise<Either<OwnerNotFound, Owner>> {
-    const ownerOrErr = await this.#ownerRepository.getById(
-      ID.fromString(ownerId),
-    );
-    if (ownerOrErr.isLeft()) return left(ownerOrErr.value);
+	async findOwner(ownerId: string): Promise<Either<OwnerNotFound, Owner>> {
+		const ownerOrErr = await this.#ownerRepository.getById(
+			ID.fromString(ownerId),
+		);
+		if (ownerOrErr.isLeft()) return left(ownerOrErr.value);
 
-    return right(ownerOrErr.value);
-  }
+		return right(ownerOrErr.value);
+	}
 
-  async registerReport(data: RegisterReportData): Promise<Either<ReportError, void>> {
-    const patientOrErr = await this.#patientRepository.getById(
-      ID.fromString(data.patientId),
-    );
+	async registerReport(data: RegisterReportData): Promise<Either<ReportError, void>> {
+		const patientOrErr = await this.#patientRepository.getById(
+			ID.fromString(data.patientId),
+		);
 
-    if (patientOrErr.isLeft()) return left(patientOrErr.value);
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-    const patient = patientOrErr.value;
+		const patient = patientOrErr.value;
 
-    if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
+		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
 
-    const reportOrErr = new ReportBuilder()
-      .withPatientId(patient.systemId)
-      .withStateOfConsciousness(data.stateOfConsciousness)
-      .withFood(this.#buildFood(data))
-      .withDischarge(this.#buildDischarge(data))
-      .withComments(data.comments)
-      .build();
+		const reportOrErr = new ReportBuilder()
+			.withPatientId(patient.systemId)
+			.withStateOfConsciousness(data.stateOfConsciousness)
+			.withFood(this.#buildFood(data))
+			.withDischarge(this.#buildDischarge(data))
+			.withComments(data.comments)
+			.build();
 
-    if (reportOrErr.isLeft()) return left(reportOrErr.value);
+		if (reportOrErr.isLeft()) return left(reportOrErr.value);
 
-    const report = reportOrErr.value;
+		const report = reportOrErr.value;
 
-    await this.#reportRepository.save(report);
+		await this.#reportRepository.save(report);
 
-    return right(undefined);
-  }
+		return right(undefined);
+	}
 
-  async findReports(
-    patientId: string,
-    ownerId: string,
-    hospitalizationId: string,
-  ): Promise<Either<ReportError, ReportDTO[]>> {
-    const ownerOrErr = await this.#ownerRepository.getById(ID.fromString(ownerId));
-    if (ownerOrErr.isLeft()) return left(ownerOrErr.value);
+	async findReports(
+		patientId: string,
+		ownerId: string,
+		hospitalizationId: string,
+	): Promise<Either<ReportError, ReportDTO[]>> {
+		const ownerOrErr = await this.#ownerRepository.getById(ID.fromString(ownerId));
+		if (ownerOrErr.isLeft()) return left(ownerOrErr.value);
 
-    const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
-    if (patientOrErr.isLeft()) return left(patientOrErr.value);
+		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-    if (!patientOrErr.value.isHospitalized()) return left(new PatientNotHospitalized());
+		if (!patientOrErr.value.isHospitalized()) return left(new PatientNotHospitalized());
 
-    if (!patientOrErr.value.ownerId.equals(ownerOrErr.value.ownerId)) {
-      return left(new PatientNotFound());
-    }
+		if (!patientOrErr.value.ownerId.equals(ownerOrErr.value.ownerId)) {
+			return left(new PatientNotFound());
+		}
 
-    const budgetOrErr = await this.#budgetRepository.findById(
-      ID.fromString(hospitalizationId),
-    );
-    if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
+		const budgetOrErr = await this.#budgetRepository.findById(
+			ID.fromString(hospitalizationId),
+		);
+		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-    const reports = await this.#reportService.findAll(patientId, hospitalizationId);
+		const reports = await this.#reportService.findAll(patientId, hospitalizationId);
 
-    return right(reports);
-  }
+		return right(reports);
+	}
 
-  #buildFood(data: RegisterReportData) {
-    return new Food(data.food.types, data.food.level, data.food.datetime);
-  }
+	#buildFood(data: RegisterReportData) {
+		return new Food(data.food.types, data.food.level, data.food.datetime);
+	}
 
-  #buildDischarge(data: RegisterReportData) {
-    return data.discharges.map((discharge) => {
-      return new Discharge(discharge.type, discharge.aspects);
-    });
-  }
+	#buildDischarge(data: RegisterReportData) {
+		return data.discharges.map((discharge) => {
+			return new Discharge(discharge.type, discharge.aspects);
+		});
+	}
 }
 
 interface DischargeData {
-  type: string;
-  aspects: string[];
+	type: string;
+	aspects: string[];
 }
 
 export interface ReportData {
-  stateOfConsciousness: string[];
-  food: {
-    types: string[];
-    level: string;
-    datetime: string;
-  };
-  discharges: DischargeData[];
-  comments: string;
+	stateOfConsciousness: string[];
+	food: {
+		types: string[];
+		level: string;
+		datetime: string;
+	};
+	discharges: DischargeData[];
+	comments: string;
 }
 
 interface RegisterReportData extends ReportData {
-  patientId: string;
+	patientId: string;
 }
