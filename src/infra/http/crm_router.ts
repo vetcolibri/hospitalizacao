@@ -45,11 +45,12 @@ export default function (service: CrmService, transaction: TransactionController
 
     const registerReportHandler = async (ctx: Context) => {
         const data = ctx.state.validatedData;
+        const username = ctx.state.username;
 
         try {
             await transaction.begin();
 
-            const voidOrErr = await service.registerReport(data);
+            const voidOrErr = await service.registerReport(data, username);
 
             if (voidOrErr.value instanceof PatientNotFound) {
                 sendNotFound(ctx, voidOrErr.value.message);

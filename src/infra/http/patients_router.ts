@@ -82,11 +82,11 @@ export default function (service: PatientService, transaction: TransactionContro
 
     const newPatientHandler = async (ctx: Context) => {
         const newPatientData = ctx.state.validatedData;
-
+        const username = ctx.state.username;
         try {
             await transaction.begin();
 
-            const voidOrErr = await service.newPatient(newPatientData);
+            const voidOrErr = await service.newPatient({...newPatientData, username: username});
 
             if (voidOrErr.value instanceof PatientIdAlreadyExists) {
                 sendBadRequest(ctx, voidOrErr.value.message);
@@ -119,11 +119,11 @@ export default function (service: PatientService, transaction: TransactionContro
 
     const endHospitalizationHandler = async (ctx: Context) => {
         const { patientId } = ctx.state.validatedData;
-
+        const username = ctx.state.username;
         try {
             await transaction.begin();
 
-            const voidOrErr = await service.endHospitalization(patientId);
+            const voidOrErr = await service.endHospitalization(patientId, username);
 
             if (voidOrErr.value instanceof PatientNotFound) {
                 sendNotFound(ctx, voidOrErr.value.message);
@@ -151,6 +151,7 @@ export default function (service: PatientService, transaction: TransactionContro
 
     const endBudgetHandler = async (ctx: Context) => {
         const { patientId, hospitalizationId, status } = ctx.state.validatedData;
+        const username = ctx.state.username;
 
         try {
             await transaction.begin();
@@ -158,6 +159,7 @@ export default function (service: PatientService, transaction: TransactionContro
                 patientId,
                 hospitalizationId,
                 status,
+                username
             );
 
             if (voidOrErr.value instanceof PatientNotFound) {

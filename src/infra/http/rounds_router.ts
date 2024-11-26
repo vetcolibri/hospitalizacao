@@ -10,76 +10,78 @@ import { roundSchema } from "infra/http/schemas/round_schema.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
 
 interface ParameterDTO {
-    name: string;
-    value: unknown;
-    issuedAt: string;
+	name: string;
+	value: unknown;
+	issuedAt: string;
 }
 
 function toParameterDTO(measurement: Parameter): ParameterDTO {
-    return {
-        name: measurement.name,
-        value: measurement.value,
-        issuedAt: measurement.issuedAt.toISOString(),
-    };
+	return {
+		name: measurement.name,
+		value: measurement.value,
+		issuedAt: measurement.issuedAt.toISOString(),
+	};
 }
 
 export default function (service: RoundService, transation: TransactionController) {
-    const newRoundHandler = async (ctx: Context) => {
-        const { patientId, parameters } = ctx.state.validatedData;
-        try {
-            await transation.begin();
+	const newRoundHandler = async (ctx: Context) => {
+		const { patientId, parameters } = ctx.state.validatedData;
+		const username = ctx.state.username;
 
-            const voidOrErr = await service.new(patientId, parameters);
+		try {
+			await transation.begin();
 
-            if (voidOrErr.value instanceof PatientNotFound) {
-                sendNotFound(ctx, voidOrErr.value.message);
-                return;
-            }
+			const voidOrErr = await service.new(patientId, parameters, username);
 
-            if (voidOrErr.value instanceof PatientAlreadyDischarged) {
-                sendBadRequest(ctx, voidOrErr.value.message);
-                return;
-            }
+			if (voidOrErr.value instanceof PatientNotFound) {
+				sendNotFound(ctx, voidOrErr.value.message);
+				return;
+			}
 
-            await transation.commit();
+			if (voidOrErr.value instanceof PatientAlreadyDischarged) {
+				sendBadRequest(ctx, voidOrErr.value.message);
+				return;
+			}
 
-            sendOk(ctx);
-        } catch (error) {
-            sendServerError(ctx, error);
-        }
-    };
+			await transation.commit();
 
-    const latestMeasurementsHandler = async (ctx: ContextWithParams) => {
-        const patientId = ctx.params.patientId;
-        const parametersOrErr = await service.latestMeasurements(patientId);
+			sendOk(ctx);
+		} catch (error) {
+			sendServerError(ctx, error);
+		}
+	};
 
-        if (parametersOrErr.isLeft()) {
-            sendBadRequest(ctx, parametersOrErr.value.message);
-            return;
-        }
+	const latestMeasurementsHandler = async (ctx: ContextWithParams) => {
+		const patientId = ctx.params.patientId;
+		const parametersOrErr = await service.latestMeasurements(patientId);
 
-        const parameters = parametersOrErr.value;
-        const parameterDTO = parameters.map(toParameterDTO);
+		if (parametersOrErr.isLeft()) {
+			sendBadRequest(ctx, parametersOrErr.value.message);
+			return;
+		}
 
-        sendOk(ctx, parameterDTO);
-    };
+		const parameters = parametersOrErr.value;
+		const parameterDTO = parameters.map(toParameterDTO);
 
-    const measurementsHandler = async (ctx: ContextWithParams) => {
-        const patientId = ctx.params.patientId;
-        const resultOrErr = await service.measurements(patientId);
-        if (resultOrErr.isLeft()) {
-            sendBadRequest(ctx, resultOrErr.value.message);
-            return;
-        }
+		sendOk(ctx, parameterDTO);
+	};
 
-        const parameterDTO = resultOrErr.value.map(toParameterDTO);
+	const measurementsHandler = async (ctx: ContextWithParams) => {
+		const patientId = ctx.params.patientId;
+		const resultOrErr = await service.measurements(patientId);
+		if (resultOrErr.isLeft()) {
+			sendBadRequest(ctx, resultOrErr.value.message);
+			return;
+		}
 
-        sendOk(ctx, parameterDTO);
-    };
+		const parameterDTO = resultOrErr.value.map(toParameterDTO);
 
-    const router = new Router({ prefix: "/rounds" });
-    router.post("/new", validate(roundSchema), newRoundHandler);
-    router.get("/measurements/latest/:patientId", latestMeasurementsHandler);
-    router.get("/measurements/:patientId", measurementsHandler);
-    return router;
+		sendOk(ctx, parameterDTO);
+	};
+
+	const router = new Router({ prefix: "/rounds" });
+	router.post("/new", validate(roundSchema), newRoundHandler);
+	router.get("/measurements/latest/:patientId", latestMeasurementsHandler);
+	router.get("/measurements/:patientId", measurementsHandler);
+	return router;
 }

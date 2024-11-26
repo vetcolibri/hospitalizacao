@@ -3,19 +3,39 @@ import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { BudgetRepository } from "domain/budget/budget_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
+import { UserRepository } from "domain/auth/user_repository.ts";
+import { Username } from "domain/auth/username.ts";
+import { User } from "domain/auth/user.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 export class BudgetService {
 	#budgetRepository: BudgetRepository;
+	#userRepository: UserRepository;
 
-	constructor(budgetRepository: BudgetRepository) {
+	constructor(budgetRepository: BudgetRepository, userRepository: UserRepository) {
 		this.#budgetRepository = budgetRepository;
+		this.#userRepository = userRepository;
 	}
 
 	async getAll(): Promise<Budget[]> {
 		return await this.#budgetRepository.getAll();
 	}
 
-	async update(budgetId: string, data: BudgetData): Promise<Either<BudgetNotFound, void>> {
+	async update(
+		budgetId: string,
+		data: BudgetData,
+		username: string,
+	): Promise<Either<BudgetNotFound, void>> {
+		const userOrErr = await this.#userRepository.getByUsername(Username.fromString(username));
+		const user = <User> userOrErr.value;
+		if (!user.hasBudgetWritePermission()) {
+			return left(
+				new PermissionDenied(
+					"O nível de Utilizador não lhe permite modificar o Orçamento da hospitalização.",
+				),
+			);
+		}
+
 		const budgetOrErr = await this.#budgetRepository.get(ID.fromString(budgetId));
 
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);

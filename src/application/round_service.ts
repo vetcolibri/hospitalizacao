@@ -8,19 +8,26 @@ import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { RoundError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
+import { UserRepository } from "domain/auth/user_repository.ts";
+import { Username } from "domain/auth/username.ts";
+import { User } from "domain/auth/user.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 export class RoundService {
 	#roundRepository: RoundRepository;
 	#patientRepository: PatientRepository;
+	#userRepository: UserRepository;
 	#measurementService: MeasurementService;
 
 	constructor(
 		roundRepository: RoundRepository,
 		patientRepository: PatientRepository,
+		userRepository: UserRepository,
 		measurementService: MeasurementService,
 	) {
 		this.#roundRepository = roundRepository;
 		this.#patientRepository = patientRepository;
+		this.#userRepository = userRepository;
 		this.#measurementService = measurementService;
 	}
 
@@ -34,7 +41,18 @@ export class RoundService {
 	async new(
 		patientId: string,
 		data: ParametersData,
+		username: string,
 	): Promise<Either<RoundError, void>> {
+		const userOrErr = await this.#userRepository.getByUsername(Username.fromString(username));
+		const user = <User> userOrErr.value;
+		if (!user.hasRoundWritePermission()) {
+			return left(
+				new PermissionDenied(
+					"O nível de Utilizador não lhe permite efectuar Rondas.",
+				),
+			);
+		}
+
 		const patientOrErr = await this.#patientRepository.getById(
 			ID.fromString(patientId),
 		);

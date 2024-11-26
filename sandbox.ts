@@ -42,6 +42,7 @@ const patientService = new PatientService(
     hospRepo,
     budgetRepo,
     alertRepo,
+    userRepo,
     notifier,
 );
 const alertService = new AlertService(
@@ -50,16 +51,17 @@ const alertService = new AlertService(
     userRepo,
     notifier,
 );
-const roundService = new RoundService(roundRepo, patientRepo, measurementService);
+const roundService = new RoundService(roundRepo, patientRepo, userRepo, measurementService);
 const hospitalizationService = new HospitalizationService(
     hospRepo,
 );
-const budgetService = new BudgetService(budgetRepo);
+const budgetService = new BudgetService(budgetRepo, userRepo);
 const crmService = new CrmService(
     ownerRepo,
     patientRepo,
     reportRepo,
     budgetRepo,
+    userRepo,
     reportService,
 );
 const authService = new AuthService(userRepo, tokenGenerator)

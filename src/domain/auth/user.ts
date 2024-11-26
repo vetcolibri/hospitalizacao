@@ -1,9 +1,9 @@
 import { Password } from "domain/auth/password.ts";
 import { Username } from "domain/auth/username.ts";
-import { Mode, Permission, Type } from "domain/auth/permission.ts";
+import { Permission, Type } from "domain/auth/permission.ts";
 import { PermissionFactory } from "domain/auth/permissions_factory.ts";
 
-export enum Level {
+export enum Role {
 	Admin = "Admin",
 	MedVet = "Médico Veterinário",
 	VetAssistent = "Médico Auxiliar",
@@ -16,7 +16,7 @@ export class User {
 	readonly #password: Password;
 	readonly isAdmin: boolean;
 	readonly isMedVet: boolean;
-	readonly level: Level;
+	readonly role: Role;
 	readonly permissions: Permission[];
 
 	constructor(username: string, password: string, level: string) {
@@ -24,32 +24,32 @@ export class User {
 		this.#password = Password.fromString(password);
 		this.isAdmin = true;
 		this.isMedVet = false;
-		this.level = Level.Admin;
+		this.role = Role.Admin;
 		this.permissions = [];
 
-		if (level === Level.MedVet) {
-			this.level = Level.MedVet;
+		if (level === Role.MedVet) {
+			this.role = Role.MedVet;
 			this.isAdmin = false;
 			this.isMedVet = true;
 			return;
 		}
 
-		if (level === Level.VetAssistent) {
+		if (level === Role.VetAssistent) {
 			this.isAdmin = false;
-			this.level = Level.VetAssistent;
+			this.role = Role.VetAssistent;
 		}
 
-		if (level === Level.Reception) {
+		if (level === Role.Reception) {
 			this.isAdmin = false;
-			this.level = Level.Reception;
+			this.role = Role.Reception;
 		}
 
-		if (level === Level.Trainee) {
+		if (level === Role.Trainee) {
 			this.isAdmin = false;
-			this.level = Level.Trainee;
+			this.role = Role.Trainee;
 		}
 
-		const factory = PermissionFactory.create(this.level);
+		const factory = PermissionFactory.create(this.role);
 		this.permissions = factory.getPermissions();
 	}
 
@@ -57,18 +57,62 @@ export class User {
 		return this.#password.isValid(password);
 	}
 
-	hasAlertWritePermission(): boolean {
-	    if (this.isAdmin) return true
+	hasHospitalizationWritePermission(): boolean {
+		if (this.#isAdminOrMedVet()) return true;
 
-		if (this.isMedVet) return true
+		if (this.#isEmptyPermissions()) return false;
 
 		for (const per of this.permissions) {
-		    if (per.hasPermission(Type.Alert, Mode.Write)) {
-				return true
+			if (per.hasWritePermission(Type.Hospitalization)) {
+				return true;
 			}
 		}
 
-		return false
+		return false;
+	}
+
+	hasAlertWritePermission(): boolean {
+		if (this.#isAdminOrMedVet()) return true;
+
+		if (this.#isEmptyPermissions()) return false;
+
+		for (const per of this.permissions) {
+			if (per.hasWritePermission(Type.Alert)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	hasBudgetWritePermission(): boolean {
+		if (this.#isAdminOrMedVet()) return true;
+
+		if (this.#isEmptyPermissions()) return false;
+
+		for (const per of this.permissions) {
+			if (per.hasWritePermission(Type.Buget)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	hasRoundWritePermission(): boolean {
+		return this.#isAdminOrMedVet();
+	}
+
+	hasReportWritePermission(): boolean {
+		return this.#isAdminOrMedVet();
+	}
+
+	#isAdminOrMedVet(): boolean {
+		return this.isAdmin === true || this.isMedVet === true;
+	}
+
+	#isEmptyPermissions(): boolean {
+		return this.permissions.length === 0;
 	}
 
 	get password(): Password {

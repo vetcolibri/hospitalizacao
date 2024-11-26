@@ -36,10 +36,11 @@ export default function (service: BudgetService, transaction: TransactionControl
     const updateBudgetHandler = async (ctx: ContextWithParams) => {
         const data = ctx.state.validatedData;
         const budgetId = ctx.params.budgetId;
+        const username = ctx.state.username;
         try {
             await transaction.begin();
 
-            const voidOrErr = await service.update(budgetId, data);
+            const voidOrErr = await service.update(budgetId, data, username);
             if (voidOrErr.value instanceof BudgetNotFound) {
                 sendNotFound(ctx, voidOrErr.value.message);
                 return;

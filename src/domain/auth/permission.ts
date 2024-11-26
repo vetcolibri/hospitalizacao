@@ -20,6 +20,10 @@ export class Permission {
         this.mode = mode
     }
 
+    hasWritePermission(type: Type): boolean {
+        return this.hasPermission(type, Mode.Write)
+    }
+
     hasPermission(type: Type, mode: Mode): boolean {
         return this.type === type && this.mode === mode
     }

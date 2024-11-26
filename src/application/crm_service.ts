@@ -13,12 +13,17 @@ import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ReportError } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
+import { UserRepository } from "domain/auth/user_repository.ts";
+import { Username } from "domain/auth/username.ts";
+import { User } from "domain/auth/user.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 export class CrmService {
 	#ownerRepository: OwnerRepository;
 	#patientRepository: PatientRepository;
 	#reportRepository: ReportRepository;
 	#budgetRepository: BudgetRepository;
+	#userRepository: UserRepository;
 	#reportService: ReportService;
 
 	constructor(
@@ -26,12 +31,14 @@ export class CrmService {
 		patientRepository: PatientRepository,
 		reportRepository: ReportRepository,
 		budgetRepository: BudgetRepository,
+		userRepository: UserRepository,
 		reportService: ReportService,
 	) {
 		this.#ownerRepository = ownerRepository;
 		this.#patientRepository = patientRepository;
 		this.#reportRepository = reportRepository;
 		this.#budgetRepository = budgetRepository;
+		this.#userRepository = userRepository;
 		this.#reportService = reportService;
 	}
 
@@ -48,7 +55,20 @@ export class CrmService {
 		return right(ownerOrErr.value);
 	}
 
-	async registerReport(data: RegisterReportData): Promise<Either<ReportError, void>> {
+	async registerReport(
+		data: RegisterReportData,
+		username: string,
+	): Promise<Either<ReportError, void>> {
+		const userOrErr = await this.#userRepository.getByUsername(Username.fromString(username));
+		const user = <User> userOrErr.value;
+		if (!user.hasReportWritePermission()) {
+			return left(
+				new PermissionDenied(
+					"O nível de Utilizador não lhe permite salvar Reports.",
+				),
+			);
+		}
+
 		const patientOrErr = await this.#patientRepository.getById(
 			ID.fromString(data.patientId),
 		);
