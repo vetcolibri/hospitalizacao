@@ -35,6 +35,9 @@ import { Alert } from "domain/hospitalization/alerts/alert.ts";
 import { RepeatEvery } from "domain/hospitalization/alerts/repeat_every.ts";
 import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";
 import { AlertNotifier } from "application/alert_notifier.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
+import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
+import { Role, User } from "domain/auth/user.ts";
 
 Deno.test("Patient Service - Hospitalizad Patients", async (t) => {
 	await t.step(
@@ -416,6 +419,19 @@ Deno.test("Patient Service - New Patient", async (t) => {
 
 		assertEquals(owner.hasWhatsApp(), false);
 	});
+
+	await t.step(
+		"Deve retornar @PermissionDenied se o utilizador não tiver permissão para registar novo paciente",
+		async () => {
+			const { service } = makeService();
+			const data = {...newPatientData, username: "john.doe123" }
+
+			const error = await service.newPatient(data);
+
+			assertEquals(error.isLeft(), true)
+			assertInstanceOf(error.value, PermissionDenied)
+		},
+	);
 });
 
 Deno.test("Patient Service - End Hospitalization", async (t) => {
@@ -425,7 +441,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 		const { service } = makeService({ hospitalizationRepository, budgetRepository });
 
-		await service.endHospitalization("1918BA");
+		await service.endHospitalization("1918BA", "john.doe1234");
 
 		const error = await hospitalizationRepository.getByPatientId(ID.fromString("1918BA"));
 
@@ -441,7 +457,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 			budgetRepository,
 		});
 
-		await service.endHospitalization("1922BA");
+		await service.endHospitalization("1922BA", "john.doe1234");
 
 		const patientOrErr = await patientRepository.getById(ID.fromString("1922BA"));
 
@@ -461,7 +477,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 				budgetRepository,
 			});
 
-			await service.endHospitalization("1919BA");
+			await service.endHospitalization("1919BA", "john.doe1234");
 
 			const patientOrErr = await patientRepository.getById(ID.fromString("1919BA"));
 
@@ -481,7 +497,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 				budgetRepository,
 			});
 
-			await service.endHospitalization("1920BA");
+			await service.endHospitalization("1920BA", "john.doe1234");
 
 			const patientOrErr = await patientRepository.getById(ID.fromString("1920BA"));
 
@@ -502,7 +518,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 				budgetRepository,
 			});
 
-			await service.endHospitalization("1921BA");
+			await service.endHospitalization("1921BA", "john.doe1234");
 
 			const patientOrErr = await patientRepository.getById(ID.fromString("1921BA"));
 
@@ -517,7 +533,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 		async () => {
 			const { service } = makeService();
 
-			const error = await service.endHospitalization("1781GD");
+			const error = await service.endHospitalization("1781GD", "john.doe1234");
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, PatientNotFound);
@@ -530,7 +546,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 			const hospitalizationRepository = new HospitalizationRepositoryStub();
 			const { service } = makeService({ hospitalizationRepository });
 
-			const error = await service.endHospitalization("1918BA");
+			const error = await service.endHospitalization("1918BA", "john.doe1234");
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, HospitalizationNotFound);
@@ -549,7 +565,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 			alertRepository,
 		});
 
-		await service.endHospitalization("1901BA");
+		await service.endHospitalization("1901BA", "john.doe1234");
 
 		const alerts = await alertRepository.findByPatientId(ID.fromString("1901BA"));
 
@@ -573,9 +589,21 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 			});
 			const alertSpy = spy(alertNotifier, "cancel");
 
-			await service.endHospitalization("1902BA");
+			await service.endHospitalization("1902BA", "john.doe1234");
 
 			assertSpyCalls(alertSpy, 1);
+		},
+	);
+
+	await t.step(
+		"Deve retornar @PermissionDenied se o utilizador não tiver permissão para encerrar a hospitalização",
+		async () => {
+			const { service } = makeService();
+
+			const error = await service.endHospitalization("1918BA", "john.doe123");
+
+			assertEquals(error.isLeft(), true)
+			assertInstanceOf(error.value, PermissionDenied)
 		},
 	);
 });
@@ -592,7 +620,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 		const hospitalizationId = "0006";
 		const status = "PAGO";
 
-		await service.endBudget(patientId, hospitalizationId, status);
+		await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
 		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
@@ -613,7 +641,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const { service } = makeService();
 			const patientId = "20000";
 
-			const error = await service.endBudget(patientId, "0001", "PAGO");
+			const error = await service.endBudget(patientId, "0001", "PAGO", "john.doe1234");
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, PatientNotFound);
@@ -627,7 +655,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const repoSpy = spy(patientRepository, "update");
 			const patientId = "1925BA";
 
-			await service.endBudget(patientId, "0001", "PAGO");
+			await service.endBudget(patientId, "0001", "PAGO", "john.doe1234");
 
 			assertSpyCalls(repoSpy, 0);
 		},
@@ -640,7 +668,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const repoSpy = spy(budgetRepository, "update");
 			const patientId = "1925BA";
 
-			await service.endBudget(patientId, "0001", "PAGO");
+			await service.endBudget(patientId, "0001", "PAGO", "john.doe1234");
 
 			assertSpyCalls(repoSpy, 0);
 		},
@@ -659,7 +687,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const hospitalizationId = "0006";
 			const status = "NÃO PAGO";
 
-			await service.endBudget(patientId, hospitalizationId, status);
+			await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
@@ -688,7 +716,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const hospitalizationId = "0006";
 			const status = "PENDENTE";
 
-			await service.endBudget(patientId, hospitalizationId, status);
+			await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
@@ -717,7 +745,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 			const hospitalizationId = "0006";
 			const status = "PENDENTE (ORÇAMENTO ENVIADO)";
 
-			await service.endBudget(patientId, hospitalizationId, status);
+			await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
 			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
@@ -730,6 +758,18 @@ Deno.test("Patient Service - End Budget", async (t) => {
 
 			assertEquals(patient.status, PatientStatus.DischargedWithBudgetSent);
 			assertEquals(budget.status, BudgetStatus.PendingWithBudgetSent);
+		},
+	);
+
+	await t.step(
+		"Deve retornar @PermissionDenied se o utilizador não tiver permissão para encerrar o orçamento",
+		async () => {
+			const { service } = makeService();
+
+			const error = await service.endBudget("1928BA", "0045", "NÃO PAGO", "john.doe123");
+
+			assertEquals(error.isLeft(), true)
+			assertInstanceOf(error.value, PermissionDenied)
 		},
 	);
 });
@@ -778,6 +818,9 @@ function makeService(options?: Options) {
 	const budgetRepository = options?.budgetRepository ?? new InmemBudgetRepository();
 	const alertRepository = options?.alertRepository ?? new InmemAlertRepository();
 	const alertNotifier = options?.alertNotifier ?? new AlertNotifierDummy();
+	const user1 = new User("john.doe123", "john.doe123", Role.Trainee);
+	const user2 = new User("john.doe1234", "john.doe1234", Role.Reception);
+	const userRepository = new InmemUserRepository([user1, user2]);
 
 	const service = new PatientService(
 		patientRepository,
@@ -785,6 +828,7 @@ function makeService(options?: Options) {
 		hospitalizationRepository,
 		budgetRepository,
 		alertRepository,
+		userRepository,
 		alertNotifier,
 	);
 	return {

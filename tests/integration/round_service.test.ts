@@ -12,6 +12,9 @@ import { PATIENTS } from "../fake_data.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
 import { MeasurementServiceStub } from "../stubs/measurement_service_stub.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
+import { Role, User } from "domain/auth/user.ts";
+import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step(
@@ -25,7 +28,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			};
 			const { service, roundRepository } = makeService();
 
-			await service.new(patientId, parameters);
+			await service.new(patientId, parameters, "john.doe1234");
 
 			const round = await roundRepository.last();
 			assertNotEquals(round.patientId.value, undefined);
@@ -43,7 +46,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			};
 			const { service, roundRepository } = makeService();
 
-			await service.new(patientId, parameters);
+			await service.new(patientId, parameters, "john.doe1234");
 
 			const round = await roundRepository.last();
 			const heartRate = round.get("heartRate");
@@ -65,7 +68,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			};
 			const { service, roundRepository } = makeService();
 
-			await service.new(patientId, parameters);
+			await service.new(patientId, parameters, "john.doe1234");
 
 			const round = await roundRepository.last();
 			const respiratoryRate = round.get("respiratoryRate");
@@ -84,7 +87,7 @@ Deno.test("Round Service - New Round", async (t) => {
 		};
 		const { service, roundRepository } = makeService();
 
-		await service.new(patientId, parameters);
+		await service.new(patientId, parameters, "john.doe1234");
 
 		const round = await roundRepository.last();
 		const trc = round.get("trc");
@@ -102,7 +105,7 @@ Deno.test("Round Service - New Round", async (t) => {
 		};
 		const { service, roundRepository } = makeService();
 
-		await service.new(patientId, parameters);
+		await service.new(patientId, parameters, "john.doe1234");
 
 		const round = await roundRepository.last();
 		const avdn = round.get("avdn");
@@ -120,7 +123,7 @@ Deno.test("Round Service - New Round", async (t) => {
 		};
 		const { service, roundRepository } = makeService();
 
-		await service.new(patientId, parameters);
+		await service.new(patientId, parameters, "john.doe1234");
 
 		const round = await roundRepository.last();
 		const mucosas = round.get("mucosas");
@@ -138,7 +141,7 @@ Deno.test("Round Service - New Round", async (t) => {
 		};
 		const { service, roundRepository } = makeService();
 
-		await service.new(patientId, parameters);
+		await service.new(patientId, parameters, "john.doe1234");
 
 		const round = await roundRepository.last();
 		const temperature = round.get("temperature");
@@ -156,7 +159,7 @@ Deno.test("Round Service - New Round", async (t) => {
 		};
 		const { service, roundRepository } = makeService();
 
-		await service.new(patientId, parameters);
+		await service.new(patientId, parameters, "john.doe1234");
 
 		const round = await roundRepository.last();
 		const bloodGlucose = round.get("bloodGlucose");
@@ -174,7 +177,7 @@ Deno.test("Round Service - New Round", async (t) => {
 		};
 		const { service, roundRepository } = makeService();
 
-		await service.new(patientId, parameters);
+		await service.new(patientId, parameters, "john.doe1234");
 
 		const round = await roundRepository.last();
 		const hct = round.get("hct");
@@ -192,7 +195,7 @@ Deno.test("Round Service - New Round", async (t) => {
 		};
 		const { service, roundRepository } = makeService();
 
-		await service.new(patientId, parameters);
+		await service.new(patientId, parameters, "john.doe1234");
 
 		const round = await roundRepository.last();
 		const bloodPressure = round.get("bloodPressure");
@@ -213,7 +216,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const patientRepository = new InmemPatientRepository();
 			const { service } = makeService({ patientRepository });
 
-			const error = await service.new(patientId, parameters);
+			const error = await service.new(patientId, parameters, "john.doe1234");
 
 			assertEquals(error.isLeft(), true);
 		},
@@ -233,6 +236,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -254,6 +258,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -275,6 +280,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -297,6 +303,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -319,6 +326,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -341,6 +349,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -363,6 +372,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -385,6 +395,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1918BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -407,6 +418,7 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				PATIENTS.hospitalized["1904BA"].systemId.value,
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -428,10 +440,29 @@ Deno.test("Round Service - New Round", async (t) => {
 			const error = await service.new(
 				"1923BA",
 				parameters,
+				"john.doe1234",
 			);
 
 			assertEquals(error.isLeft(), true);
 			assertInstanceOf(error.value, PatientAlreadyDischarged);
+		},
+	);
+
+	await t.step(
+		"Deve retornar @PermissionDenied se o utilizador não tiver permissão para efectuar um ronda",
+		async () => {
+			const { service } = makeService();
+			const parameters = {
+				heartRate: {
+					name: "heartRate",
+					value: 78,
+				},
+			};
+
+			const error = await service.new("1923BA", parameters, "john.doe123");
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PermissionDenied);
 		},
 	);
 });
@@ -503,7 +534,15 @@ function makeService(options?: options) {
 	const roundRepository = options?.roundRepository ?? new InmemRoundRepository();
 	const patientRepository = options?.patientRepository ?? new PatientRepositoryStub();
 	const measuremntService = new MeasurementServiceStub();
+	const user1 = new User("john.doe123", "john.doe123", Role.VetAssistent);
+	const user2 = new User("john.doe1234", "john.doe1234", Role.MedVet);
+	const userRepository = new InmemUserRepository([user1, user2]);
 
-	const service = new RoundService(roundRepository, patientRepository, measuremntService);
+	const service = new RoundService(
+		roundRepository,
+		patientRepository,
+		userRepository,
+		measuremntService,
+	);
 	return { service, patientRepository, roundRepository };
 }

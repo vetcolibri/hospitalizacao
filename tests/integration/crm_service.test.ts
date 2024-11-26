@@ -17,6 +17,9 @@ import { InmemPatientRepository } from "persistence/inmem/inmem_patient_reposito
 import { InmemReportRepository } from "persistence/inmem/inmem_report_repository.ts";
 import { ID } from "shared/id.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
+import { Role, User } from "domain/auth/user.ts";
+import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
 
 Deno.test("Crm Service - List Owners", async (t) => {
 	await t.step("Deve recuperar os proprietários do repositório", async () => {
@@ -93,7 +96,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 
 			const { service } = makeService({ patientRepository: new PatientRepositoryStub() });
 
-			const err = await service.registerReport(data);
+			const err = await service.registerReport(data, "john.doe1234");
 
 			assertEquals(err.isLeft(), true);
 			assertInstanceOf(err.value, PatientNotHospitalized);
@@ -121,7 +124,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 			};
 			const { service } = makeService();
 
-			const err = await service.registerReport(data);
+			const err = await service.registerReport(data, "john.doe1234");
 
 			assertEquals(err.isLeft(), true);
 			assertInstanceOf(err.value, PatientNotFound);
@@ -151,7 +154,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.registerReport(data);
+			await service.registerReport(data, "john.doe1234");
 
 			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
@@ -184,7 +187,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.registerReport(data);
+			await service.registerReport(data, "john.doe1234");
 
 			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
@@ -216,7 +219,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.registerReport(data);
+			await service.registerReport(data, "john.doe1234");
 
 			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
@@ -254,7 +257,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.registerReport(data);
+			await service.registerReport(data, "john.doe1234");
 
 			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
@@ -286,7 +289,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.registerReport(data);
+			await service.registerReport(data, "john.doe1234");
 
 			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
@@ -318,7 +321,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 				patientRepository: new PatientRepositoryStub(),
 			});
 
-			await service.registerReport(data);
+			await service.registerReport(data, "john.doe1234");
 
 			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
@@ -352,13 +355,46 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 			patientRepository: new PatientRepositoryStub(),
 		});
 
-		await service.registerReport(data);
+		await service.registerReport(data, "john.doe1234");
 
 		const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 		assertEquals(report.discharges[0].type, data.discharges[0].type);
 		assertEquals(report.discharges[0].aspects, data.discharges[0].aspects);
 	});
+
+	await t.step(
+		"Deve retornar @PermissionDenied se o utilizador não tiver permissão para efectuar um ronda",
+		async () => {
+			const { service } = makeService();
+			const data = {
+				patientId: "1900BA",
+				stateOfConsciousness: ["Consciente"],
+				food: {
+					types: ["Ração"],
+					datetime: "2021-09-01T00:00:00",
+					level: "1",
+				},
+				discharges: [
+					{
+						type: "Urina",
+						aspects: ["Normal"],
+					},
+					{
+						type: "Fezes",
+						aspects: ["Normal"],
+					},
+				],
+				comments: "Paciente está bem",
+			};
+
+
+			const error = await service.registerReport(data, "john.doe123")
+
+			assertEquals(error.isLeft(), true);
+			assertInstanceOf(error.value, PermissionDenied);
+		},
+	);
 });
 
 Deno.test("Crm Service - Get Reports", async (t) => {
@@ -553,6 +589,9 @@ function makeService(opts?: Options) {
 	const reportRepo = new InmemReportRepository();
 	const patientRepo = opts?.patientRepository ?? new InmemPatientRepository();
 	const budgetRepo = new InmemBudgetRepository();
+	const user1 = new User("john.doe123", "john.doe123", Role.VetAssistent);
+	const user2 = new User("john.doe1234", "john.doe1234", Role.MedVet);
+	const userRepo = new InmemUserRepository([user1, user2]);
 	const reportService = {
 		findAll: (_patientId: string, _hospitalization_id: string) => {
 			return Promise.resolve([
@@ -586,6 +625,7 @@ function makeService(opts?: Options) {
 		patientRepo,
 		reportRepo,
 		budgetRepo,
+		userRepo,
 		reportService,
 	);
 

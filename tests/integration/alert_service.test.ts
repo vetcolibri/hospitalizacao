@@ -10,7 +10,7 @@ import { ID } from "shared/id.ts";
 import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
-import { Level, User } from "domain/auth/user.ts";
+import { Role, User } from "domain/auth/user.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 Deno.test("Alert Service - Schedule Alert", async (t) => {
@@ -253,8 +253,8 @@ async function makeService() {
 
 	const notifier = new AlertNotifierDummy();
 
-	const user1 = new User("john.doe123", "john.doe123", Level.Reception);
-	const user2 = new User("john.doe1234", "john.doe1234", Level.MedVet);
+	const user1 = new User("john.doe123", "john.doe123", Role.Reception);
+	const user2 = new User("john.doe1234", "john.doe1234", Role.MedVet);
 	const userRepo = new InmemUserRepository([user1, user2]);
 
 	const service = new AlertService(

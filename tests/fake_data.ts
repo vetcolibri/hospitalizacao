@@ -43,6 +43,7 @@ export const newPatientData = {
 	hospitalizationData,
 	ownerData,
 	budgetData,
+	username: "john.doe1234",
 };
 
 const alertData = {
