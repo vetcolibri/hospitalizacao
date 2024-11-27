@@ -1,6 +1,4 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class AlertNotFound extends DomainError {
+export class AlertNotFound extends Error {
 	constructor() {
 		super("Alerta não encontrado");
 	}

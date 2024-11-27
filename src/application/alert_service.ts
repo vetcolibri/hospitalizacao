@@ -42,7 +42,7 @@ export class AlertService {
 			return left(new PermissionDenied("O nível de Utilizador não lhe permite agendar alertas."));
 		}
 
-		const patientOrErr = await this.#patientRepository.getById(
+		const patientOrErr = await this.#patientRepository.findBySystemId(
 			ID.fromString(data.patientId),
 		);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);

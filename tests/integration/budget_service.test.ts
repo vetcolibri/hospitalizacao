@@ -14,7 +14,7 @@ Deno.test("Budget Service - Get All", async (t) => {
 		await budgetRepository.save(budget);
 		const service = new BudgetService(budgetRepository, userRepository);
 
-		const budgets = await service.getAll();
+		const budgets = await service.findAll();
 
 		assertEquals(budgets.length, 1);
 	});
@@ -23,7 +23,7 @@ Deno.test("Budget Service - Get All", async (t) => {
 		const budgetRepository = new InmemBudgetRepository();
 		const service = new BudgetService(budgetRepository, userRepository);
 
-		const budgets = await service.getAll();
+		const budgets = await service.findAll();
 
 		assertEquals(budgets, []);
 	});
@@ -41,7 +41,7 @@ Deno.test("Budget Service - Update", async (t) => {
 
 		await service.update("1010", data, "john.doe1234");
 
-		const resOrErr = await budgetRepository.get(ID.fromString("1010"));
+		const resOrErr = await budgetRepository.findById(ID.fromString("1010"));
 
 		const updatedBudget = <Budget> resOrErr.value;
 

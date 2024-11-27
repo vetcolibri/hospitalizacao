@@ -1,6 +1,4 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class BudgetNotFound extends DomainError {
+export class BudgetNotFound extends Error {
     constructor() {
         super("O Orçamento não foi encontrado.");
     }

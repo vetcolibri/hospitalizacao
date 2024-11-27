@@ -4,9 +4,9 @@ import { Either } from "shared/either.ts";
 import { ID } from "shared/id.ts";
 
 export interface BudgetRepository {
-	get(budgetId: ID): Promise<Either<BudgetNotFound, Budget>>;
-	findById(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>>;
-	getAll(): Promise<Budget[]>;
+	findAll(): Promise<Budget[]>;
+	findById(id: ID): Promise<Either<BudgetNotFound, Budget>>;
+	findByHospitalizationId(id: ID): Promise<Either<BudgetNotFound, Budget>>;
 	save(budget: Budget): Promise<void>;
 	update(budget: Budget): Promise<void>;
 	last(): Promise<Budget>;

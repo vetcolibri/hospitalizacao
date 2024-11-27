@@ -19,7 +19,7 @@ export class User {
 	readonly role: Role;
 	readonly permissions: Permission[];
 
-	constructor(username: string, password: string, level: string) {
+	constructor(username: string, password: string, role: string) {
 		this.username = Username.fromString(username);
 		this.#password = Password.fromString(password);
 		this.isAdmin = true;
@@ -27,24 +27,24 @@ export class User {
 		this.role = Role.Admin;
 		this.permissions = [];
 
-		if (level === Role.MedVet) {
+		if (role === Role.MedVet) {
 			this.role = Role.MedVet;
 			this.isAdmin = false;
 			this.isMedVet = true;
 			return;
 		}
 
-		if (level === Role.VetAssistent) {
+		if (role === Role.VetAssistent) {
 			this.isAdmin = false;
 			this.role = Role.VetAssistent;
 		}
 
-		if (level === Role.Reception) {
+		if (role === Role.Reception) {
 			this.isAdmin = false;
 			this.role = Role.Reception;
 		}
 
-		if (level === Role.Trainee) {
+		if (role === Role.Trainee) {
 			this.isAdmin = false;
 			this.role = Role.Trainee;
 		}

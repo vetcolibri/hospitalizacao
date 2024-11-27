@@ -17,8 +17,8 @@ export class BudgetService {
 		this.#userRepository = userRepository;
 	}
 
-	async getAll(): Promise<Budget[]> {
-		return await this.#budgetRepository.getAll();
+	async findAll(): Promise<Budget[]> {
+		return await this.#budgetRepository.findAll();
 	}
 
 	async update(
@@ -36,7 +36,7 @@ export class BudgetService {
 			);
 		}
 
-		const budgetOrErr = await this.#budgetRepository.get(ID.fromString(budgetId));
+		const budgetOrErr = await this.#budgetRepository.findById(ID.fromString(budgetId));
 
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 

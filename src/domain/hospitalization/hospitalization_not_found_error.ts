@@ -1,6 +1,4 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class HospitalizationNotFound extends DomainError {
+export class HospitalizationNotFound extends Error {
 	constructor() {
 		super("Hospitalização não encontrada");
 	}

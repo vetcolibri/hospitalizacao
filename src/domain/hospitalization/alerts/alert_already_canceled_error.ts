@@ -1,6 +1,4 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class AlertAlreadyCanceled extends DomainError {
+export class AlertAlreadyCanceled extends Error {
 	constructor() {
 		super("O Alerta já foi cancelado");
 	}

@@ -4,6 +4,6 @@ import { User } from "domain/auth/user.ts";
 
 export class FixedUserRepository extends InmemUserRepository {
     constructor() {
-        super(_userData.map((d) => new User(d.username, d.password, d.level)))
+        super(_userData.map((d) => new User(d.username, d.password, d.role)))
     }
 }

@@ -9,7 +9,7 @@ import { HospitalizationBuilder } from "domain/hospitalization/hospitalization_b
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
 import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
-import { Patient } from "domain/patient/patient.ts";
+import { Patient, PatientStatus } from "domain/patient/patient.ts";
 import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
 import { PatientBuilder } from "domain/patient/patient_builder.ts";
 import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
@@ -60,7 +60,7 @@ export class PatientService {
 	 * @returns {Promise<Patient[]>}
 	 */
 	async listHospitalizad(): Promise<Patient[]> {
-		return await this.#patientRepository.hospitalized();
+		return await this.#patientRepository.findByStatus(PatientStatus.Hospitalized);
 	}
 
 	/**
@@ -68,7 +68,7 @@ export class PatientService {
 	 * @returns {Promise<Patient[]>}
 	 */
 	async listNonHospitalized(): Promise<Patient[]> {
-		return await this.#patientRepository.nonHospitalized();
+		return await this.#patientRepository.findByStatus(PatientStatus.Discharged);
 	}
 
 	/**
@@ -81,7 +81,7 @@ export class PatientService {
 		patientId: string,
 		data: HospitalizationData,
 	): Promise<Either<NewHospitalizationError, void>> {
-		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		const voidOrErr = this.#verifyHospitalizationData(data);
@@ -129,10 +129,11 @@ export class PatientService {
 
 		const { patientData, ownerData, hospitalizationData, budgetData } = data;
 
-		const patientExists = await this.#patientRepository.exists(
+		let patientOrErr = await this.#patientRepository.findByPatientId(
 			ID.fromString(patientData.patientId),
 		);
-		if (patientExists) return left(new PatientIdAlreadyExists());
+
+		if (patientOrErr.isRight()) return left(new PatientIdAlreadyExists());
 
 		if (this.#isInvalidDate(patientData.birthDate)) {
 			return left(new InvalidDate(ErrorMessage.InvalidBirthDate));
@@ -143,7 +144,7 @@ export class PatientService {
 
 		await this.#buildOwner(ownerData);
 
-		const patientOrErr = new PatientBuilder()
+		patientOrErr = new PatientBuilder()
 			.withPatientId(patientData.patientId)
 			.withName(patientData.name)
 			.withOwnerId(ownerData.ownerId)
@@ -198,7 +199,7 @@ export class PatientService {
 			);
 		}
 
-		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		const hospitalizationOrErr = await this.#hospitalizationRepository.getByPatientId(
@@ -209,7 +210,7 @@ export class PatientService {
 		const patient = <Patient> patientOrErr.value;
 		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
 
-		const budgetOrErr = await this.#budgetRepository.findById(
+		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
 			hospitalization.hospitalizationId,
 		);
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
@@ -255,12 +256,12 @@ export class PatientService {
 			);
 		}
 
-		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		const patient = patientOrErr.value;
 
-		const budgetOrErr = await this.#budgetRepository.findById(
+		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
 			ID.fromString(hospitalizationId),
 		);
 

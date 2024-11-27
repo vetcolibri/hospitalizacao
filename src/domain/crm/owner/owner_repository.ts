@@ -4,7 +4,7 @@ import { Either } from "shared/either.ts";
 import { ID } from "shared/id.ts";
 
 export interface OwnerRepository {
-	getById(ownerId: ID): Promise<Either<OwnerNotFound, Owner>>;
+	getById(id: ID): Promise<Either<OwnerNotFound, Owner>>;
 	getAll(): Promise<Owner[]>;
 	save(owner: Owner): Promise<void>;
 	last(): Promise<Owner>;

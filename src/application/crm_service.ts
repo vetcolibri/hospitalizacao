@@ -69,7 +69,7 @@ export class CrmService {
 			);
 		}
 
-		const patientOrErr = await this.#patientRepository.getById(
+		const patientOrErr = await this.#patientRepository.findBySystemId(
 			ID.fromString(data.patientId),
 		);
 
@@ -104,7 +104,7 @@ export class CrmService {
 		const ownerOrErr = await this.#ownerRepository.getById(ID.fromString(ownerId));
 		if (ownerOrErr.isLeft()) return left(ownerOrErr.value);
 
-		const patientOrErr = await this.#patientRepository.getById(ID.fromString(patientId));
+		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		if (!patientOrErr.value.isHospitalized()) return left(new PatientNotHospitalized());
@@ -113,7 +113,7 @@ export class CrmService {
 			return left(new PatientNotFound());
 		}
 
-		const budgetOrErr = await this.#budgetRepository.findById(
+		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
 			ID.fromString(hospitalizationId),
 		);
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);

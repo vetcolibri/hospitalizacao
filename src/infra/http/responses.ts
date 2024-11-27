@@ -24,12 +24,9 @@ export function sendNotFound(ctx: Context, body?: ResponseBody) {
 	sendResponse(ctx, Status.NotFound, { message: body });
 }
 
-export function sendServerError(ctx: Context, error?: Error) {
-	sendResponse(ctx, Status.InternalServerError, { message: "Internal Server Error" });
-
-	if (!error) return;
-
+export function sendServerError(ctx: Context, error: Error) {
 	console.error(error);
+	sendResponse(ctx, Status.InternalServerError, { message: "Erro desconhecido, contacte o Administrador" });
 }
 
 export function sendOk(ctx: Context, body?: ResponseBody) {

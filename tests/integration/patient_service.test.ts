@@ -69,7 +69,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 
 		await service.newHospitalization(patientId, hospitalizationData);
 
-		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+		const patientOrErr = await patientRepository.findBySystemId(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
 
 		const hospitalizationOrErr = await hospitalizationRepository.getByPatientId(
@@ -459,7 +459,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 		await service.endHospitalization("1922BA", "john.doe1234");
 
-		const patientOrErr = await patientRepository.getById(ID.fromString("1922BA"));
+		const patientOrErr = await patientRepository.findBySystemId(ID.fromString("1922BA"));
 
 		const patient = <Patient> patientOrErr.value;
 
@@ -479,7 +479,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 			await service.endHospitalization("1919BA", "john.doe1234");
 
-			const patientOrErr = await patientRepository.getById(ID.fromString("1919BA"));
+			const patientOrErr = await patientRepository.findBySystemId(ID.fromString("1919BA"));
 
 			const patient = <Patient> patientOrErr.value;
 
@@ -499,7 +499,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 			await service.endHospitalization("1920BA", "john.doe1234");
 
-			const patientOrErr = await patientRepository.getById(ID.fromString("1920BA"));
+			const patientOrErr = await patientRepository.findBySystemId(ID.fromString("1920BA"));
 
 			const patient = <Patient> patientOrErr.value;
 
@@ -520,7 +520,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 			await service.endHospitalization("1921BA", "john.doe1234");
 
-			const patientOrErr = await patientRepository.getById(ID.fromString("1921BA"));
+			const patientOrErr = await patientRepository.findBySystemId(ID.fromString("1921BA"));
 
 			const patient = <Patient> patientOrErr.value;
 
@@ -622,10 +622,10 @@ Deno.test("Patient Service - End Budget", async (t) => {
 
 		await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
-		const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+		const patientOrErr = await patientRepository.findBySystemId(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
 
-		const budgetOrErr = await budgetRepository.findById(
+		const budgetOrErr = await budgetRepository.findByHospitalizationId(
 			ID.fromString(hospitalizationId),
 		);
 
@@ -689,10 +689,10 @@ Deno.test("Patient Service - End Budget", async (t) => {
 
 			await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
-			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+			const patientOrErr = await patientRepository.findBySystemId(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budgetOrErr = await budgetRepository.findById(
+			const budgetOrErr = await budgetRepository.findByHospitalizationId(
 				ID.fromString(hospitalizationId),
 			);
 
@@ -718,10 +718,10 @@ Deno.test("Patient Service - End Budget", async (t) => {
 
 			await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
-			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+			const patientOrErr = await patientRepository.findBySystemId(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budgetOrErr = await budgetRepository.findById(
+			const budgetOrErr = await budgetRepository.findByHospitalizationId(
 				ID.fromString(hospitalizationId),
 			);
 
@@ -747,10 +747,10 @@ Deno.test("Patient Service - End Budget", async (t) => {
 
 			await service.endBudget(patientId, hospitalizationId, status, "john.doe1234");
 
-			const patientOrErr = await patientRepository.getById(ID.fromString(patientId));
+			const patientOrErr = await patientRepository.findBySystemId(ID.fromString(patientId));
 			const patient = <Patient> patientOrErr.value;
 
-			const budgetOrErr = await budgetRepository.findById(
+			const budgetOrErr = await budgetRepository.findByHospitalizationId(
 				ID.fromString(hospitalizationId),
 			);
 

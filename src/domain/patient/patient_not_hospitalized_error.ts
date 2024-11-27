@@ -1,7 +1,5 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class PatientNotHospitalized extends DomainError {
-    constructor() {
-        super("O paciente não está hospitalizado.");
-    }
+export class PatientNotHospitalized extends Error {
+	constructor() {
+		super("O paciente não está hospitalizado.");
+	}
 }

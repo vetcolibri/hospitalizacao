@@ -32,7 +32,7 @@ function patientFactory(model: PatientModel): Patient {
 export class PostgresPatientRepository implements PatientRepository {
     constructor(private client: Client) {}
 
-    async getById(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
+    async findBySystemId(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
         const result = await this.client.queryObject<PatientModel>(
             "SELECT * FROM patients WHERE system_id = $SYSTEM_ID limit 1",
             { system_id: patientId.value },
@@ -69,19 +69,10 @@ export class PostgresPatientRepository implements PatientRepository {
         );
     }
 
-    async hospitalized(): Promise<Patient[]> {
-        const result = await this.client.queryObject<PatientModel>(
-            "SELECT * FROM patients WHERE status != $STATUS",
-            { status: PatientStatus.Discharged },
-        );
-
-        return result.rows.map(patientFactory);
-    }
-
-    async nonHospitalized(): Promise<Patient[]> {
+    async findByStatus(status: PatientStatus): Promise<Patient[]> {
         const result = await this.client.queryObject<PatientModel>(
             "SELECT * FROM patients WHERE status = $STATUS",
-            { status: PatientStatus.Discharged },
+            { status: String(status) },
         );
 
         return result.rows.map(patientFactory);
@@ -91,12 +82,14 @@ export class PostgresPatientRepository implements PatientRepository {
         throw new Error("Method not implemented.");
     }
 
-    async exists(patientId: ID): Promise<boolean> {
+    async findByPatientId(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
         const result = await this.client.queryObject<PatientModel>(
             "SELECT patient_id FROM patients WHERE patient_id = $PATIENT_ID",
             { patient_id: patientId.value },
         );
 
-        return result.rows.some((row) => row.patient_id === patientId.value);
+        if (result.rows.length === 0) return left(new PatientNotFound())
+
+        return right(patientFactory(result.rows[0]))
     }
 }

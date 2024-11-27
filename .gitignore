@@ -33,3 +33,4 @@ db.sqlite
 data/
 .nuxt/
 .deno/
+.zed/

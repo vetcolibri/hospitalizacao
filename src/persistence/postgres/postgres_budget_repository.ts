@@ -5,49 +5,69 @@ import { BudgetRepository } from "domain/budget/budget_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
 
+interface BudgetModel {
+	hospitalization_id: string;
+	budget_id: string;
+	start_on: string;
+	end_on: string;
+	status: string;
+}
+
+function budgetFactory(model: BudgetModel): Budget {
+	return Budget.restore({
+		hospitalizationId: model.hospitalization_id,
+		budgetId: model.budget_id,
+		startOn: model.start_on,
+		endOn: model.end_on,
+		status: model.status,
+	});
+}
+
 export class PostgresBudgetRepository implements BudgetRepository {
 	constructor(private client: Client) {}
 
-	async get(budgetId: ID): Promise<Either<BudgetNotFound, Budget>> {
-		const result = await this.client.queryObject<BudgetModel>(
-			"SELECT * FROM budgets WHERE budget_id = $BUDGET_ID LIMIT 1",
-			{
-				budget_id: budgetId.value,
-			},
-		);
-
-		if (result.rows.length === 0) return left(new BudgetNotFound());
-
-		return right(budgetFactory(result.rows[0]));
-	}
-
-	async findById(hospitalizationId: ID): Promise<Either<BudgetNotFound, Budget>> {
-		const result = await this.client.queryObject<BudgetModel>(
-			"SELECT * FROM budgets WHERE hospitalization_id = $HOSPITALIZATION_ID LIMIT 1",
-			{
-				hospitalization_id: hospitalizationId.value,
-			},
-		);
-
-		if (result.rows.length === 0) return left(new BudgetNotFound());
-
-		return right(budgetFactory(result.rows[0]));
-	}
-
-	async getAll(): Promise<Budget[]> {
+	async findAll(): Promise<Budget[]> {
 		const result = await this.client.queryObject<BudgetModel>("SELECT * FROM budgets");
 		return result.rows.map(budgetFactory);
 	}
 
+	async findById(id: ID): Promise<Either<BudgetNotFound, Budget>> {
+		const result = await this.client.queryObject<BudgetModel>(
+			"SELECT * FROM budgets WHERE budget_id = $BUDGET_ID LIMIT 1",
+			{
+				budget_id: id.value,
+			},
+		);
+
+		if (result.rows.length === 0) return left(new BudgetNotFound());
+
+		return right(budgetFactory(result.rows[0]));
+	}
+
+	async findByHospitalizationId(id: ID): Promise<Either<BudgetNotFound, Budget>> {
+		const result = await this.client.queryObject<BudgetModel>(
+			"SELECT * FROM budgets WHERE hospitalization_id = $HOSPITALIZATION_ID LIMIT 1",
+			{
+				hospitalization_id: id.value,
+			},
+		);
+
+		if (result.rows.length === 0) return left(new BudgetNotFound());
+
+		return right(budgetFactory(result.rows[0]));
+	}
+
 	async save(budget: Budget): Promise<void> {
-		await this.client.queryObject("INSERT INTO budgets (hospitalization_id, start_on, end_on, status, budget_id) VALUES ($1, $2, $3, $4, $5)",
-		[
-			budget.hospitalizationId.value,
-			budget.startOn.toISOString(),
-			budget.endOn.toISOString(),
-			budget.status,
-			budget.budgetId.value
-		]);
+		await this.client.queryObject(
+			"INSERT INTO budgets (hospitalization_id, start_on, end_on, status, budget_id) VALUES ($1, $2, $3, $4, $5)",
+			[
+				budget.hospitalizationId.value,
+				budget.startOn.toISOString(),
+				budget.endOn.toISOString(),
+				budget.status,
+				budget.budgetId.value,
+			],
+		);
 	}
 
 	async update(budget: Budget): Promise<void> {
@@ -68,22 +88,4 @@ export class PostgresBudgetRepository implements BudgetRepository {
 		const result = await this.client.queryObject<BudgetModel>("SELECT * FROM budgets");
 		return budgetFactory(result.rows[result.rows.length - 1]);
 	}
-}
-
-interface BudgetModel {
-	hospitalization_id: string;
-	budget_id: string;
-	start_on: string;
-	end_on: string;
-	status: string;
-}
-
-function budgetFactory(model: BudgetModel): Budget {
-	return Budget.restore({
-		hospitalizationId: model.hospitalization_id,
-		budgetId: model.budget_id,
-		startOn: model.start_on,
-		endOn: model.end_on,
-		status: model.status,
-	});
 }

@@ -1,6 +1,4 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class InvalidNumber extends DomainError {
+export class InvalidNumber extends Error {
 	constructor(message: string) {
 		super(message);
 	}

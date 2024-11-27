@@ -28,7 +28,7 @@ function toHospitalizationDTO(budget: Budget): BudgetDTO {
 
 export default function (service: BudgetService, transaction: TransactionController) {
     const listBudgetHandler = async (context: Context) => {
-        const budgets = await service.getAll();
+        const budgets = await service.findAll();
         const budgetDTO: BudgetDTO[] = budgets.map(toHospitalizationDTO);
         sendOk(context, budgetDTO);
     };

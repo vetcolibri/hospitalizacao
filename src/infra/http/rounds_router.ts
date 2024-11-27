@@ -8,6 +8,7 @@ import { ContextWithParams } from "infra/http/context_with_params.ts";
 import { sendBadRequest, sendNotFound, sendOk, sendServerError } from "infra/http/responses.ts";
 import { roundSchema } from "infra/http/schemas/round_schema.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts"
 
 interface ParameterDTO {
 	name: string;
@@ -33,13 +34,18 @@ export default function (service: RoundService, transation: TransactionControlle
 
 			const voidOrErr = await service.new(patientId, parameters, username);
 
-			if (voidOrErr.value instanceof PatientNotFound) {
-				sendNotFound(ctx, voidOrErr.value.message);
-				return;
+			if (voidOrErr.value instanceof PermissionDenied) {
+			    sendBadRequest(ctx, voidOrErr.value.message);
+				return
 			}
 
 			if (voidOrErr.value instanceof PatientAlreadyDischarged) {
 				sendBadRequest(ctx, voidOrErr.value.message);
+				return;
+			}
+
+			if (voidOrErr.value instanceof PatientNotFound) {
+				sendNotFound(ctx, voidOrErr.value.message);
 				return;
 			}
 

@@ -53,7 +53,7 @@ export class RoundService {
 			);
 		}
 
-		const patientOrErr = await this.#patientRepository.getById(
+		const patientOrErr = await this.#patientRepository.findBySystemId(
 			ID.fromString(patientId),
 		);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
@@ -91,7 +91,7 @@ export class RoundService {
 	async latestMeasurements(id: string): Promise<Either<PatientNotFound, Parameter[]>> {
 		const patientId = this.#buildPatientId(id);
 
-		const patientOrErr = await this.#patientRepository.getById(patientId);
+		const patientOrErr = await this.#patientRepository.findBySystemId(patientId);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		const measurements = await this.#measurementService.latest(id);
@@ -106,7 +106,7 @@ export class RoundService {
 	async measurements(id: string): Promise<Either<PatientNotFound, Parameter[]>> {
 		const patientId = this.#buildPatientId(id);
 
-		const patientOrErr = await this.#patientRepository.getById(patientId);
+		const patientOrErr = await this.#patientRepository.findBySystemId(patientId);
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		const measurements = await this.#measurementService.findAll(id);

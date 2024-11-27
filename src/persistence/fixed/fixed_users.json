@@ -2,71 +2,156 @@
   {
     "username": "joaosantos",
     "password": "joaosantos",
-    "level": ""
+    "role": ""
   },
   {
     "username": "Oscar Moraes",
     "password": "Oscar Moraes",
-    "level": ""
+    "role": ""
   },
   {
     "username": "ione Bettencourt",
     "password": "ione",
-    "level": ""
+    "role": ""
   },
   {
     "username": "Jose Sachilepa",
     "password": "Jose Sachilepa",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Dario Lisboa",
     "password": "Dario Lisboa",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Valdemar Capitango",
     "password": "Valdemar Capitango",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Emidio Francisco",
     "password": "Emidio Francisco",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Catarina Filho",
     "password": "Catarina Filho",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Mariano Mangonga",
     "password": "Mariano Mangonga",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Adolfo Kassissi",
     "password": "Adolfo Kassissi",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Ermerson Costa",
     "password": "Ermerson Costa",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Thalita Santos",
     "password": "Thalita Santos",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Madalena Mbengue",
     "password": "Madalena Mbengue",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
   },
   {
     "username": "Manuela Castelhano",
     "password": "Manuela Castelhano",
-    "level": "Médico Veterinário"
+    "role": "Médico Veterinário"
+  },
+  {
+    "username": "Joaquim Jeronimo",
+    "password": "Joaquim Jeronimo",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Ermenegildo Quissama",
+    "password": "Ermenegildo Quissama",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Jose Bula",
+    "password": "Jose Bula",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Euridice Rafaela",
+    "password": "Euridice Rafaela",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Bruno Costa",
+    "password": "Bruno Costa",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Jandiro Vintem",
+    "password": "Jandiro Vintem",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Francisco Ribeiro",
+    "password": "Francisco Ribeiro",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Armando Mendes",
+    "password": "Armando Mendes",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Jose Marcelino",
+    "password": "Jose Marcelino",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Deodeth Ventura",
+    "password": "Deodeth Ventura",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Jose Malungo",
+    "password": "Jose Malungo",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Erica Valente",
+    "password": "Erica Valente",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Cristiano Lino",
+    "password": "Cristiano Lino",
+    "role": "Médico Auxiliar"
+  },
+  {
+    "username": "Betania Bocolo",
+    "password": "Betania Bocolo",
+    "role": "Recepção"
+  },
+  {
+    "username": "Renata Bastos",
+    "password": "Renata Bastos",
+    "role": "Recepção"
+  },
+  {
+    "username": "Luisa Pinto",
+    "password": "Luisa Pinto",
+    "role": "Recepção"
+  },
+  {
+    "username": "Rodivinda Manuel",
+    "password": "Rodivinda Manuel",
+    "role": "Recepção"
   }
 ]

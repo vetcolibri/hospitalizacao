@@ -1,7 +1,5 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class InvalidParameter extends DomainError {
-  constructor(message: string) {
-    super(message);
-  }
+export class InvalidParameter extends Error {
+	constructor(message: string) {
+		super(message);
+	}
 }

@@ -1,6 +1,4 @@
-import { DomainError } from "shared/domain_error.ts";
-
-export class PatientIdAlreadyExists extends DomainError {
+export class PatientIdAlreadyExists extends Error {
 	constructor() {
 		super("ID do paciente já foi registrado.");
 	}
