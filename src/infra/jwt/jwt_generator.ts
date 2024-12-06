@@ -11,7 +11,7 @@ export class JwtTokenGenerator implements TokenGenerator {
 			.setProtectedHeader({ alg: "HS256" })
 			.setIssuedAt()
 			.setIssuer("urn:hospitalizacao")
-			.setExpirationTime("4h")
+			.setExpirationTime("168h")
 			.sign(secret);
 
 		return jwt;
