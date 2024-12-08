@@ -8,7 +8,7 @@ export class HospitalizationService {
 		this.#hospitalizationRepository = hospitalizationRepository;
 	}
 
-	async getAll(): Promise<Hospitalization[]> {
-		return await this.#hospitalizationRepository.getAll();
+	async findAll(): Promise<Hospitalization[]> {
+		return await this.#hospitalizationRepository.findAll();
 	}
 }

@@ -11,7 +11,7 @@ Deno.test("Hospitalization Service - Get all hospitalizations", async (t) => {
 
 			const service = new HospitalizationService(repo);
 
-			const hospitalizations = await service.getAll();
+			const hospitalizations = await service.findAll();
 
 			assertEquals(hospitalizations.length, 0);
 
@@ -24,7 +24,7 @@ Deno.test("Hospitalization Service - Get all hospitalizations", async (t) => {
 
 		const service = new HospitalizationService(repo);
 
-		const hospitalizations = await service.getAll();
+		const hospitalizations = await service.findAll();
 
 		assert(hospitalizations.length > 1);
 	});

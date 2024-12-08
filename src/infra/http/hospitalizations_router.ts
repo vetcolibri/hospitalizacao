@@ -15,10 +15,6 @@ interface HospitalizationDTO {
 }
 
 function toHospitalizationDTO(hospitalization: Hospitalization): HospitalizationDTO {
-	let dischargeDate = "";
-	if (hospitalization.dischargeDate) {
-		dischargeDate = String(hospitalization.dischargeDate.toISOString());
-	}
 	return {
 		hospitalizationId: hospitalization.hospitalizationId.value,
 		patientId: hospitalization.patientId.value,
@@ -26,16 +22,15 @@ function toHospitalizationDTO(hospitalization: Hospitalization): Hospitalization
 		complaints: hospitalization.complaints,
 		diagnostics: hospitalization.diagnostics,
 		entryDate: hospitalization.entryDate.toISOString(),
-		dischargeDate,
+		dischargeDate: hospitalization.dischargeDate!.toISOString() ?? undefined,
 		status: hospitalization.status,
 	};
 }
 
 export default function (service: HospitalizationService) {
 	const listOpenedHospitalizationHandler = async (ctx: Context) => {
-		const hospitalizations = await service.getAll();
-		const hospitalizationDTO: HospitalizationDTO[] = hospitalizations.map(toHospitalizationDTO);
-		sendOk(ctx, hospitalizationDTO);
+		const hospitalizations = await service.findAll();
+		sendOk(ctx, hospitalizations.map(toHospitalizationDTO));
 	};
 
 	const router = new Router({ prefix: "/hospitalizations" });

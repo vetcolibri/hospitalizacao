@@ -72,7 +72,7 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 		const patientOrErr = await patientRepository.findBySystemId(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
 
-		const hospitalizationOrErr = await hospitalizationRepository.getByPatientId(
+		const hospitalizationOrErr = await hospitalizationRepository.findByPatientId(
 			patient.systemId,
 		);
 
@@ -443,7 +443,7 @@ Deno.test("Patient Service - End Hospitalization", async (t) => {
 
 		await service.endHospitalization("1918BA", "john.doe1234");
 
-		const error = await hospitalizationRepository.getByPatientId(ID.fromString("1918BA"));
+		const error = await hospitalizationRepository.findByPatientId(ID.fromString("1918BA"));
 
 		assertEquals(error.isLeft(), true);
 	});

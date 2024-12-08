@@ -20,6 +20,8 @@ import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 import { Role, User } from "domain/auth/user.ts";
 import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
+import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 
 Deno.test("Crm Service - List Owners", async (t) => {
 	await t.step("Deve recuperar os proprietários do repositório", async () => {
@@ -397,16 +399,15 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 	);
 });
 
-Deno.test("Crm Service - Get Reports", async (t) => {
+Deno.test("Crm Service - Find Reports", async (t) => {
 	await t.step("Deve recuperar o último relatório do paciente", async () => {
-		const { service, ownerRepo, reportRepo, budgetRepo } = makeService({
+		const { service, reportRepo, budgetRepo } = makeService({
 			patientRepository: new PatientRepositoryStub(),
 		});
 		await budgetRepo.save(budget);
-		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA");
 
 		const output = <ReportDTO[]> reportsOrErr.value;
 
@@ -422,7 +423,7 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA");
 
 		const output = <ReportDTO[]> reportsOrErr.value;
 
@@ -438,7 +439,7 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA");
 
 		const output = <ReportDTO[]> reportsOrErr.value;
 
@@ -454,7 +455,7 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA");
 
 		const output = <ReportDTO[]> reportsOrErr.value;
 
@@ -470,7 +471,7 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const reportsOrErr = await service.findReports("1900BA", "1001", "111");
+		const reportsOrErr = await service.findReports("1900BA");
 
 		const output = <ReportDTO[]> reportsOrErr.value;
 		const reports = await reportService.findAll("1900BA", "some-id");
@@ -479,62 +480,33 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 	});
 
 	await t.step(
-		"Deve retornar @PatientNotFound se o paciente não pertencer ao tutor",
-		async () => {
-			const { service, ownerRepo } = makeService({
-				patientRepository: new PatientRepositoryStub(),
-			});
-			await ownerRepo.save(huston);
-
-			const err = await service.findReports("1900BA", "1002", "111");
-
-			assertEquals(err.isLeft(), true);
-			assertInstanceOf(err.value, PatientNotFound);
-		},
-	);
-
-	await t.step(
 		"Deve retornar @PatientNotHospitalized se o paciente não estiver hospitalizado",
 		async () => {
-			const { service, ownerRepo } = makeService({
-				patientRepository: new PatientRepositoryStub(),
-			});
-			await ownerRepo.save(john);
+			const { service } = makeService({patientRepository: new PatientRepositoryStub()});
 
-			const err = await service.findReports("1927BA", "1001", "111");
+			const err = await service.findReports("1927BA");
 
 			assertEquals(err.isLeft(), true);
 			assertInstanceOf(err.value, PatientNotHospitalized);
 		},
 	);
 
-	await t.step("Deve retornar @OwnerNotFound se o dono não for encontrado", async () => {
+	await t.step("Deve retornar @PatientNotFound se o paciente não for encontrado", async () => {
 		const { service } = makeService();
 
-		const err = await service.findReports("1001", "1001", "111");
-
-		assertEquals(err.isLeft(), true);
-		assertInstanceOf(err.value, OwnerNotFound);
-	});
-
-	await t.step("Deve retornar @PatientNotFound se o paciente não for encontrado", async () => {
-		const { service, ownerRepo } = makeService();
-		await ownerRepo.save(john);
-
-		const err = await service.findReports("1900BA", "1001", "111");
+		const err = await service.findReports("1900BA");
 
 		assertEquals(err.isLeft(), true);
 		assertInstanceOf(err.value, PatientNotFound);
 	});
 
 	await t.step("Deve retornar @BudgetNotFound se o orçamento não for encontrado", async () => {
-		const { service, ownerRepo, reportRepo } = makeService({
+		const { service, reportRepo } = makeService({
 			patientRepository: new PatientRepositoryStub(),
 		});
-		await ownerRepo.save(john);
 		await reportRepo.save(report);
 
-		const err = await service.findReports("1900BA", "1001", "111");
+		const err = await service.findReports("1900BA");
 
 		assertEquals(err.isLeft(), true);
 		assertInstanceOf(err.value, BudgetNotFound);
@@ -542,7 +514,6 @@ Deno.test("Crm Service - Get Reports", async (t) => {
 });
 
 const john = new Owner("1001", "John", "933001122");
-const huston = new Owner("1002", "Huston", "933843893");
 const food = new Food(["Ração"], "1", "2021-09-01T00:00:00");
 const discharge = new Discharge("Urina", ["Normal"]);
 const report = new Report(
@@ -561,6 +532,8 @@ const budget = new Budget(
 	"2020-01-10T00:00:00",
 	"PENDENTE",
 );
+
+const hospitalization = new Hospitalization(ID.fromString("111"), "1900BA", 10, [], [], "")
 
 const payload = {
 	ownerName: "John",
@@ -587,6 +560,7 @@ interface Options {
 function makeService(opts?: Options) {
 	const ownerRepo = new InmemOwnerRepository();
 	const reportRepo = new InmemReportRepository();
+	const hospRepo = new InmemHospitalizationRepository([hospitalization])
 	const patientRepo = opts?.patientRepository ?? new InmemPatientRepository();
 	const budgetRepo = new InmemBudgetRepository();
 	const user1 = new User("john.doe123", "john.doe123", Role.VetAssistent);
@@ -623,6 +597,7 @@ function makeService(opts?: Options) {
 	const service = new CrmService(
 		ownerRepo,
 		patientRepo,
+		hospRepo,
 		reportRepo,
 		budgetRepo,
 		userRepo,

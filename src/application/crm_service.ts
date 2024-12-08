@@ -7,7 +7,6 @@ import { Food } from "domain/crm/report/food.ts";
 import { ReportBuilder } from "domain/crm/report/report_builder.ts";
 import { ReportRepository } from "domain/crm/report/report_repository.ts";
 import { ReportDTO, ReportService } from "domain/crm/report/report_service.ts";
-import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
@@ -17,10 +16,13 @@ import { UserRepository } from "domain/auth/user_repository.ts";
 import { Username } from "domain/auth/username.ts";
 import { User } from "domain/auth/user.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
+import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 
 export class CrmService {
 	#ownerRepository: OwnerRepository;
 	#patientRepository: PatientRepository;
+	#hospitalizationRepository: HospitalizationRepository;
 	#reportRepository: ReportRepository;
 	#budgetRepository: BudgetRepository;
 	#userRepository: UserRepository;
@@ -29,6 +31,7 @@ export class CrmService {
 	constructor(
 		ownerRepository: OwnerRepository,
 		patientRepository: PatientRepository,
+		hospitalizationRepository: HospitalizationRepository,
 		reportRepository: ReportRepository,
 		budgetRepository: BudgetRepository,
 		userRepository: UserRepository,
@@ -36,6 +39,7 @@ export class CrmService {
 	) {
 		this.#ownerRepository = ownerRepository;
 		this.#patientRepository = patientRepository;
+		this.#hospitalizationRepository = hospitalizationRepository
 		this.#reportRepository = reportRepository;
 		this.#budgetRepository = budgetRepository;
 		this.#userRepository = userRepository;
@@ -96,29 +100,20 @@ export class CrmService {
 		return right(undefined);
 	}
 
-	async findReports(
-		patientId: string,
-		ownerId: string,
-		hospitalizationId: string,
-	): Promise<Either<ReportError, ReportDTO[]>> {
-		const ownerOrErr = await this.#ownerRepository.getById(ID.fromString(ownerId));
-		if (ownerOrErr.isLeft()) return left(ownerOrErr.value);
+	async findReports(patientId: string): Promise<Either<ReportError, ReportDTO[]>> {
 
 		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		if (!patientOrErr.value.isHospitalized()) return left(new PatientNotHospitalized());
 
-		if (!patientOrErr.value.ownerId.equals(ownerOrErr.value.ownerId)) {
-			return left(new PatientNotFound());
-		}
+		const hospOrErr = await this.#hospitalizationRepository.findByPatientId(patientOrErr.value.systemId)
+		const hosp = <Hospitalization>hospOrErr.value
 
-		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
-			ID.fromString(hospitalizationId),
-		);
+		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(hosp.hospitalizationId);
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-		const reports = await this.#reportService.findAll(patientId, hospitalizationId);
+		const reports = await this.#reportService.findAll(patientId, hosp.hospitalizationId.value);
 
 		return right(reports);
 	}

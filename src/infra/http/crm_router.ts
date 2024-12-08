@@ -79,26 +79,20 @@ export default function (service: CrmService, transaction: TransactionController
 
 	const findReportsHandler = async (ctx: Context) => {
 		const patientId = ctx.request.url.searchParams.get("patientId");
-		const hospitalizationId = ctx.request.url.searchParams.get("hospitalizationId");
-		const ownerId = ctx.request.url.searchParams.get("ownerId");
 
-		if (!ownerId || !patientId || !hospitalizationId) {
+		if (!patientId) {
 			sendBadRequest(ctx, "Link inválido");
 			return;
 		}
 
-		const dataOrErr = await service.findReports(
-			patientId,
-			ownerId,
-			hospitalizationId,
-		);
+		const reportsOrErr = await service.findReports(patientId);
 
-		if (dataOrErr.isLeft()) {
-			sendNotFound(ctx, dataOrErr.value.message);
+		if (reportsOrErr.isLeft()) {
+			sendNotFound(ctx, reportsOrErr.value.message);
 			return;
 		}
 
-		sendOk(ctx, dataOrErr.value);
+		sendOk(ctx, reportsOrErr.value);
 	};
 
 	const router = new Router({ prefix: "/owners" });

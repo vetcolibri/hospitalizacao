@@ -13,12 +13,12 @@ export class InmemHospitalizationRepository implements HospitalizationRepository
 		hospitalizations.forEach((h) => (this.#data[h.hospitalizationId.value] = h));
 	}
 
-	getAll(): Promise<Hospitalization[]> {
+	findAll(): Promise<Hospitalization[]> {
 		const result = this.records.filter((h) => h.isOpen());
 		return Promise.resolve(result);
 	}
 
-	getByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {
+	findByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {
 		const hospitalization = this.records.find((h) =>
 			h.patientId.equals(patientId) && h.isOpen()
 		);

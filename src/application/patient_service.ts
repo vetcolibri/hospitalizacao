@@ -202,7 +202,7 @@ export class PatientService {
 		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const hospitalizationOrErr = await this.#hospitalizationRepository.getByPatientId(
+		const hospitalizationOrErr = await this.#hospitalizationRepository.findByPatientId(
 			ID.fromString(patientId),
 		);
 		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
