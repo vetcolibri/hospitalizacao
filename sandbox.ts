@@ -59,6 +59,7 @@ const budgetService = new BudgetService(budgetRepo, userRepo);
 const crmService = new CrmService(
     ownerRepo,
     patientRepo,
+    hospRepo,
     reportRepo,
     budgetRepo,
     userRepo,
