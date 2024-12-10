@@ -8,8 +8,13 @@ import { ID } from "shared/id.ts";
 export class PostgresHospitalizationRepository implements HospitalizationRepository {
 	constructor(private client: Client) {}
 
-	async findAll(): Promise<Hospitalization[]> {
-		const result = await this.client.queryObject<HospModel>("SELECT * FROM hospitalizations");
+	async findByStatus(status: HospitalizationStatus): Promise<Hospitalization[]> {
+		const result = await this.client.queryObject<HospModel>(
+			"SELECT * FROM hospitalizations WHERE status = $STATUS",
+			{
+				status: status,
+			},
+		);
 		return result.rows.map(hospFactory);
 	}
 
@@ -34,7 +39,9 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 		return hospFactory(result.rows[result.rows.length - 1]);
 	}
 
-	async findByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {
+	async findByPatientId(
+		patientId: ID,
+	): Promise<Either<HospitalizationNotFound, Hospitalization>> {
 		const result = await this.client.queryObject<HospModel>(
 			"SELECT * FROM hospitalizations WHERE system_id = $SYSTEM_ID  AND status = $STATUS LIMIT 1",
 			{ system_id: patientId.value, status: HospitalizationStatus.Open },
@@ -73,7 +80,7 @@ function hospFactory(model: HospModel): Hospitalization {
 		hospitalizationId: model.hospitalization_id,
 		entryDate: model.entry_date,
 		dischargeDate: model.discharge_date,
-		weight: model.weight,
+		weight: Number(model.weight),
 		complaints: model.complaints.split(","),
 		diagnostics: model.diagnostics.split(","),
 		status: model.status,

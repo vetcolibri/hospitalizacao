@@ -1,5 +1,5 @@
 import { Either, left, right } from "shared/either.ts";
-import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { Hospitalization, HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
 import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { ID } from "shared/id.ts";
@@ -13,9 +13,8 @@ export class InmemHospitalizationRepository implements HospitalizationRepository
 		hospitalizations.forEach((h) => (this.#data[h.hospitalizationId.value] = h));
 	}
 
-	findAll(): Promise<Hospitalization[]> {
-		const result = this.records.filter((h) => h.isOpen());
-		return Promise.resolve(result);
+	findByStatus(status: HospitalizationStatus): Promise<Hospitalization[]> {
+		return Promise.resolve(this.records.filter((h) => h.status = status));
 	}
 
 	findByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {

@@ -3,7 +3,7 @@ import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospital
 import { HospitalizationService } from "application/hospitalization_service.ts";
 import { HospitalizationRepositoryStub } from "../stubs/hospitalization_repository_stub.ts";
 
-Deno.test("Hospitalization Service - Get all hospitalizations", async (t) => {
+Deno.test("Hospitalization Service - Find all opens hospitalizations", async (t) => {
 	await t.step(
 		"Deve retornar uma lista vazia se não existirem hospitalizações",
 		async () => {
@@ -11,7 +11,7 @@ Deno.test("Hospitalization Service - Get all hospitalizations", async (t) => {
 
 			const service = new HospitalizationService(repo);
 
-			const hospitalizations = await service.findAll();
+			const hospitalizations = await service.findAllOpen();
 
 			assertEquals(hospitalizations.length, 0);
 
@@ -24,7 +24,7 @@ Deno.test("Hospitalization Service - Get all hospitalizations", async (t) => {
 
 		const service = new HospitalizationService(repo);
 
-		const hospitalizations = await service.findAll();
+		const hospitalizations = await service.findAllOpen();
 
 		assert(hospitalizations.length > 1);
 	});

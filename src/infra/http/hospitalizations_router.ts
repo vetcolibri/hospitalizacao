@@ -22,14 +22,14 @@ function toHospitalizationDTO(hospitalization: Hospitalization): Hospitalization
 		complaints: hospitalization.complaints,
 		diagnostics: hospitalization.diagnostics,
 		entryDate: hospitalization.entryDate.toISOString(),
-		dischargeDate: hospitalization.dischargeDate!.toISOString() ?? undefined,
+		dischargeDate: hospitalization.dischargeDate?.toISOString() ?? undefined,
 		status: hospitalization.status,
 	};
 }
 
 export default function (service: HospitalizationService) {
 	const listOpenedHospitalizationHandler = async (ctx: Context) => {
-		const hospitalizations = await service.findAll();
+		const hospitalizations = await service.findAllOpen();
 		sendOk(ctx, hospitalizations.map(toHospitalizationDTO));
 	};
 
