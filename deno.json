@@ -1,10 +1,10 @@
 {
   "imports": {
-    "application/": "./src/application/",
-    "domain/": "./src/domain/",
-    "infra/": "./src/infra/",
-    "persistence/": "./src/persistence/",
-    "shared/": "./src/shared/",
+    "application/": "./application/",
+    "domain/": "./domain/",
+    "infra/": "./infra/",
+    "persistence/": "./persistence/",
+    "shared/": "./shared/",
 
     "deps": "./deps.ts",
     "dev_deps": "./dev_deps.ts"
