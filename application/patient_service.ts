@@ -12,7 +12,6 @@ import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
 import { Patient, PatientStatus } from "domain/patient/patient.ts";
 import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
 import { PatientBuilder } from "domain/patient/patient_builder.ts";
-import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ErrorMessage } from "shared/error_messages.ts";
@@ -82,13 +81,19 @@ export class PatientService {
 		data: HospitalizationData,
 	): Promise<Either<NewHospitalizationError, void>> {
 		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+		if (patientOrErr.isLeft()) {
+			return left(patientOrErr.value);
+		}
 
 		const voidOrErr = this.#verifyHospitalizationData(data);
-		if (voidOrErr.isLeft()) return left(voidOrErr.value);
+		if (voidOrErr.isLeft()) {
+			return left(voidOrErr.value);
+		}
 
 		const patient = patientOrErr.value;
-		if (patient.isHospitalized()) return left(new PatientAlreadyHospitalized(patient.name));
+		if (patient.isHospitalized()) {
+			return left(new PatientAlreadyHospitalized(patient.name));
+		}
 
 		const hospitalizationOrErr = new HospitalizationBuilder()
 			.withPatientId(patient.systemId.value)
@@ -99,11 +104,12 @@ export class PatientService {
 			.withDiagnostics(data.diagnostics)
 			.build();
 
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+		if (hospitalizationOrErr.isLeft()) {
+			return left(hospitalizationOrErr.value);
+		}
 		await this.#hospitalizationRepository.save(hospitalizationOrErr.value);
 
 		patient.hospitalize();
-
 		await this.#patientRepository.update(patient);
 
 		return right(undefined);
@@ -139,7 +145,9 @@ export class PatientService {
 			ID.fromString(patientData.patientId),
 		);
 
-		if (patientOrErr.isRight()) return left(new PatientIdAlreadyExists());
+		if (patientOrErr.isRight() && patientOrErr.value.status === PatientStatus.Hospitalized) {
+			return left(new PatientAlreadyHospitalized(patientOrErr.value.name));
+		}
 
 		if (this.#isInvalidDate(patientData.birthDate)) {
 			return left(new InvalidDate(ErrorMessage.InvalidBirthDate));
@@ -150,17 +158,21 @@ export class PatientService {
 
 		await this.#buildOwner(ownerData);
 
-		patientOrErr = new PatientBuilder()
-			.withPatientId(patientData.patientId)
-			.withName(patientData.name)
-			.withOwnerId(ownerData.ownerId)
-			.withSpecie(patientData.specie)
-			.withBreed(patientData.breed)
-			.withBirthDate(patientData.birthDate)
-			.build();
+		if (patientOrErr.isLeft()) {
+			patientOrErr = new PatientBuilder()
+				.withPatientId(patientData.patientId)
+				.withName(patientData.name)
+				.withOwnerId(ownerData.ownerId)
+				.withSpecie(patientData.specie)
+				.withBreed(patientData.breed)
+				.withBirthDate(patientData.birthDate)
+				.build();
 
-		if (patientOrErr.isLeft()) return left(patientOrErr.value);
-		await this.#patientRepository.save(patientOrErr.value);
+			if (patientOrErr.isLeft()) {
+				return left(patientOrErr.value);
+			}
+			await this.#patientRepository.save(patientOrErr.value);
+		}
 
 		const hospitalizationOrErr = new HospitalizationBuilder()
 			.withPatientId(patientOrErr.value.systemId.value)
@@ -171,7 +183,10 @@ export class PatientService {
 			.withDiagnostics(hospitalizationData.diagnostics)
 			.build();
 
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+		if (hospitalizationOrErr.isLeft()) {
+			return left(hospitalizationOrErr.value);
+		}
+
 		await this.#hospitalizationRepository.save(hospitalizationOrErr.value);
 
 		const hospitalizationId = hospitalizationOrErr.value.hospitalizationId;
@@ -183,8 +198,10 @@ export class PatientService {
 			.build();
 
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
-
 		await this.#budgetRepository.save(budgetOrErr.value);
+
+		patientOrErr.value.hospitalize();
+		await this.#patientRepository.update(patientOrErr.value);
 
 		return right(undefined);
 	}
