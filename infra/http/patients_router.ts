@@ -30,6 +30,7 @@ interface PatientDTO {
 	breed: string;
 	status: string;
 	birthDate: string;
+	age: string;
 	ownerId: string;
 }
 
@@ -41,7 +42,8 @@ function toPatientDTO(patient: Patient): PatientDTO {
 		specie: patient.specie.toString(),
 		breed: patient.breed,
 		status: patient.status.toString(),
-		birthDate: patient.birthDate.age,
+		birthDate: patient.birthDate.toISOString(),
+		age: patient.birthDate.age,
 		ownerId: patient.ownerId.value,
 	};
 }

@@ -45,4 +45,8 @@ export class BirthDate {
 
 		return age;
 	}
+
+	toISOString(): string {
+		return this.value.toISOString().substring(0, 10);
+	}
 }
