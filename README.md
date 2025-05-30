@@ -11,13 +11,13 @@ Backoffice para gestão da hospitalização dos pacientes.
 
 ### Ambiente de produção
 
-- Construção da imagem em Docker
+- Construção da imagem em Docker:
 
 ```bash
-docker build -f ./.build/Dockerfile -t hospitalizacao-api .
+docker build -f ./build/Dockerfile -t hospitalizacao-api .
 ```
 
-- Execução do container
+- Execução do container:
 
 ```bash
 docker run -d -p 3001:8080 -e DATABASE_URL="db-url" hospitalizacao-api
