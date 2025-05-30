@@ -1,0 +1,16 @@
+export enum ErrorMessage {
+	InvalidEntryDate = "Data de entrada não pode ser menor que a data actual.",
+	InvalidDischargeDate = "Data prevista para alta médica não pode ser menor que a data actual.",
+	InvalidComplaintsNumber = "Número de queixas não pode ser maior que 10.",
+	InvalidDiagnosticsNumber = "Número de diagnósticos não pode ser maior que 5.",
+	InvalidHeartRate = "Frequência cardíaca não deve ser maior que 300 BPM.",
+	InvalidRespiratoryRate = "Frequência respiratória não deve ser maior que 100 RPM.",
+	InvalidTrc = "TRC não deve ser maior que 10'.",
+	InvalidAvdn = "AVDN inválida'.",
+	InvalidMucosas = "Mucosas inválidas'.",
+	InvalidTemperature = "Temperatura não deve ser maior que 100 ºC'.",
+	InvalidBloodGlucose = "Glicemia não deve ser maior que 300 mg/dL.",
+	InvalidHct = "HCT não deve ser maior que 100%.",
+	InvalidBloodPressure = "Pressão arterial não deve ser maior que 280/180 mmHg.",
+	InvalidBirthDate = "Data de nascimento não pode ser maior que a data actual.",
+}
