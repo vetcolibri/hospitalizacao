@@ -14,8 +14,8 @@ import { createOwnerCreatedEvent } from "./owner_created_event.ts";
 import { OrangestIdValue } from "@shared/orangest_id_value.ts";
 import { createOwnerUpdatedEvent } from "./owner_updated_event.ts";
 
-const CREATE_OWNER_CAUSE = "PatientsService:createOwner";
-const UPDATE_OWNER_CAUSE = "PatientsService:updateOwner";
+const CREATE_OWNER_CAUSE = "Pets.PetsService:createOwner";
+const UPDATE_OWNER_CAUSE = "Pets.PetsService:updateOwner";
 
 export class PetsService {
 	#ownerRepository: OwnerRepository;

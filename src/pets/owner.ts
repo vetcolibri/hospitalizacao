@@ -36,7 +36,9 @@ export class Owner {
 		this.#phoneNumbers = phoneNumbers;
 
 		if (phoneNumbers.length === 0) {
-			throw new ValidationError("Owner", ["O tutor deve ter pelo menos um número de telefone"]);
+			throw new ValidationError("Pets.Owner:constructor", [
+				"O tutor deve ter pelo menos um número de telefone",
+			]);
 		}
 	}
 
@@ -67,7 +69,7 @@ export class Owner {
 	updatePhoneNumbers(phoneNumbers: PhoneNumberValue[]): Either<ValidationError, void> {
 		if (!phoneNumbers || phoneNumbers.length === 0) {
 			return left(
-				new ValidationError("Owner:updatePhoneNumbers", [
+				new ValidationError("Pets.Owner:updatePhoneNumbers", [
 					"O tutor deve ter pelo menos um número de telefone",
 				]),
 			);

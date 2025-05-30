@@ -88,7 +88,7 @@ export class Pet {
 		}
 	}
 
-	private static Builder = class {
+	static Builder = class {
 		private id: IdValue;
 		private name: string;
 		private birthday: DateValue;
