@@ -22,8 +22,8 @@ type EventHeaderEntry = [string, string];
  * Classe que representa um Event.
  */
 export class Event<T> {
-	headers: Record<EventHeader, string>;
-	payload: T;
+	readonly headers: Record<EventHeader, string>;
+	readonly payload: T;
 
 	constructor(headers: Record<EventHeader, string>, payload: T) {
 		this.headers = headers;
@@ -88,8 +88,7 @@ export class Event<T> {
  */
 export function withPayload<T>(payload: T): EventOption<T> {
 	return (e: Event<T>): Event<T> => {
-		e.payload = payload;
-		return e;
+		return new Event(e.headers, payload);
 	};
 }
 
