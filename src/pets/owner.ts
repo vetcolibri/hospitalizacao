@@ -4,6 +4,9 @@ import { OwnerNameValue } from "./owner_name_value.ts";
 import { PhoneNumberValue } from "@shared/phone_number_value.ts";
 import { ValidationError } from "@shared/validation_error.ts";
 import { Either, left, right } from "@shared/either.ts";
+import { Event, withHeader, withPayload } from "@shared/event.ts";
+import { OWNER_CREATED_EVENT_NAME, OwnerCreatedPayload } from "./owner_created_event.ts";
+import { OWNER_UPDATED_EVENT_NAME, OwnerUpdatedPayload } from "./owner_updated_event.ts";
 
 export class Owner {
 	static create(
@@ -24,6 +27,8 @@ export class Owner {
 	#name: OwnerNameValue;
 	#phoneNumbers: PhoneNumberValue[];
 
+	#uncommitedEvents: Event<OwnerCreatedPayload | OwnerUpdatedPayload>[];
+
 	private constructor(
 		id: IdValue,
 		orangestId: OrangestIdValue,
@@ -40,6 +45,9 @@ export class Owner {
 				"O tutor deve ter pelo menos um número de telefone",
 			]);
 		}
+
+		this.#uncommitedEvents = [];
+		this.#uncommitedEvents.push(this.#createOwnerCreatedEvent(this));
 	}
 
 	get id(): IdValue {
@@ -60,10 +68,23 @@ export class Owner {
 
 	changeName(name: OwnerNameValue): void {
 		this.#name = name;
+
+		const evt = this.#createOwnerUpdatedEvent({
+			id: this.id,
+			name: this.name,
+		});
+		this.#uncommitedEvents.push(evt);
 	}
 
 	changeOrangestId(orangestId: OrangestIdValue): void {
 		this.#orangestId = orangestId;
+
+		const evt = this.#createOwnerUpdatedEvent({
+			id: this.id,
+			orangestId: this.orangestId,
+		});
+
+		this.#uncommitedEvents.push(evt);
 	}
 
 	updatePhoneNumbers(phoneNumbers: PhoneNumberValue[]): Either<ValidationError, void> {
@@ -76,10 +97,60 @@ export class Owner {
 		}
 
 		this.#phoneNumbers = phoneNumbers;
+
+		const evt = this.#createOwnerUpdatedEvent({
+			id: this.id,
+			phoneNumbers: this.phoneNumbers,
+		});
+
+		this.#uncommitedEvents.push(evt);
+
 		return right(undefined);
 	}
 
 	clone(): Owner {
 		return new Owner(this.#id, this.#orangestId, this.#name, this.#phoneNumbers);
+	}
+
+	clearUncommitedEvents(): Event<OwnerCreatedPayload | OwnerUpdatedPayload>[] {
+		const oldEvents = this.#uncommitedEvents;
+		this.#uncommitedEvents = [];
+
+		return oldEvents;
+	}
+
+	#createOwnerCreatedEvent(
+		owner: Owner,
+	) {
+		return Event.create<OwnerCreatedPayload>(
+			OWNER_CREATED_EVENT_NAME,
+			withHeader("AggregateType", "pets.Owner"),
+			withHeader("AggregateId", owner.id.value),
+			withPayload({
+				orangestId: owner.orangestId.value,
+				name: owner.name.value,
+				phoneNumbers: owner.phoneNumbers.map((n) => n.formattedNumber),
+			}),
+		);
+	}
+
+	#createOwnerUpdatedEvent(
+		data: {
+			id: IdValue;
+			name?: OwnerNameValue;
+			orangestId?: OrangestIdValue;
+			phoneNumbers?: PhoneNumberValue[];
+		},
+	): Event<OwnerUpdatedPayload> {
+		return Event.create<OwnerUpdatedPayload>(
+			OWNER_UPDATED_EVENT_NAME,
+			withHeader("AggregateType", "pets.Owner"),
+			withHeader("AggregateId", data.id.value),
+			withPayload({
+				name: data.name?.value,
+				orangestId: data.orangestId?.value,
+				phoneNumbers: data.phoneNumbers?.map((n) => n.formattedNumber),
+			} as OwnerUpdatedPayload),
+		);
 	}
 }

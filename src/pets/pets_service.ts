@@ -10,9 +10,9 @@ import { OwnerRepository } from "./owner_repository.ts";
 import { DuplicatedOwnerIdError } from "./duplicated_owner_id_error.ts";
 import { DuplicatedOrangestIdError } from "./duplicated_orangest_id_error.ts";
 import { EventBus } from "@shared/event_bus.ts";
-import { createOwnerCreatedEvent } from "./owner_created_event.ts";
 import { OrangestIdValue } from "@shared/orangest_id_value.ts";
-import { createOwnerUpdatedEvent } from "./owner_updated_event.ts";
+import { IOError } from "@shared/io_error.ts";
+import { decorate, withHeader } from "@shared/event.ts";
 
 const CREATE_OWNER_CAUSE = "Pets.PetsService:createOwner";
 const UPDATE_OWNER_CAUSE = "Pets.PetsService:updateOwner";
@@ -29,7 +29,7 @@ export class PetsService {
 	async createOwner(
 		ctx: Context,
 		request: CreateOwnerRequest,
-	): Promise<Either<ValidationError[] | ForbiddenError, IdValue>> {
+	): Promise<Either<ValidationError[] | ForbiddenError | IOError, IdValue>> {
 		if (ctx.roles.some((v) => !["RECEPTIONIST"].includes(v))) {
 			return left(new ForbiddenError(CREATE_OWNER_CAUSE));
 		}
@@ -83,10 +83,35 @@ export class PetsService {
 			return left(new DuplicatedOrangestIdError(CREATE_OWNER_CAUSE, ownerOrErr.right.orangestId));
 		}
 
-		await this.#ownerRepository.save(ownerOrErr.value);
-		this.#eventBus.publish(createOwnerCreatedEvent(ctx.principal, ownerOrErr.value));
+		const voidOrErr = await this.#tryIO(
+			() => this.#ownerRepository.save(ownerOrErr.value),
+			CREATE_OWNER_CAUSE,
+			"Erro ao gravar o owner no repositorio",
+		);
 
-		return right(id);
+		if (voidOrErr.isLeft()) {
+			return left([voidOrErr.value]);
+		}
+
+		const events = ownerOrErr.value.clearUncommitedEvents()
+			.map((evt) => decorate(evt, withHeader("Principal", ctx.principal)));
+
+		this.#eventBus.publishAll(...events);
+
+		return right(ownerOrErr.value.id);
+	}
+
+	async #tryIO(
+		task: () => Promise<void>,
+		cause: string,
+		msg: string,
+	): Promise<Either<IOError, void>> {
+		try {
+			await task();
+			return right(undefined);
+		} catch (error) {
+			return left(new IOError(cause, msg, error as Error));
+		}
 	}
 
 	async updateOwner(
@@ -174,14 +199,20 @@ export class PetsService {
 			return left(errs);
 		}
 
-		await this.#ownerRepository.save(owner);
+		const saveOrErr = await this.#tryIO(
+			() => this.#ownerRepository.save(owner),
+			UPDATE_OWNER_CAUSE,
+			"Erro ao gravar as alterações do owner no repositorio",
+		);
 
-		this.#eventBus.publish(createOwnerUpdatedEvent(ctx.principal, {
-			id: owner.id,
-			name: request.name ? owner.name : undefined,
-			orangestId: request.orangestId ? owner.orangestId : undefined,
-			phoneNumbers: request.phoneNumbers ? owner.phoneNumbers : undefined,
-		}));
+		if (saveOrErr.isLeft()) {
+			return left([saveOrErr.value]);
+		}
+
+		const events = owner.clearUncommitedEvents()
+			.map((evt) => decorate(evt, withHeader("Principal", ctx.principal)));
+
+		this.#eventBus.publishAll(...events);
 
 		return right(undefined);
 	}

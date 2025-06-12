@@ -13,17 +13,22 @@ import { IdValue } from "@shared/id_value.ts";
 import { Owner } from "./owner.ts";
 import { PetsService } from "./pets_service.ts";
 import { OWNER_UPDATED_EVENT_NAME } from "./owner_updated_event.ts";
+import { Event } from "@shared/event.ts";
 
 Deno.test("PetsService.createOwner", async (t) => {
 	await t.step("Deve criar um owner com sucesso se todos os dados forem válidos", async () => {
 		let eventPublished = false;
+		const publish = <T>(evt: Event<T>) => {
+			if (evt.header("EventName") === "OwnerCreatedEvent") {
+				eventPublished = true;
+			}
+		};
+
 		const eventBus: EventBus = {
-			publish: (evt) => {
-				if (evt.header("EventName") === "OwnerCreatedEvent") {
-					eventPublished = true;
-				}
+			publish,
+			publishAll: (...evts: Event<unknown>[]) => {
+				evts.forEach((e) => publish(e));
 			},
-			publishAll: async () => {},
 			subscribe: function <T>(_: string, _h: EventHandler<T>): void {},
 		};
 
@@ -132,13 +137,18 @@ function setupService(
 Deno.test("PetsService.updateOwner", async (t) => {
 	await t.step("Deve atualizar um owner com sucesso se todos os dados forem válidos", async () => {
 		let eventPublished = false;
+
+		const publish = <T>(evt: Event<T>) => {
+			if (evt.header("EventName") == OWNER_UPDATED_EVENT_NAME) {
+				eventPublished = true;
+			}
+		};
+
 		const eventBus: EventBus = {
-			publish: (evt) => {
-				if (evt.header("EventName") == OWNER_UPDATED_EVENT_NAME) {
-					eventPublished = true;
-				}
+			publish,
+			publishAll: (...evts: Event<unknown>[]) => {
+				evts.forEach((e) => publish(e));
 			},
-			publishAll: async () => {},
 			subscribe: function <T>(_: string, _h: EventHandler<T>): void {},
 		};
 
