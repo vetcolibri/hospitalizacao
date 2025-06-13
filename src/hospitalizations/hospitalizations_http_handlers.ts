@@ -228,58 +228,56 @@ export function dischargeHospitalizationHttpHandler(service: HospitalizationsSer
 	};
 }
 
-export function createPeriodicReportHttpHandler(service: HospitalizationsService): HttpHandler {
-	return async (req: Request): Promise<Response> => {
+export function createPeriodicReportHttpHandler(service: HospitalizationsService) {
+	return async (ctx: Context) => {
 		try {
-			const body = await req.json();
-			const ctx = await getRequestContext(req);
+			const body = await ctx.request.body.json();
+			const requestContext = await getRequestContext(ctx.request);
+			const hospitalizationId = ctx.params?.id;
 
-			// Validate required fields
-			if (!body.hospitalizationId || !body.timestamp) {
-				return new Response(
-					JSON.stringify({
-						error: "ID da hospitalização e timestamp são obrigatórios"
-					}),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				);
+			if (!hospitalizationId) {
+				ctx.response.status = 400;
+				ctx.response.body = {
+					error: "ID da hospitalização é obrigatório"
+				};
+				return;
 			}
 
-			const voidOrErr = await service.createPeriodicReport(ctx, {
-				hospitalizationId: body.hospitalizationId,
+			// Validate required fields
+			if (!body.timestamp) {
+				ctx.response.status = 400;
+				ctx.response.body = {
+					error: "Timestamp é obrigatório"
+				};
+				return;
+			}
+
+			const voidOrErr = await service.createPeriodicReport(requestContext, {
+				hospitalizationId: hospitalizationId,
 				timestamp: body.timestamp,
 				consciousnessStates: body.consciousnessStates as ConsciousnessStateEnum,
-				annotations: body.annotations,
+				annotations: body.annotations || "",
 				feedingRecord: body.feedingRecord,
 				physicalDischarges: body.physicalDischarges,
 			});
 
 			if (voidOrErr.isLeft()) {
-				return processApplicationErrors(voidOrErr.value);
+				const errorResponse = processApplicationErrors(voidOrErr.value);
+				ctx.response.status = errorResponse.status;
+				ctx.response.body = await errorResponse.json();
+				return;
 			}
 
-			return new Response(
-				JSON.stringify({
-					success: true,
-					message: "Relatório periódico criado com sucesso"
-				}),
-				{
-					status: 201,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			);
+			ctx.response.status = 201;
+			ctx.response.body = {
+				success: true,
+				message: "Relatório periódico criado com sucesso"
+			};
 		} catch (error) {
-			return new Response(
-				JSON.stringify({
-					error: "Invalid JSON payload"
-				}),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			);
+			ctx.response.status = 400;
+			ctx.response.body = {
+				error: "Invalid JSON payload"
+			};
 		}
 	};
 }

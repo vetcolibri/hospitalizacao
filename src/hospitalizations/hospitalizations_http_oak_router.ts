@@ -27,8 +27,11 @@ export function createHttpOakHospitalizationsRouter(service: HospitalizationsSer
 		dischargeHospitalizationHttpHandler(service),
 	);
 
-	// Periodic report routes
-	router.post("/periodic-reports", adaptOakRequest(createPeriodicReportHttpHandler(service)));
+	// Periodic report routes (nested under hospitalizations)
+	router.post(
+		"/hospitalizations/:id/periodic-reports",
+		createPeriodicReportHttpHandler(service),
+	);
 
 	return router;
 }

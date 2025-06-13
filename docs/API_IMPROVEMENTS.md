@@ -9,6 +9,7 @@ This document outlines the comprehensive improvements made to the REST API imple
 ### 1. **HTTP Handlers Improvements**
 
 #### Before:
+
 - Basic error handling with generic responses
 - No input validation
 - Inconsistent response formats
@@ -16,6 +17,7 @@ This document outlines the comprehensive improvements made to the REST API imple
 - Missing imports for TypeScript types
 
 #### After:
+
 - **Comprehensive Input Validation**: All endpoints now validate required fields before processing
 - **Standardized Response Format**: Consistent JSON structure with `success`, `data`, `message`, and `error` fields
 - **Proper Error Handling**: Try-catch blocks with detailed error messages
@@ -23,6 +25,7 @@ This document outlines the comprehensive improvements made to the REST API imple
 - **Status Code Consistency**: Appropriate HTTP status codes (400 for validation, 201 for creation, etc.)
 
 #### Example Response Format:
+
 ```json
 // Success Response
 {
@@ -42,12 +45,14 @@ This document outlines the comprehensive improvements made to the REST API imple
 ### 2. **Enhanced Error Processing**
 
 #### Implemented:
+
 - **Typed Error Handling**: Support for `ValidationError`, `ForbiddenError`, `IOError`
 - **Detailed Error Messages**: Specific error details instead of generic messages
 - **Proper HTTP Status Codes**: 400 (Bad Request), 403 (Forbidden), 500 (Internal Server Error)
 - **Error Response Structure**: Consistent error format across all endpoints
 
 #### Error Types Handled:
+
 ```typescript
 - ValidationError → 400 Bad Request
 - ForbiddenError → 403 Forbidden
@@ -58,12 +63,14 @@ This document outlines the comprehensive improvements made to the REST API imple
 ### 3. **Security Enhancements**
 
 #### CORS Configuration:
+
 - **Permissive CORS**: Allow all origins for development (configurable for production)
 - **Method Support**: GET, POST, PUT, DELETE, OPTIONS
 - **Header Support**: Content-Type, Authorization, X-Requested-With
 - **Preflight Handling**: Proper OPTIONS request handling
 
 #### Security Headers:
+
 ```
 X-Content-Type-Options: nosniff
 X-Frame-Options: DENY
@@ -76,6 +83,7 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains
 ### 4. **Middleware Implementation**
 
 #### New Middleware Functions:
+
 1. **CORS Middleware**: Handles cross-origin requests
 2. **Security Headers Middleware**: Adds security headers to all responses
 3. **Request Logging Middleware**: Logs all requests with timing and request IDs
@@ -85,6 +93,7 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains
 7. **JSON Validation Middleware**: Pre-validates JSON payloads
 
 #### Health Check Endpoint:
+
 ```json
 GET /health
 {
@@ -100,26 +109,30 @@ GET /health
 ### 5. **Context Management**
 
 #### Improved Authentication Context:
+
 - **Header Extraction**: Reads Authorization header
 - **Role Assignment**: Temporary admin role assignment for development
 - **TODO Implementation**: Placeholder for proper JWT/token validation
 
 #### Context Structure:
+
 ```typescript
 interface Context {
-  principal: string;    // User identifier
-  roles: UserRole[];   // User permissions
+  principal: string; // User identifier
+  roles: UserRole[]; // User permissions
 }
 ```
 
 ### 6. **Request/Response Handling**
 
 #### Input Validation:
+
 - **Required Field Validation**: Checks for missing required fields
 - **Type Validation**: Ensures arrays are arrays, objects are objects
 - **Business Logic Validation**: Validates business rules (non-empty arrays, etc.)
 
 #### Response Utilities:
+
 - **Standard Response Creator**: `createStandardResponse(data, status, message)`
 - **Error Response Creator**: `createErrorResponse(error, status, details)`
 - **Consistent JSON Headers**: All responses include proper content-type
@@ -127,11 +140,13 @@ interface Context {
 ### 7. **Router Improvements**
 
 #### Enhanced Routing:
+
 - **Path Parameters**: Proper use of Oak's built-in parameter extraction
 - **Mixed Handler Types**: Support for both standard and Oak-specific handlers
 - **Route Organization**: Clear separation between different resource types
 
 #### Route Structure:
+
 ```
 POST   /owners              - Create owner
 PUT    /owners/:id          - Update owner
@@ -139,13 +154,14 @@ POST   /hospitalizations    - Create hospitalization
 PUT    /hospitalizations/:id/contact-person - Update contact person
 PUT    /hospitalizations/:id/diagnosis      - Update diagnosis
 POST   /hospitalizations/:id/discharge      - Discharge patient
-POST   /periodic-reports    - Create periodic report
+POST   /hospitalizations/:id/periodic-reports - Create periodic report
 GET    /health             - Health check
 ```
 
 ## 🚀 **Best Practices Implemented**
 
 ### 1. **API Design**
+
 - ✅ RESTful endpoint design
 - ✅ Consistent HTTP method usage
 - ✅ Proper status code implementation
@@ -153,6 +169,7 @@ GET    /health             - Health check
 - ✅ Input validation at API layer
 
 ### 2. **Security**
+
 - ✅ CORS configuration
 - ✅ Security headers implementation
 - ✅ Request size limits
@@ -160,6 +177,7 @@ GET    /health             - Health check
 - ✅ Input sanitization
 
 ### 3. **Error Handling**
+
 - ✅ Centralized error processing
 - ✅ Detailed error messages
 - ✅ Proper HTTP status codes
@@ -167,6 +185,7 @@ GET    /health             - Health check
 - ✅ Graceful error recovery
 
 ### 4. **Monitoring & Observability**
+
 - ✅ Request logging with correlation IDs
 - ✅ Performance timing
 - ✅ Health check endpoints
@@ -174,6 +193,7 @@ GET    /health             - Health check
 - ✅ Error tracking
 
 ### 5. **Development Experience**
+
 - ✅ TypeScript type safety
 - ✅ Consistent code structure
 - ✅ Clear separation of concerns
@@ -185,6 +205,7 @@ GET    /health             - Health check
 ### Owners API
 
 #### Create Owner
+
 ```http
 POST /owners
 Content-Type: application/json
@@ -203,6 +224,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -211,6 +233,7 @@ Content-Type: application/json
 ```
 
 #### Update Owner
+
 ```http
 PUT /owners/:id
 Content-Type: application/json
@@ -230,6 +253,7 @@ Content-Type: application/json
 ### Hospitalizations API
 
 #### Create Hospitalization
+
 ```http
 POST /hospitalizations
 Content-Type: application/json
@@ -252,6 +276,7 @@ Content-Type: application/json
 ```
 
 #### Update Contact Person
+
 ```http
 PUT /hospitalizations/:id/contact-person
 Content-Type: application/json
@@ -265,6 +290,7 @@ Content-Type: application/json
 ```
 
 #### Update Diagnosis
+
 ```http
 PUT /hospitalizations/:id/diagnosis
 Content-Type: application/json
@@ -275,6 +301,7 @@ Content-Type: application/json
 ```
 
 #### Discharge Hospitalization
+
 ```http
 POST /hospitalizations/:id/discharge
 Content-Type: application/json
@@ -288,12 +315,12 @@ Content-Type: application/json
 ### Periodic Reports API
 
 #### Create Periodic Report
+
 ```http
-POST /periodic-reports
+POST /hospitalizations/:id/periodic-reports
 Content-Type: application/json
 
 {
-  "hospitalizationId": "hospitalization-uuid",
   "timestamp": "2024-01-16T10:00:00Z",
   "consciousnessStates": "ALERT",
   "annotations": "Patient showing improvement",
@@ -305,11 +332,13 @@ Content-Type: application/json
 ### Health Check API
 
 #### Health Check
+
 ```http
 GET /health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -324,42 +353,51 @@ GET /health
 ## 🔧 **Configuration Options**
 
 ### Rate Limiting
+
 - **Default**: 100 requests per minute per IP
 - **Configurable**: Can be adjusted per endpoint or globally
 
 ### Request Size Limits
+
 - **Default**: 1MB maximum payload size
 - **Configurable**: Can be adjusted based on endpoint requirements
 
 ### CORS Settings
-- **Development**: Allow all origins (*)
+
+- **Development**: Allow all origins (\*)
 - **Production**: Should be configured for specific domains
 
 ### Security Headers
+
 - **Enabled by default**: All security headers are applied
 - **Configurable**: Can be customized per environment
 
 ## 🚧 **TODO / Future Improvements**
 
 1. **Authentication & Authorization**
+
    - Implement JWT token validation
    - Role-based access control
    - Session management
 
 2. **Database Integration**
+
    - Actual database health checks
    - Connection pooling monitoring
 
 3. **API Documentation**
+
    - OpenAPI/Swagger specification
    - Interactive API documentation
 
 4. **Testing**
+
    - HTTP handler unit tests
    - Integration tests for endpoints
    - Load testing
 
 5. **Monitoring**
+
    - Metrics collection (Prometheus)
    - Distributed tracing
    - Application performance monitoring
@@ -386,4 +424,4 @@ GET /health
 
 ---
 
-*This document reflects the current state of API improvements. It should be updated as new features and enhancements are added.*
+_This document reflects the current state of API improvements. It should be updated as new features and enhancements are added._
