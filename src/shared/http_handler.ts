@@ -21,115 +21,115 @@ export const getRequestContext = async (req: Request): Promise<Context> => {
 };
 
 export const processApplicationErrors = (errs: Error | Error[]): Response => {
-	const headers = { 'Content-Type': 'application/json' };
+	const headers = { "Content-Type": "application/json" };
 
 	if (errs instanceof ValidationError) {
 		return new Response(
 			JSON.stringify({
-				error: 'Validation Error',
+				error: "Validation Error",
 				details: errs.message,
-				fields: errs.errors || []
+				fields: errs.errors || [],
 			}),
 			{
 				status: 400,
-				headers
-			}
+				headers,
+			},
 		);
 	}
 
 	if (Array.isArray(errs) && errs.length > 0 && errs[0] instanceof ValidationError) {
 		return new Response(
 			JSON.stringify({
-				error: 'Validation Errors',
-				details: errs.map(err => ({
-					field: err.field || 'unknown',
+				error: "Validation Errors",
+				details: errs.map((err) => ({
+					field: err.field || "unknown",
 					message: err.message,
-					errors: err.errors || []
-				}))
+					errors: err.errors || [],
+				})),
 			}),
 			{
 				status: 400,
-				headers
-			}
+				headers,
+			},
 		);
 	}
 
 	if (errs instanceof ForbiddenError) {
 		return new Response(
 			JSON.stringify({
-				error: 'Forbidden',
-				message: errs.message || 'Access denied'
+				error: "Forbidden",
+				message: errs.message || "Access denied",
 			}),
 			{
 				status: 403,
-				headers
-			}
+				headers,
+			},
 		);
 	}
 
 	if (errs instanceof IOError) {
 		return new Response(
 			JSON.stringify({
-				error: 'Internal Server Error',
-				message: 'A database or I/O error occurred'
+				error: "Internal Server Error",
+				message: "A database or I/O error occurred",
 			}),
 			{
 				status: 500,
-				headers
-			}
+				headers,
+			},
 		);
 	}
 
 	// Handle generic errors
-	const errorMessage = errs instanceof Error ? errs.message : 'Unknown error occurred';
+	const errorMessage = errs instanceof Error ? errs.message : "Unknown error occurred";
 	return new Response(
 		JSON.stringify({
-			error: 'Internal Server Error',
-			message: errorMessage
+			error: "Internal Server Error",
+			message: errorMessage,
 		}),
 		{
 			status: 500,
-			headers
-		}
+			headers,
+		},
 	);
 };
 
 export const createStandardResponse = (
 	data: any,
 	status: number = 200,
-	message?: string
+	message?: string,
 ): Response => {
 	const body = {
 		success: status < 400,
 		...(message && { message }),
-		...(data && { data })
+		...(data && { data }),
 	};
 
 	return new Response(
 		JSON.stringify(body),
 		{
 			status,
-			headers: { 'Content-Type': 'application/json' }
-		}
+			headers: { "Content-Type": "application/json" },
+		},
 	);
 };
 
 export const createErrorResponse = (
 	error: string,
 	status: number = 400,
-	details?: any
+	details?: any,
 ): Response => {
 	const body = {
 		success: false,
 		error,
-		...(details && { details })
+		...(details && { details }),
 	};
 
 	return new Response(
 		JSON.stringify(body),
 		{
 			status,
-			headers: { 'Content-Type': 'application/json' }
-		}
+			headers: { "Content-Type": "application/json" },
+		},
 	);
 };

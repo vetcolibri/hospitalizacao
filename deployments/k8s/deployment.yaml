@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: hospitalizacao
-          image: <IMAGE> 
+          image: <IMAGE>
           ports:
             - name: http
               containerPort: 8000

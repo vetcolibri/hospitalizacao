@@ -75,7 +75,11 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 
 			const result = await service.createHospitalization(context, request);
 
-			assertEquals(result.isRight(), true, `Expected right, got left: ${JSON.stringify(result.value)}`);
+			assertEquals(
+				result.isRight(),
+				true,
+				`Expected right, got left: ${JSON.stringify(result.value)}`,
+			);
 			assertEquals(eventPublished, true, "HospitalizationCreatedEvent não foi publicado.");
 
 			const hospitalizationOrErr = await hospitalizationRepository.findById(result.right!);
@@ -506,20 +510,24 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 			id: hospitalizationId.value,
 			dischargeDate: "2024-01-02",
 			stateAtDischarge: StateAtDischargeEnum.CURED,
-				};
+		};
 
-				const result = await service.dischargeHospitalization(context, dischargeRequest);
+		const result = await service.dischargeHospitalization(context, dischargeRequest);
 
-				assertEquals(result.isRight(), true, `Expected right, got left: ${JSON.stringify(result.value)}`);
-				assertEquals(eventPublished, true, "PatientDischargedEvent não foi publicado.");
+		assertEquals(
+			result.isRight(),
+			true,
+			`Expected right, got left: ${JSON.stringify(result.value)}`,
+		);
+		assertEquals(eventPublished, true, "PatientDischargedEvent não foi publicado.");
 
-				const dischargedHospitalizationOrErr = await hospitalizationRepository.findById(
-					hospitalizationId,
-				);
-				assertEquals(dischargedHospitalizationOrErr.isRight(), true);
-				const dischargedHospitalization = dischargedHospitalizationOrErr.right!;
-				assertEquals(dischargedHospitalization.isActive, false);
-				assertEquals(dischargedHospitalization.state, HospitalizationStateEnum.CLOSED);
+		const dischargedHospitalizationOrErr = await hospitalizationRepository.findById(
+			hospitalizationId,
+		);
+		assertEquals(dischargedHospitalizationOrErr.isRight(), true);
+		const dischargedHospitalization = dischargedHospitalizationOrErr.right!;
+		assertEquals(dischargedHospitalization.isActive, false);
+		assertEquals(dischargedHospitalization.state, HospitalizationStateEnum.CLOSED);
 		assertEquals(
 			dischargedHospitalization.stateAtDischarge,
 			dischargeRequest.stateAtDischarge,
@@ -629,7 +637,11 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 
 		const result = await service.createPeriodicReport(context, reportRequest);
 
-		assertEquals(result.isRight(), true, `Expected right, got left: ${JSON.stringify(result.value)}`);
+		assertEquals(
+			result.isRight(),
+			true,
+			`Expected right, got left: ${JSON.stringify(result.value)}`,
+		);
 
 		const updatedHospitalizationOrErr = await hospitalizationRepository.findById(hospitalizationId);
 		assertEquals(updatedHospitalizationOrErr.isRight(), true);
@@ -699,74 +711,83 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 		},
 	);
 
-	await t.step("Deve criar um relatório simples sem alimentação nem descargas e publicar evento", async () => {
-		let eventPublished = false;
-		let publishedEventPayload: PeriodicReportReleasedPayload | null = null;
-		const eventBus: EventBus = {
-			publish: <T>(evt: Event<T>) => {
-				if (evt.header("EventName") === PERIODIC_REPORT_RELEASED_EVENT_NAME) {
-					eventPublished = true;
-					publishedEventPayload = evt.payload as unknown as PeriodicReportReleasedPayload;
-				}
-			},
-			publishAll: (...evts: Event<unknown>[]) => evts.forEach((e) => eventBus.publish(e)),
-			subscribe: () => {},
-		};
-		const { service, hospitalizationRepository, context } = setupService({ eventBus });
+	await t.step(
+		"Deve criar um relatório simples sem alimentação nem descargas e publicar evento",
+		async () => {
+			let eventPublished = false;
+			let publishedEventPayload: PeriodicReportReleasedPayload | null = null;
+			const eventBus: EventBus = {
+				publish: <T>(evt: Event<T>) => {
+					if (evt.header("EventName") === PERIODIC_REPORT_RELEASED_EVENT_NAME) {
+						eventPublished = true;
+						publishedEventPayload = evt.payload as unknown as PeriodicReportReleasedPayload;
+					}
+				},
+				publishAll: (...evts: Event<unknown>[]) => evts.forEach((e) => eventBus.publish(e)),
+				subscribe: () => {},
+			};
+			const { service, hospitalizationRepository, context } = setupService({ eventBus });
 
-		// Criar pessoa de contacto e hospitalização
-		const whatsAppNumber = PhoneNumberValue.create("912345678", true, "351").right;
-		const contactPerson = ContactPersonValue.create(
-			"Paulo Mendes",
-			whatsAppNumber,
-		).right;
+			// Criar pessoa de contacto e hospitalização
+			const whatsAppNumber = PhoneNumberValue.create("912345678", true, "351").right;
+			const contactPerson = ContactPersonValue.create(
+				"Paulo Mendes",
+				whatsAppNumber,
+			).right;
 
-		const hospitalizationId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
-			.withId(hospitalizationId)
-			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
-			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.KENNEL_COUGH])
-			.withComplaints([ComplaintEnum.COUGHING])
-			.withPetId(IdValue.random())
-			.withPetName("Rex")
-			.withPetAge("5 anos")
-			.withPetWeight(25.0)
-			.withOwnerId(IdValue.random())
-			.withOwnerName("Sofia Martins")
-			.withContactPerson(contactPerson)
-			.build();
-		await hospitalizationRepository.save(hospitalization);
+			const hospitalizationId = IdValue.random();
+			const hospitalization = new Hospitalization.Builder()
+				.withId(hospitalizationId)
+				.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
+				.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
+				.withInitialDiagnosis([DiagnosisEnum.KENNEL_COUGH])
+				.withComplaints([ComplaintEnum.COUGHING])
+				.withPetId(IdValue.random())
+				.withPetName("Rex")
+				.withPetAge("5 anos")
+				.withPetWeight(25.0)
+				.withOwnerId(IdValue.random())
+				.withOwnerName("Sofia Martins")
+				.withContactPerson(contactPerson)
+				.build();
+			await hospitalizationRepository.save(hospitalization);
 
-		const reportRequest = {
-			hospitalizationId: hospitalizationId.value,
-			timestamp: "2024-01-01",
-			consciousnessStates: ConsciousnessStateEnum.ASLEEP,
-			annotations: "Pet a dormir pacificamente.",
-		};
+			const reportRequest = {
+				hospitalizationId: hospitalizationId.value,
+				timestamp: "2024-01-01",
+				consciousnessStates: ConsciousnessStateEnum.ASLEEP,
+				annotations: "Pet a dormir pacificamente.",
+			};
 
-		const result = await service.createPeriodicReport(context, reportRequest);
+			const result = await service.createPeriodicReport(context, reportRequest);
 
-		assertEquals(result.isRight(), true, `Expected right, got left: ${JSON.stringify(result.value)}`);
+			assertEquals(
+				result.isRight(),
+				true,
+				`Expected right, got left: ${JSON.stringify(result.value)}`,
+			);
 
-		const updatedHospitalizationOrErr = await hospitalizationRepository.findById(hospitalizationId);
-		assertEquals(updatedHospitalizationOrErr.isRight(), true);
-		const updatedHospitalization = updatedHospitalizationOrErr.right!;
-		assertEquals(updatedHospitalization.periodicReports.length, 1);
+			const updatedHospitalizationOrErr = await hospitalizationRepository.findById(
+				hospitalizationId,
+			);
+			assertEquals(updatedHospitalizationOrErr.isRight(), true);
+			const updatedHospitalization = updatedHospitalizationOrErr.right!;
+			assertEquals(updatedHospitalization.periodicReports.length, 1);
 
-		const report: PeriodicReport = updatedHospitalization.periodicReports[0];
-		assertEquals(report.consciousnessStates, ConsciousnessStateEnum.ASLEEP);
-		assertEquals(report.annotations, "Pet a dormir pacificamente.");
+			const report: PeriodicReport = updatedHospitalization.periodicReports[0];
+			assertEquals(report.consciousnessStates, ConsciousnessStateEnum.ASLEEP);
+			assertEquals(report.annotations, "Pet a dormir pacificamente.");
 
-		assertEquals(eventPublished, true, "PeriodicReportReleasedEvent não foi publicado.");
-		assert(publishedEventPayload !== null, "Payload do evento não deveria ser nulo.");
-		const payload = publishedEventPayload as PeriodicReportReleasedPayload;
-		assertEquals(payload.hospitalizationId, hospitalizationId.value);
-		assertEquals(payload.reportId, report.id.value);
-		assertEquals(payload.timestamp, reportRequest.timestamp);
-		assertEquals(payload.consciousnessState, reportRequest.consciousnessStates);
-		assertEquals(payload.annotations, reportRequest.annotations);
-	});
+			assertEquals(eventPublished, true, "PeriodicReportReleasedEvent não foi publicado.");
+			assert(publishedEventPayload !== null, "Payload do evento não deveria ser nulo.");
+			const payload = publishedEventPayload as PeriodicReportReleasedPayload;
+			assertEquals(payload.hospitalizationId, hospitalizationId.value);
+			assertEquals(payload.reportId, report.id.value);
+			assertEquals(payload.timestamp, reportRequest.timestamp);
+			assertEquals(payload.consciousnessState, reportRequest.consciousnessStates);
+			assertEquals(payload.annotations, reportRequest.annotations);
+		},
+	);
 
 	await t.step("Deve ordenar relatórios por data descendente", async () => {
 		const { service, hospitalizationRepository, context } = setupService();

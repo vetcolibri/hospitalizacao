@@ -27,7 +27,10 @@ export function healthCheckHandler() {
 			const memoryUsageMB = memoryUsage.rss / 1024 / 1024;
 
 			if (memoryUsageMB > 512) { // 512MB threshold
-				checks.memory = { status: "error", message: `High memory usage: ${memoryUsageMB.toFixed(2)}MB` };
+				checks.memory = {
+					status: "error",
+					message: `High memory usage: ${memoryUsageMB.toFixed(2)}MB`,
+				};
 				overallStatus = "unhealthy";
 			} else {
 				checks.memory = { status: "ok", message: `Memory usage: ${memoryUsageMB.toFixed(2)}MB` };
@@ -54,7 +57,10 @@ export function corsMiddleware() {
 		// Set CORS headers
 		ctx.response.headers.set("Access-Control-Allow-Origin", "*");
 		ctx.response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-		ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+		ctx.response.headers.set(
+			"Access-Control-Allow-Headers",
+			"Content-Type, Authorization, X-Requested-With",
+		);
 		ctx.response.headers.set("Access-Control-Max-Age", "86400");
 
 		// Handle preflight requests
@@ -74,7 +80,10 @@ export function securityHeadersMiddleware() {
 		ctx.response.headers.set("X-Frame-Options", "DENY");
 		ctx.response.headers.set("X-XSS-Protection", "1; mode=block");
 		ctx.response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-		ctx.response.headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
+		ctx.response.headers.set(
+			"Content-Security-Policy",
+			"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+		);
 		ctx.response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
 
 		await next();
@@ -97,7 +106,9 @@ export function requestLoggingMiddleware() {
 			throw error;
 		} finally {
 			const duration = Date.now() - start;
-			console.log(`[${requestId}] ${ctx.request.method} ${ctx.request.url.pathname} - ${ctx.response.status} (${duration}ms)`);
+			console.log(
+				`[${requestId}] ${ctx.request.method} ${ctx.request.url.pathname} - ${ctx.response.status} (${duration}ms)`,
+			);
 		}
 	};
 }
@@ -115,28 +126,28 @@ export function errorHandlingMiddleware() {
 					success: false,
 					error: "Validation Error",
 					details: error.message,
-					fields: error.errors || []
+					fields: error.errors || [],
 				};
 			} else if (error.name === "ForbiddenError") {
 				ctx.response.status = 403;
 				ctx.response.body = {
 					success: false,
 					error: "Forbidden",
-					message: error.message || "Access denied"
+					message: error.message || "Access denied",
 				};
 			} else if (error.name === "IOError") {
 				ctx.response.status = 500;
 				ctx.response.body = {
 					success: false,
 					error: "Internal Server Error",
-					message: "A database or I/O error occurred"
+					message: "A database or I/O error occurred",
 				};
 			} else {
 				ctx.response.status = 500;
 				ctx.response.body = {
 					success: false,
 					error: "Internal Server Error",
-					message: "An unexpected error occurred"
+					message: "An unexpected error occurred",
 				};
 			}
 
@@ -155,7 +166,7 @@ export function requestSizeLimitMiddleware(maxSizeBytes: number = 1024 * 1024) {
 			ctx.response.body = {
 				success: false,
 				error: "Payload Too Large",
-				message: `Request size exceeds maximum allowed size of ${maxSizeBytes} bytes`
+				message: `Request size exceeds maximum allowed size of ${maxSizeBytes} bytes`,
 			};
 			return;
 		}
@@ -186,7 +197,7 @@ export function rateLimitMiddleware(requestsPerMinute: number = 100) {
 				ctx.response.body = {
 					success: false,
 					error: "Too Many Requests",
-					message: `Rate limit exceeded. Maximum ${requestsPerMinute} requests per minute allowed.`
+					message: `Rate limit exceeded. Maximum ${requestsPerMinute} requests per minute allowed.`,
 				};
 				return;
 			}
@@ -207,10 +218,11 @@ export function rateLimitMiddleware(requestsPerMinute: number = 100) {
 
 export function validateJsonMiddleware() {
 	return async (ctx: Context, next: () => Promise<unknown>) => {
-		if (ctx.request.hasBody &&
+		if (
+			ctx.request.hasBody &&
 			(ctx.request.method === "POST" || ctx.request.method === "PUT") &&
-			ctx.request.headers.get("content-type")?.includes("application/json")) {
-
+			ctx.request.headers.get("content-type")?.includes("application/json")
+		) {
 			try {
 				// Pre-validate JSON format
 				const body = await ctx.request.body.text();
@@ -219,7 +231,7 @@ export function validateJsonMiddleware() {
 				// Re-create the body for the next middleware
 				ctx.request.body = () => ({
 					json: async () => JSON.parse(body),
-					text: async () => body
+					text: async () => body,
 				});
 			} catch (error) {
 				ctx.response.status = 400;
@@ -227,7 +239,7 @@ export function validateJsonMiddleware() {
 				ctx.response.body = {
 					success: false,
 					error: "Invalid JSON",
-					message: "Request body contains invalid JSON"
+					message: "Request body contains invalid JSON",
 				};
 				return;
 			}
@@ -244,7 +256,7 @@ export function notFoundMiddleware() {
 		ctx.response.body = {
 			success: false,
 			error: "Not Found",
-			message: `Route ${ctx.request.method} ${ctx.request.url.pathname} not found`
+			message: `Route ${ctx.request.method} ${ctx.request.url.pathname} not found`,
 		};
 	};
 }

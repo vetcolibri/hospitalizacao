@@ -1,5 +1,9 @@
 import { getRequestContext, HttpHandler, processApplicationErrors } from "@shared/http_handler.ts";
-import { HospitalizationsService, UpdateContactPersonRequest, UpdateDiagnosisRequest } from "./hospitalization_service.ts";
+import {
+	HospitalizationsService,
+	UpdateContactPersonRequest,
+	UpdateDiagnosisRequest,
+} from "./hospitalization_service.ts";
 import { ConsciousnessStateEnum } from "./consciousness_state_enum.ts";
 import { Context } from "@deps/oak";
 
@@ -10,19 +14,19 @@ export function createHospitalizationHttpHandler(service: HospitalizationsServic
 			const ctx = await getRequestContext(req);
 
 			// Validate required fields
-			const requiredFields = ['admissionDate', 'estimatedDischargeDate', 'petId', 'ownerId'];
-			const missingFields = requiredFields.filter(field => !body[field]);
+			const requiredFields = ["admissionDate", "estimatedDischargeDate", "petId", "ownerId"];
+			const missingFields = requiredFields.filter((field) => !body[field]);
 
 			if (missingFields.length > 0) {
 				return new Response(
 					JSON.stringify({
-						error: 'Missing required fields',
-						missingFields
+						error: "Missing required fields",
+						missingFields,
 					}),
 					{
 						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
+						headers: { "Content-Type": "application/json" },
+					},
 				);
 			}
 
@@ -49,22 +53,22 @@ export function createHospitalizationHttpHandler(service: HospitalizationsServic
 			return new Response(
 				JSON.stringify({
 					success: true,
-					data: { id: idOrErr.right.value }
+					data: { id: idOrErr.right.value },
 				}),
 				{
 					status: 201,
-					headers: { 'Content-Type': 'application/json' }
-				}
+					headers: { "Content-Type": "application/json" },
+				},
 			);
 		} catch (error) {
 			return new Response(
 				JSON.stringify({
-					error: 'Invalid JSON payload'
+					error: "Invalid JSON payload",
 				}),
 				{
 					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
+					headers: { "Content-Type": "application/json" },
+				},
 			);
 		}
 	};
@@ -80,7 +84,7 @@ export function updateContactPersonHttpHandler(service: HospitalizationsService)
 			if (!id) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "ID da hospitalização é obrigatório"
+					error: "ID da hospitalização é obrigatório",
 				};
 				return;
 			}
@@ -89,7 +93,7 @@ export function updateContactPersonHttpHandler(service: HospitalizationsService)
 			if (!body.name || !body.phoneNumber) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "Nome e número de telefone são obrigatórios"
+					error: "Nome e número de telefone são obrigatórios",
 				};
 				return;
 			}
@@ -114,12 +118,12 @@ export function updateContactPersonHttpHandler(service: HospitalizationsService)
 			ctx.response.status = 200;
 			ctx.response.body = {
 				success: true,
-				message: "Pessoa de contacto atualizada com sucesso"
+				message: "Pessoa de contacto atualizada com sucesso",
 			};
 		} catch (error) {
 			ctx.response.status = 400;
 			ctx.response.body = {
-				error: "Invalid JSON payload"
+				error: "Invalid JSON payload",
 			};
 		}
 	};
@@ -135,7 +139,7 @@ export function updateDiagnosisHttpHandler(service: HospitalizationsService) {
 			if (!id) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "ID da hospitalização é obrigatório"
+					error: "ID da hospitalização é obrigatório",
 				};
 				return;
 			}
@@ -144,7 +148,7 @@ export function updateDiagnosisHttpHandler(service: HospitalizationsService) {
 			if (!body.actualDiagnosis || !Array.isArray(body.actualDiagnosis)) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "Diagnóstico atual é obrigatório e deve ser um array"
+					error: "Diagnóstico atual é obrigatório e deve ser um array",
 				};
 				return;
 			}
@@ -166,12 +170,12 @@ export function updateDiagnosisHttpHandler(service: HospitalizationsService) {
 			ctx.response.status = 200;
 			ctx.response.body = {
 				success: true,
-				message: "Diagnóstico atualizado com sucesso"
+				message: "Diagnóstico atualizado com sucesso",
 			};
 		} catch (error) {
 			ctx.response.status = 400;
 			ctx.response.body = {
-				error: "Invalid JSON payload"
+				error: "Invalid JSON payload",
 			};
 		}
 	};
@@ -187,7 +191,7 @@ export function dischargeHospitalizationHttpHandler(service: HospitalizationsSer
 			if (!id) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "ID da hospitalização é obrigatório"
+					error: "ID da hospitalização é obrigatório",
 				};
 				return;
 			}
@@ -196,7 +200,7 @@ export function dischargeHospitalizationHttpHandler(service: HospitalizationsSer
 			if (!body.dischargeDate || !body.stateAtDischarge) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "Data de alta e estado na alta são obrigatórios"
+					error: "Data de alta e estado na alta são obrigatórios",
 				};
 				return;
 			}
@@ -217,12 +221,12 @@ export function dischargeHospitalizationHttpHandler(service: HospitalizationsSer
 			ctx.response.status = 200;
 			ctx.response.body = {
 				success: true,
-				message: "Hospitalização finalizada com sucesso"
+				message: "Hospitalização finalizada com sucesso",
 			};
 		} catch (error) {
 			ctx.response.status = 400;
 			ctx.response.body = {
-				error: "Invalid JSON payload"
+				error: "Invalid JSON payload",
 			};
 		}
 	};
@@ -238,7 +242,7 @@ export function createPeriodicReportHttpHandler(service: HospitalizationsService
 			if (!hospitalizationId) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "ID da hospitalização é obrigatório"
+					error: "ID da hospitalização é obrigatório",
 				};
 				return;
 			}
@@ -247,7 +251,7 @@ export function createPeriodicReportHttpHandler(service: HospitalizationsService
 			if (!body.timestamp) {
 				ctx.response.status = 400;
 				ctx.response.body = {
-					error: "Timestamp é obrigatório"
+					error: "Timestamp é obrigatório",
 				};
 				return;
 			}
@@ -271,12 +275,12 @@ export function createPeriodicReportHttpHandler(service: HospitalizationsService
 			ctx.response.status = 201;
 			ctx.response.body = {
 				success: true,
-				message: "Relatório periódico criado com sucesso"
+				message: "Relatório periódico criado com sucesso",
 			};
 		} catch (error) {
 			ctx.response.status = 400;
 			ctx.response.body = {
-				error: "Invalid JSON payload"
+				error: "Invalid JSON payload",
 			};
 		}
 	};

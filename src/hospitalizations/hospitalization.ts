@@ -54,10 +54,10 @@ export class Hospitalization {
 	#periodicReports: PeriodicReport[];
 
 	#uncommitedEvents: Event<
-		HospitalizationCreatedPayload |
-			HospitalizationUpdatedPayload |
-			PatientDischargedPayload |
-			PeriodicReportReleasedPayload
+		| HospitalizationCreatedPayload
+		| HospitalizationUpdatedPayload
+		| PatientDischargedPayload
+		| PeriodicReportReleasedPayload
 	>[];
 
 	private constructor(
@@ -378,10 +378,10 @@ export class Hospitalization {
 	}
 
 	clearUncommitedEvents(): Event<
-		HospitalizationCreatedPayload |
-			HospitalizationUpdatedPayload |
-			PatientDischargedPayload |
-			PeriodicReportReleasedPayload
+		| HospitalizationCreatedPayload
+		| HospitalizationUpdatedPayload
+		| PatientDischargedPayload
+		| PeriodicReportReleasedPayload
 	>[] {
 		const oldEvents = this.#uncommitedEvents;
 		this.#uncommitedEvents = [];

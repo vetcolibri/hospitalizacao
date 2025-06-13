@@ -91,8 +91,8 @@ This entity captures a snapshot of the pet's status at a specific point in time.
 
 #### **Admission and Diagnosis**
 
-1.  **Admission:** When a pet is admitted, a `Hospitalization` record is created. The system captures the pet's details (`PetID`, `PetName`, etc.) and the legal owner's details (`OwnerID`, `OwnerName`) as a permanent part of that record. The `InitialDiagnosis` is recorded based on the admitting veterinarian's assessment.
-2.  **Diagnosis Evolution:** During the stay, as more information becomes available (e.g., from blood tests or imaging), a veterinarian can update the `ActualDiagnosis` field to reflect a more precise understanding of the pet's condition.
+1. **Admission:** When a pet is admitted, a `Hospitalization` record is created. The system captures the pet's details (`PetID`, `PetName`, etc.) and the legal owner's details (`OwnerID`, `OwnerName`) as a permanent part of that record. The `InitialDiagnosis` is recorded based on the admitting veterinarian's assessment.
+2. **Diagnosis Evolution:** During the stay, as more information becomes available (e.g., from blood tests or imaging), a veterinarian can update the `ActualDiagnosis` field to reflect a more precise understanding of the pet's condition.
 
 #### **Contact and Owner Management**
 
@@ -101,8 +101,8 @@ This entity captures a snapshot of the pet's status at a specific point in time.
 
 #### **Reporting and Discharge**
 
-1.  **Periodic Reporting:** The workflow for creating and sharing periodic reports remains the same. Staff create reports detailing the pet's status, which are then added to the `ReportsBlogURL`.
-2.  **Discharge Process:** When the veterinarian decides to discharge the pet, they execute the `DischargePet` action. This requires them to record the final `StateAtDischarge` and sets the `DischargeDate`, formally closing the hospitalization period.
+1. **Periodic Reporting:** The workflow for creating and sharing periodic reports remains the same. Staff create reports detailing the pet's status, which are then added to the `ReportsBlogURL`.
+2. **Discharge Process:** When the veterinarian decides to discharge the pet, they execute the `DischargePet` action. This requires them to record the final `StateAtDischarge` and sets the `DischargeDate`, formally closing the hospitalization period.
 
 ## 3. Billing & Payment Context
 

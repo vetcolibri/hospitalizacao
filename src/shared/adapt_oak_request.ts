@@ -58,7 +58,7 @@ export function adaptOakRequest(handler: HttpHandler): (ctx: Context) => Promise
 			ctx.response.headers.set("Content-Type", "application/json");
 			ctx.response.body = JSON.stringify({
 				error: "Internal Server Error",
-				message: "An unexpected error occurred"
+				message: "An unexpected error occurred",
 			});
 		}
 	};
@@ -110,7 +110,9 @@ export function requestLoggingMiddleware() {
 			throw error;
 		} finally {
 			const duration = Date.now() - start;
-			console.log(`[${requestId}] ${ctx.request.method} ${ctx.request.url.pathname} - ${ctx.response.status} (${duration}ms)`);
+			console.log(
+				`[${requestId}] ${ctx.request.method} ${ctx.request.url.pathname} - ${ctx.response.status} (${duration}ms)`,
+			);
 		}
 	};
 }

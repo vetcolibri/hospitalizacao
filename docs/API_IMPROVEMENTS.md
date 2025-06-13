@@ -118,8 +118,8 @@ GET /health
 
 ```typescript
 interface Context {
-  principal: string; // User identifier
-  roles: UserRole[]; // User permissions
+	principal: string; // User identifier
+	roles: UserRole[]; // User permissions
 }
 ```
 
@@ -227,8 +227,8 @@ Content-Type: application/json
 
 ```json
 {
-  "success": true,
-  "data": { "id": "owner-uuid" }
+	"success": true,
+	"data": { "id": "owner-uuid" }
 }
 ```
 
@@ -341,12 +341,12 @@ GET /health
 
 ```json
 {
-  "status": "healthy",
-  "checks": {
-    "database": { "status": "ok" },
-    "memory": { "status": "ok", "message": "Memory usage: 128.45MB" }
-  },
-  "timestamp": "2024-01-15T10:30:00.000Z"
+	"status": "healthy",
+	"checks": {
+		"database": { "status": "ok" },
+		"memory": { "status": "ok", "message": "Memory usage: 128.45MB" }
+	},
+	"timestamp": "2024-01-15T10:30:00.000Z"
 }
 ```
 

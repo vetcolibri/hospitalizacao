@@ -97,38 +97,44 @@ Content-Type: application/json
 ### Response Format
 
 **Success (201 Created):**
+
 ```json
 {
-  "success": true,
-  "message": "Relatório periódico criado com sucesso"
+	"success": true,
+	"message": "Relatório periódico criado com sucesso"
 }
 ```
 
 **Error (400 Bad Request):**
+
 ```json
 {
-  "error": "Timestamp é obrigatório"
+	"error": "Timestamp é obrigatório"
 }
 ```
 
 **Error (403 Forbidden):**
+
 ```json
 {
-  "error": "User does not have permission to perform this action"
+	"error": "User does not have permission to perform this action"
 }
 ```
 
 ## Key Changes Made
 
 ### 1. Endpoint Structure
+
 - **Before**: `POST /periodic-reports` (with `hospitalizationId` in body)
 - **After**: `POST /hospitalizations/:id/periodic-reports` (ID in URL)
 
 ### 2. Handler Pattern
+
 - **Before**: HttpHandler pattern with Request/Response
 - **After**: Oak Context pattern for consistency
 
 ### 3. Validation
+
 - Hospitalization ID is now extracted from URL parameter
 - No longer need to validate `hospitalizationId` in request body
 - More intuitive API design following REST conventions
@@ -136,21 +142,25 @@ Content-Type: application/json
 ## Benefits of This Implementation
 
 ### 1. RESTful Design
+
 - Follows REST principles for nested resources
 - Clear hierarchical relationship between hospitalizations and reports
 - Intuitive URL structure
 
 ### 2. Consistency
+
 - Uses the same handler pattern as other endpoints
 - Consistent error handling and response formats
 - Maintains existing service layer logic
 
 ### 3. Security
+
 - Authorization checks remain in place
 - Input validation is comprehensive
 - Proper error responses without information leakage
 
 ### 4. Maintainability
+
 - Code remains within the hospitalizations module
 - No unnecessary module separation
 - Clear separation of concerns
@@ -160,13 +170,13 @@ Content-Type: application/json
 When a periodic report is created, the following event is published:
 
 ```typescript
-Event: "PeriodicReportReleased"
+Event: "PeriodicReportReleased";
 Payload: {
-  hospitalizationId: string;
-  reportId: string;
-  timestamp: string;
-  consciousnessState: ConsciousnessStateEnum;
-  annotations: string;
+	hospitalizationId: string;
+	reportId: string;
+	timestamp: string;
+	consciousnessState: ConsciousnessStateEnum;
+	annotations: string;
 }
 ```
 
@@ -193,6 +203,7 @@ The implementation includes comprehensive error handling for:
 ## Future Considerations
 
 ### Potential Enhancements
+
 1. **Query Endpoint**: `GET /hospitalizations/:id/periodic-reports`
 2. **Individual Report Access**: `GET /hospitalizations/:id/periodic-reports/:reportId`
 3. **Report Updates**: `PUT /hospitalizations/:id/periodic-reports/:reportId`
@@ -201,6 +212,7 @@ The implementation includes comprehensive error handling for:
 6. **Filtering**: By date range, consciousness state, etc.
 
 ### Performance Considerations
+
 - Consider caching for frequently accessed reports
 - Implement pagination for large report collections
 - Optimize database queries for report retrieval
@@ -208,16 +220,19 @@ The implementation includes comprehensive error handling for:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Handler input validation
 - Service method behavior
 - Error handling scenarios
 
 ### Integration Tests
+
 - End-to-end API testing
 - Database persistence verification
 - Event publishing confirmation
 
 ### API Testing
+
 ```bash
 # Example test requests
 curl -X POST "http://localhost:8000/hospitalizations/abc123/periodic-reports" \

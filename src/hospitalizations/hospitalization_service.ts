@@ -6,7 +6,7 @@ import { ValidationError } from "@shared/validation_error.ts";
 import { ForbiddenError } from "@shared/forbidden_error.ts";
 import { IOError } from "@shared/io_error.ts";
 import { EventBus } from "@shared/event_bus.ts";
-import { Event, decorate, withHeader } from "@shared/event.ts";
+import { decorate, Event, withHeader } from "@shared/event.ts";
 import { PhoneNumberValue } from "@shared/phone_number_value.ts";
 
 import { Hospitalization } from "./hospitalization.ts";
@@ -141,7 +141,14 @@ export class HospitalizationsService {
 		}
 
 		const events = hospitalization.clearUncommitedEvents()
-			.map((evt: Event<HospitalizationCreatedPayload | HospitalizationUpdatedPayload | PatientDischargedPayload | PeriodicReportReleasedPayload>) => decorate(evt, withHeader("Principal", ctx.principal)));
+			.map((
+				evt: Event<
+					| HospitalizationCreatedPayload
+					| HospitalizationUpdatedPayload
+					| PatientDischargedPayload
+					| PeriodicReportReleasedPayload
+				>,
+			) => decorate(evt, withHeader("Principal", ctx.principal)));
 		await this.#eventBus.publishAll(...events);
 
 		return right(hospitalization.id);

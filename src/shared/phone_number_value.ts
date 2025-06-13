@@ -2,7 +2,11 @@ import { ValidationError } from "@shared/validation_error.ts";
 import { Either, left, right } from "@shared/either.ts";
 
 export class PhoneNumberValue {
-	static create(number: string, whatsapp: boolean, countryCode = "244"): Either<ValidationError, PhoneNumberValue> {
+	static create(
+		number: string,
+		whatsapp: boolean,
+		countryCode = "244",
+	): Either<ValidationError, PhoneNumberValue> {
 		try {
 			return right(new PhoneNumberValue(number, whatsapp, countryCode));
 		} catch (error) {
