@@ -4,7 +4,6 @@ import { OwnerRepository } from "./owner_repository.ts";
 import { Either, left, right } from "@shared/either.ts";
 import { OrangestIdValue } from "@shared/orangest_id_value.ts";
 import { OwnerNotFoundError } from "./owner_not_found_error.ts";
-import { cp } from "node:fs";
 
 const FIND_BY_ID_CAUSE = "InmemOwnerRepository:findById";
 const FIND_BY_ORANGEST_ID_CAUSE = "InmemOwnerRepository:findByOrangestId";

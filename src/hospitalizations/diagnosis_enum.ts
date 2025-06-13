@@ -1,0 +1,15 @@
+export enum DiagnosisEnum {
+	GASTROENTERITIS = "Gastroenteritis",
+	DEHYDRATION = "Dehydration",
+	PNEUMONIA = "Pneumonia",
+	KENNEL_COUGH = "Kennel Cough",
+	FRACTURE = "Fracture",
+	ALLERGIC_REACTION = "Allergic Reaction",
+	RENAL_FAILURE = "Renal Failure",
+	HEART_DISEASE = "Heart Disease",
+	TRAUMA = "Trauma",
+	PARVOVIRUS = "Parvovirus",
+	OTHER_INFECTION = "Other Infection",
+	POST_SURGICAL_OBSERVATION = "Post-Surgical Observation",
+	OTHER = "Other",
+}

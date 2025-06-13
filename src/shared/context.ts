@@ -1,6 +1,6 @@
-import { UserRole } from "@shared/user_role.ts";
+import { UserRoleEnum } from "./user_role_enum.ts";
 
 export interface Context {
 	principal: string;
-	roles: UserRole[];
+	roles: UserRoleEnum[];
 }
