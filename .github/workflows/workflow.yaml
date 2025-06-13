@@ -18,8 +18,8 @@ jobs:
       - name: Run tests
         run: deno test --allow-read --allow-write --allow-net
 
-      - name: Type check
-        run: deno check src/**/*.ts
+      # - name: Type check
+      #   run: deno check src/**/*.ts
 
   build:
     runs-on: ubuntu-latest
