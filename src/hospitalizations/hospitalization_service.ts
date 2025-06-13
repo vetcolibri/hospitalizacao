@@ -6,7 +6,7 @@ import { ValidationError } from "@shared/validation_error.ts";
 import { ForbiddenError } from "@shared/forbidden_error.ts";
 import { IOError } from "@shared/io_error.ts";
 import { EventBus } from "@shared/event_bus.ts";
-import { decorate, withHeader } from "@shared/event.ts";
+import { Event, decorate, withHeader } from "@shared/event.ts";
 import { PhoneNumberValue } from "@shared/phone_number_value.ts";
 
 import { Hospitalization } from "./hospitalization.ts";
@@ -17,6 +17,10 @@ import { ComplaintEnum } from "./complaint_enum.ts";
 import { DiagnosisEnum } from "./diagnosis_enum.ts";
 import { StateAtDischargeEnum } from "./state_at_discharge_enum.ts";
 import { UserRoleEnum } from "../shared/user_role_enum.ts";
+import { HospitalizationCreatedPayload } from "./hospitalization_created_event.ts";
+import { HospitalizationUpdatedPayload } from "./hospitalization_updated_event.ts";
+import { PatientDischargedPayload } from "./patient_discharged_event.ts";
+import { PeriodicReportReleasedPayload } from "./periodic_report_released_event.ts";
 
 import { HospitalizationRepository } from "./hospitalization_repository.ts";
 
@@ -106,27 +110,28 @@ export class HospitalizationsService {
 			]);
 		}
 
-		const hospitalizationOrErr = Hospitalization.create(
-			id,
-			admissionDateOrErr.right,
-			estimatedDischargeDateOrErr.right,
-			request.initialDiagnosis,
-			request.complaints,
-			petIdOrErr.right,
-			request.petName,
-			request.petAge,
-			request.petWeight,
-			ownerIdOrErr.right,
-			request.ownerName,
-			contactPersonOrErr.right,
-		);
-
-		if (hospitalizationOrErr.isLeft()) {
-			return left([hospitalizationOrErr.value]);
+		let hospitalization: Hospitalization;
+		try {
+			hospitalization = new Hospitalization.Builder()
+				.withId(id)
+				.withAdmissionDate(admissionDateOrErr.right!)
+				.withEstimatedDischargeDate(estimatedDischargeDateOrErr.right!)
+				.withInitialDiagnosis(request.initialDiagnosis)
+				.withComplaints(request.complaints)
+				.withPetId(petIdOrErr.right!)
+				.withPetName(request.petName)
+				.withPetAge(request.petAge)
+				.withPetWeight(request.petWeight)
+				.withOwnerId(ownerIdOrErr.right!)
+				.withOwnerName(request.ownerName)
+				.withContactPerson(contactPersonOrErr.right!)
+				.build();
+		} catch (error) {
+			return left([error as ValidationError]);
 		}
 
 		const voidOrErr = await this.#tryIO(
-			() => this.#hospitalizationRepository.save(hospitalizationOrErr.right),
+			() => this.#hospitalizationRepository.save(hospitalization),
 			CREATE_HOSPITALIZATION_CAUSE,
 			"Erro ao gravar a hospitalização no repositório",
 		);
@@ -135,12 +140,11 @@ export class HospitalizationsService {
 			return left(voidOrErr.value);
 		}
 
-		const events = hospitalizationOrErr.right.clearUncommitedEvents()
-			.map((evt) => decorate(evt, withHeader("Principal", ctx.principal)));
+		const events = hospitalization.clearUncommitedEvents()
+			.map((evt: Event<HospitalizationCreatedPayload | HospitalizationUpdatedPayload | PatientDischargedPayload | PeriodicReportReleasedPayload>) => decorate(evt, withHeader("Principal", ctx.principal)));
+		await this.#eventBus.publishAll(...events);
 
-		this.#eventBus.publishAll(...events);
-
-		return right(hospitalizationOrErr.right.id);
+		return right(hospitalization.id);
 	}
 
 	async updateContactPerson(

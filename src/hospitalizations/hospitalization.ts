@@ -27,42 +27,6 @@ import {
 } from "./periodic_report_released_event.ts";
 
 export class Hospitalization {
-	static create(
-		id: IdValue,
-		admissionDate: DateValue,
-		estimatedDischargeDate: DateValue,
-		initialDiagnosis: DiagnosisEnum[],
-		complaints: ComplaintEnum[],
-		petId: IdValue,
-		petName: string,
-		petAge: string,
-		petWeight: number,
-		ownerId: IdValue,
-		ownerName: string,
-		contactPerson: ContactPersonValue,
-	): Either<ValidationError, Hospitalization> {
-		try {
-			return right(
-				new Hospitalization(
-					id,
-					admissionDate,
-					estimatedDischargeDate,
-					initialDiagnosis,
-					complaints,
-					petId,
-					petName,
-					petAge,
-					petWeight,
-					ownerId,
-					ownerName,
-					contactPerson,
-				),
-			);
-		} catch (error) {
-			return left(error as ValidationError);
-		}
-	}
-
 	readonly #id: IdValue;
 	readonly #admissionDate: DateValue;
 	#estimatedDischargeDate: DateValue;
@@ -512,4 +476,111 @@ export class Hospitalization {
 
 		return cloned;
 	}
+
+	static Builder = class {
+		private id: IdValue;
+		private admissionDate: DateValue;
+		private estimatedDischargeDate: DateValue;
+		private initialDiagnosis: DiagnosisEnum[];
+		private complaints: ComplaintEnum[];
+		private petId: IdValue;
+		private petName: string;
+		private petAge: string;
+		private petWeight: number;
+		private ownerId: IdValue;
+		private ownerName: string;
+		private contactPerson: ContactPersonValue;
+
+		constructor() {
+			this.id = IdValue.random();
+			this.admissionDate = undefined as unknown as DateValue;
+			this.estimatedDischargeDate = undefined as unknown as DateValue;
+			this.initialDiagnosis = [];
+			this.complaints = [];
+			this.petId = undefined as unknown as IdValue;
+			this.petName = "";
+			this.petAge = "";
+			this.petWeight = 0;
+			this.ownerId = undefined as unknown as IdValue;
+			this.ownerName = "";
+			this.contactPerson = undefined as unknown as ContactPersonValue;
+		}
+
+		withId(id: IdValue): this {
+			this.id = id;
+			return this;
+		}
+
+		withAdmissionDate(admissionDate: DateValue): this {
+			this.admissionDate = admissionDate;
+			return this;
+		}
+
+		withEstimatedDischargeDate(estimatedDischargeDate: DateValue): this {
+			this.estimatedDischargeDate = estimatedDischargeDate;
+			return this;
+		}
+
+		withInitialDiagnosis(initialDiagnosis: DiagnosisEnum[]): this {
+			this.initialDiagnosis = initialDiagnosis;
+			return this;
+		}
+
+		withComplaints(complaints: ComplaintEnum[]): this {
+			this.complaints = complaints;
+			return this;
+		}
+
+		withPetId(petId: IdValue): this {
+			this.petId = petId;
+			return this;
+		}
+
+		withPetName(petName: string): this {
+			this.petName = petName;
+			return this;
+		}
+
+		withPetAge(petAge: string): this {
+			this.petAge = petAge;
+			return this;
+		}
+
+		withPetWeight(petWeight: number): this {
+			this.petWeight = petWeight;
+			return this;
+		}
+
+		withOwnerId(ownerId: IdValue): this {
+			this.ownerId = ownerId;
+			return this;
+		}
+
+		withOwnerName(ownerName: string): this {
+			this.ownerName = ownerName;
+			return this;
+		}
+
+		withContactPerson(contactPerson: ContactPersonValue): this {
+			this.contactPerson = contactPerson;
+			return this;
+		}
+
+		build(): Hospitalization {
+			return new Hospitalization(
+				this.id,
+				this.admissionDate,
+				this.estimatedDischargeDate,
+				this.initialDiagnosis,
+				this.complaints,
+				this.petId,
+				this.petName,
+				this.petAge,
+				this.petWeight,
+				this.ownerId,
+				this.ownerName,
+				this.contactPerson,
+			);
+		}
+	};
 }
