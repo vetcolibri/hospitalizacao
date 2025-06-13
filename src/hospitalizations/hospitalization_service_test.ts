@@ -59,7 +59,7 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 				admissionDate: "2024-01-01",
 				estimatedDischargeDate: "2024-01-03",
 				initialDiagnosis: [DiagnosisEnum.GASTROENTERITIS, DiagnosisEnum.DEHYDRATION],
-				complaints: [ComplaintEnum.ANOREXIA, ComplaintEnum.VOMITING, ComplaintEnum.LETHARGY],
+				complaints: [ComplaintEnum.ANOREXIA, ComplaintEnum.VOMITING, ComplaintEnum.PROSTRATION],
 				petId: IdValue.random().value,
 				petName: "Buddy",
 				petAge: "3 anos",
@@ -117,8 +117,8 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 			.withId(IdValue.random())
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.OTHER_INFECTION])
-			.withComplaints([ComplaintEnum.FEVER, ComplaintEnum.LETHARGY])
+			.withInitialDiagnosis([DiagnosisEnum.FUNGAL_INFECTION])
+			.withComplaints([ComplaintEnum.FEVER, ComplaintEnum.PROSTRATION])
 			.withPetId(petId)
 			.withPetName("Luna")
 			.withPetAge("1 ano")
@@ -134,7 +134,7 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 			admissionDate: "2024-01-02",
 			estimatedDischargeDate: "2024-01-04",
 			initialDiagnosis: [DiagnosisEnum.KENNEL_COUGH],
-			complaints: [ComplaintEnum.COUGHING],
+			complaints: [ComplaintEnum.COUGH],
 			petId: petId.value,
 			petName: "Luna",
 			petAge: "1 ano",
@@ -236,8 +236,8 @@ Deno.test("HospitalizationsService.updateContactPerson", async (t) => {
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.OTHER_INFECTION])
-			.withComplaints([ComplaintEnum.OTHER]) // Or a more specific enum member if appropriate
+			.withInitialDiagnosis([DiagnosisEnum.FUNGAL_INFECTION])
+			.withComplaints([ComplaintEnum.CHECK_UP])
 			.withPetId(IdValue.random())
 			.withPetName("PetName")
 			.withPetAge("1 ano")
@@ -303,8 +303,8 @@ Deno.test("HospitalizationsService.updateContactPerson", async (t) => {
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.TRAUMA])
-			.withComplaints([ComplaintEnum.PAIN])
+			.withInitialDiagnosis([DiagnosisEnum.FRACTURE])
+			.withComplaints([ComplaintEnum.LAMENESS])
 			.withPetId(IdValue.random())
 			.withPetName("Pet Name")
 			.withPetAge("1")
@@ -431,7 +431,7 @@ Deno.test("HospitalizationsService.updateDiagnosis", async (t) => {
 				.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 				.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
 				.withInitialDiagnosis([DiagnosisEnum.DEHYDRATION])
-				.withComplaints([ComplaintEnum.LETHARGY])
+				.withComplaints([ComplaintEnum.PROSTRATION])
 				.withPetId(IdValue.random())
 				.withPetName("Pet Name")
 				.withPetAge("1")
@@ -457,7 +457,7 @@ Deno.test("HospitalizationsService.updateDiagnosis", async (t) => {
 		async () => {
 			const { service } = setupService();
 			const forbiddenContext: Context = { principal: "test", roles: [UserRoleEnum.TRAINEE] };
-			const updateRequest = { id: IdValue.random().value, actualDiagnosis: [DiagnosisEnum.OTHER] };
+			const updateRequest = { id: IdValue.random().value, actualDiagnosis: [DiagnosisEnum.TO_BE_DEFINED] };
 			const result = await service.updateDiagnosis(forbiddenContext, updateRequest);
 			assertEquals(result.isLeft(), true);
 			assertInstanceOf(result.value, ForbiddenError);
@@ -494,8 +494,8 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.POST_SURGICAL_OBSERVATION])
-			.withComplaints([ComplaintEnum.PAIN])
+			.withInitialDiagnosis([DiagnosisEnum.PREOPERATIVE_EXAMS])
+			.withComplaints([ComplaintEnum.CHECK_UP])
 			.withPetId(IdValue.random())
 			.withPetName("Bella")
 			.withPetAge("1 ano")
@@ -564,8 +564,8 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.TRAUMA])
-			.withComplaints([ComplaintEnum.INJURY])
+			.withInitialDiagnosis([DiagnosisEnum.FRACTURE])
+			.withComplaints([ComplaintEnum.LAMENESS])
 			.withPetId(IdValue.random())
 			.withPetName("Max")
 			.withPetAge("2 anos")
@@ -679,7 +679,7 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 				.withId(hospitalizationId)
 				.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 				.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-				.withInitialDiagnosis([DiagnosisEnum.OTHER_INFECTION])
+				.withInitialDiagnosis([DiagnosisEnum.FUNGAL_INFECTION])
 				.withComplaints([ComplaintEnum.FEVER])
 				.withPetId(IdValue.random())
 				.withPetName("Luna")
@@ -741,7 +741,7 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 				.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 				.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
 				.withInitialDiagnosis([DiagnosisEnum.KENNEL_COUGH])
-				.withComplaints([ComplaintEnum.COUGHING])
+				.withComplaints([ComplaintEnum.COUGH])
 				.withPetId(IdValue.random())
 				.withPetName("Rex")
 				.withPetAge("5 anos")
