@@ -16,10 +16,24 @@ Deno.test("DateValue", async (t) => {
 		assertInstanceOf(date.left, ValidationError);
 	});
 
-	await t.step("Deve retornar false quando o método estático earlierThan for chamado com um data posterior", () {
+	await t.step("Deve retornar true quando o método earlierThan for chamado com uma data posterior", () => {
 	  const date1 = DateValue.fromString("2023-10-01").right;
     const date2 = DateValue.fromString("2023-10-02").right;
 
+    assertEquals(date1.earlierThan(date2), true);
+	});
+
+	await t.step("Deve retornar false quando o método earlierThan for chamado com uma data anterior", () => {
+	  const date1 = DateValue.fromString("2023-10-02").right;
+    const date2 = DateValue.fromString("2023-10-01").right;
+
     assertEquals(date1.earlierThan(date2), false);
-	})
+	});
+
+	await t.step("Deve retornar false quando o método earlierThan for chamado com a mesma data", () => {
+	  const date1 = DateValue.fromString("2023-10-01").right;
+    const date2 = DateValue.fromString("2023-10-01").right;
+
+    assertEquals(date1.earlierThan(date2), false);
+	});
 });

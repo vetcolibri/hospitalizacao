@@ -14,6 +14,7 @@ import { Owner } from "./owner.ts";
 import { PetsService } from "./pets_service.ts";
 import { OWNER_UPDATED_EVENT_NAME } from "./owner_updated_event.ts";
 import { Event } from "@shared/event.ts";
+import { UserRoleEnum } from "@shared/user_role_enum.ts";
 
 Deno.test("PetsService.createOwner", async (t) => {
 	await t.step("Deve criar um owner com sucesso se todos os dados forem válidos", async () => {
@@ -99,7 +100,7 @@ Deno.test("PetsService.createOwner", async (t) => {
 		const { service } = setupService();
 		const ctx: Context = {
 			principal: "user@domain.com",
-			roles: ["VET_ASSISTANT"],
+			roles: [UserRoleEnum.VET_ASSISTANT],
 		};
 
 		const request = {
@@ -129,7 +130,7 @@ function setupService(
 		ownerRepository,
 		context: {
 			principal: "user@domain.com",
-			roles: ["RECEPTIONIST"],
+			roles: [UserRoleEnum.RECEPTIONIST],
 		} as Context,
 	};
 }
@@ -251,7 +252,7 @@ Deno.test("PetsService.updateOwner", async (t) => {
 		const { service, ownerRepository } = setupService();
 		const ctx: Context = {
 			principal: "user@domain.com",
-			roles: ["VET_ASSISTANT"],
+			roles: [UserRoleEnum.VET_ASSISTANT],
 		};
 
 		const owner = Owner.create(
