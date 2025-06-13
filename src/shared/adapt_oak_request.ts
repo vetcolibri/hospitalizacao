@@ -29,7 +29,7 @@ export function adaptOakRequest(handler: HttpHandler): (ctx: Context) => Promise
 			// Add body for POST/PUT requests
 			if (ctx.request.method === "POST" || ctx.request.method === "PUT") {
 				if (ctx.request.hasBody) {
-					init.body = await ctx.request.body.text();
+					init.body = await (await ctx.request.body({ type: "text" })).value;
 				}
 			}
 

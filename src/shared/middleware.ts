@@ -1,5 +1,7 @@
 import { Context } from "@deps/oak";
 import { ValidationError } from "@shared/validation_error.ts";
+import { ForbiddenError } from "@shared/forbidden_error.ts";
+import { IOError } from "@shared/io_error.ts";
 
 export interface HealthCheckResult {
 	status: "healthy" | "unhealthy";
@@ -126,16 +128,16 @@ export function errorHandlingMiddleware() {
 					success: false,
 					error: "Validation Error",
 					details: error.message,
-					fields: error.errors || [],
+					fields: error.errors, // .errors is guaranteed by ValidationError
 				};
-			} else if (error.name === "ForbiddenError") {
+			} else if (error instanceof ForbiddenError) {
 				ctx.response.status = 403;
 				ctx.response.body = {
 					success: false,
 					error: "Forbidden",
 					message: error.message || "Access denied",
 				};
-			} else if (error.name === "IOError") {
+			} else if (error instanceof IOError) {
 				ctx.response.status = 500;
 				ctx.response.body = {
 					success: false,
@@ -225,14 +227,14 @@ export function validateJsonMiddleware() {
 		) {
 			try {
 				// Pre-validate JSON format
-				const body = await ctx.request.body.text();
-				JSON.parse(body);
+				const bodyObject = ctx.request.body({ type: "text" });
+				const bodyAsText = await bodyObject.value;
+				JSON.parse(bodyAsText);
 
-				// Re-create the body for the next middleware
-				ctx.request.body = () => ({
-					json: async () => JSON.parse(body),
-					text: async () => body,
-				});
+				// Note: The body stream has been consumed here by .text().
+				// Subsequent middleware or handlers that need the body will need
+				// to be aware of this or Oak's behavior for re-reading,
+				// or the body should be passed via ctx.state if needed.
 			} catch (error) {
 				ctx.response.status = 400;
 				ctx.response.headers.set("Content-Type", "application/json");

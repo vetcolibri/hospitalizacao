@@ -12,6 +12,7 @@ import { DuplicatedOrangestIdError } from "./duplicated_orangest_id_error.ts";
 import { EventBus } from "@shared/event_bus.ts";
 import { OrangestIdValue } from "@shared/orangest_id_value.ts";
 import { IOError } from "@shared/io_error.ts";
+import { NotFoundError } from "@shared/not_found_error.ts";
 import { decorate, withHeader } from "@shared/event.ts";
 
 const CREATE_OWNER_CAUSE = "Pets.PetsService:createOwner";
@@ -73,14 +74,15 @@ export class PetsService {
 
 		const exists = await this.#ownerRepository.exists(id);
 		if (exists) {
-			return left(new DuplicatedOwnerIdError(CREATE_OWNER_CAUSE, id));
+			return left([new DuplicatedOwnerIdError(id)]);
 		}
 
 		const existsWithOrangestId = await this.#ownerRepository.existsWithOrangestId(
 			orangestIdOrErr.right,
 		);
 		if (existsWithOrangestId) {
-			return left(new DuplicatedOrangestIdError(CREATE_OWNER_CAUSE, ownerOrErr.right.orangestId));
+			// orangestIdOrErr.right is guaranteed to be defined here due to prior checks
+			return left([new DuplicatedOrangestIdError(orangestIdOrErr.right!)]);
 		}
 
 		const voidOrErr = await this.#tryIO(
@@ -90,7 +92,7 @@ export class PetsService {
 		);
 
 		if (voidOrErr.isLeft()) {
-			return left([voidOrErr.value]);
+			return left(voidOrErr.value);
 		}
 
 		const events = ownerOrErr.value.clearUncommitedEvents()
@@ -117,7 +119,7 @@ export class PetsService {
 	async updateOwner(
 		ctx: Context,
 		request: UpdateOwnerRequest,
-	): Promise<Either<ValidationError[] | ForbiddenError, void>> {
+	): Promise<Either<ValidationError[] | ForbiddenError | NotFoundError | IOError, void>> {
 		if (ctx.roles.some((v) => !["RECEPTIONIST"].includes(v))) {
 			return left(new ForbiddenError(UPDATE_OWNER_CAUSE));
 		}
@@ -129,7 +131,7 @@ export class PetsService {
 
 		const ownerOrErr = await this.#ownerRepository.findById(idOrErr.value);
 		if (ownerOrErr.isLeft()) {
-			return left([ownerOrErr.value]);
+			return left(ownerOrErr.value);
 		}
 
 		const errs: ValidationError[] = [];
@@ -184,7 +186,7 @@ export class PetsService {
 			if (orangeId.isRight()) {
 				const exists = await this.#ownerRepository.existsWithOrangestId(orangeId.right);
 				err = exists
-					? new DuplicatedOrangestIdError(UPDATE_OWNER_CAUSE, owner.orangestId)
+					? new DuplicatedOrangestIdError(owner.orangestId)
 					: undefined;
 			}
 
@@ -206,7 +208,7 @@ export class PetsService {
 		);
 
 		if (saveOrErr.isLeft()) {
-			return left([saveOrErr.value]);
+			return left(saveOrErr.value);
 		}
 
 		const events = owner.clearUncommitedEvents()

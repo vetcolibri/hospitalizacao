@@ -2,6 +2,7 @@ import { Context } from "@shared/context.ts";
 import { ValidationError } from "@shared/validation_error.ts";
 import { ForbiddenError } from "@shared/forbidden_error.ts";
 import { IOError } from "@shared/io_error.ts";
+import { NotFoundError } from "@shared/not_found_error.ts";
 
 export type HttpHandler = (req: Request) => Promise<Response>;
 
@@ -37,18 +38,36 @@ export const processApplicationErrors = (errs: Error | Error[]): Response => {
 		);
 	}
 
-	if (Array.isArray(errs) && errs.length > 0 && errs[0] instanceof ValidationError) {
+	if (
+		Array.isArray(errs) &&
+		errs.length > 0 &&
+		errs.every((e) => e instanceof ValidationError)
+	) {
+		const validationErrors = errs as ValidationError[];
 		return new Response(
 			JSON.stringify({
 				error: "Validation Errors",
-				details: errs.map((err) => ({
-					field: err.field || "unknown",
-					message: err.message,
-					errors: err.errors || [],
+				details: validationErrors.map((err) => ({
+					field: err.field, // .field is now guaranteed by ValidationError
+					message: err.message, // General error message from Error class
+					errors: err.errors, // .errors is now guaranteed by ValidationError
 				})),
 			}),
 			{
 				status: 400,
+				headers,
+			},
+		);
+	}
+
+	if (errs instanceof NotFoundError) {
+		return new Response(
+			JSON.stringify({
+				error: "Not Found",
+				message: errs.message,
+			}),
+			{
+				status: 404,
 				headers,
 			},
 		);

@@ -5,7 +5,7 @@ import {
 	UpdateDiagnosisRequest,
 } from "./hospitalization_service.ts";
 import { ConsciousnessStateEnum } from "./consciousness_state_enum.ts";
-import { Context } from "@deps/oak";
+import { Context, RouterContext } from "@deps/oak";
 
 export function createHospitalizationHttpHandler(service: HospitalizationsService): HttpHandler {
 	return async (req: Request): Promise<Response> => {
@@ -77,10 +77,11 @@ export function createHospitalizationHttpHandler(service: HospitalizationsServic
 }
 
 export function updateContactPersonHttpHandler(service: HospitalizationsService) {
-	return async (ctx: Context) => {
+	return async (ctx: RouterContext<"/hospitalizations/:id/contact-person">) => {
 		try {
-			const body = await ctx.request.body.json();
-			const requestContext = await getRequestContext(ctx.request);
+			const body = await ctx.request.body({ type: "json" }).value;
+			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const requestContext = await getRequestContext(stdRequest);
 			const id = ctx.params?.id;
 
 			if (!id) {
@@ -132,10 +133,11 @@ export function updateContactPersonHttpHandler(service: HospitalizationsService)
 }
 
 export function updateDiagnosisHttpHandler(service: HospitalizationsService) {
-	return async (ctx: Context) => {
+	return async (ctx: RouterContext<"/hospitalizations/:id/diagnosis">) => {
 		try {
-			const body = await ctx.request.body.json();
-			const requestContext = await getRequestContext(ctx.request);
+			const body = await ctx.request.body({ type: "json" }).value;
+			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const requestContext = await getRequestContext(stdRequest);
 			const id = ctx.params?.id;
 
 			if (!id) {
@@ -184,10 +186,11 @@ export function updateDiagnosisHttpHandler(service: HospitalizationsService) {
 }
 
 export function dischargeHospitalizationHttpHandler(service: HospitalizationsService) {
-	return async (ctx: Context) => {
+	return async (ctx: RouterContext<"/hospitalizations/:id/discharge">) => {
 		try {
-			const body = await ctx.request.body.json();
-			const requestContext = await getRequestContext(ctx.request);
+			const body = await ctx.request.body({ type: "json" }).value;
+			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const requestContext = await getRequestContext(stdRequest);
 			const id = ctx.params?.id;
 
 			if (!id) {
@@ -235,10 +238,11 @@ export function dischargeHospitalizationHttpHandler(service: HospitalizationsSer
 }
 
 export function createPeriodicReportHttpHandler(service: HospitalizationsService) {
-	return async (ctx: Context) => {
+	return async (ctx: RouterContext<"/hospitalizations/:id/periodic-reports">) => {
 		try {
-			const body = await ctx.request.body.json();
-			const requestContext = await getRequestContext(ctx.request);
+			const body = await ctx.request.body({ type: "json" }).value;
+			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const requestContext = await getRequestContext(stdRequest);
 			const hospitalizationId = ctx.params?.id;
 
 			if (!hospitalizationId) {

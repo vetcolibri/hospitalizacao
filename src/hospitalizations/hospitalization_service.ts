@@ -5,6 +5,7 @@ import { Context } from "@shared/context.ts";
 import { ValidationError } from "@shared/validation_error.ts";
 import { ForbiddenError } from "@shared/forbidden_error.ts";
 import { IOError } from "@shared/io_error.ts";
+import { NotFoundError } from "@shared/not_found_error.ts";
 import { EventBus } from "@shared/event_bus.ts";
 import { decorate, Event, withHeader } from "@shared/event.ts";
 import { PhoneNumberValue } from "@shared/phone_number_value.ts";
@@ -289,7 +290,7 @@ export class HospitalizationsService {
 	async dischargeHospitalization(
 		ctx: Context,
 		request: DischargeHospitalizationRequest,
-	): Promise<Either<ValidationError[] | ForbiddenError | IOError, void>> {
+	): Promise<Either<ValidationError[] | ForbiddenError | IOError | NotFoundError, void>> {
 		if (!ctx.roles.includes(UserRoleEnum.MED_VET as string)) {
 			return left(new ForbiddenError(DISCHARGE_HOSPITALIZATION_CAUSE));
 		}
@@ -312,7 +313,7 @@ export class HospitalizationsService {
 
 		const hospitalizationOrErr = await this.#hospitalizationRepository.findById(idOrErr.right);
 		if (hospitalizationOrErr.isLeft()) {
-			return left([hospitalizationOrErr.value]);
+			return left(hospitalizationOrErr.value);
 		}
 
 		const hospitalization = hospitalizationOrErr.right;
@@ -322,7 +323,7 @@ export class HospitalizationsService {
 		);
 
 		if (dischargeResult.isLeft()) {
-			return left([dischargeResult.value]);
+			return left(dischargeResult.value);
 		}
 
 		const saveOrErr = await this.#tryIO(
@@ -346,7 +347,7 @@ export class HospitalizationsService {
 	async createPeriodicReport(
 		ctx: Context,
 		request: CreatePeriodicReportRequest,
-	): Promise<Either<ValidationError[] | ForbiddenError | IOError, void>> {
+	): Promise<Either<ValidationError[] | ForbiddenError | IOError | NotFoundError, void>> {
 		if (
 			!ctx.roles.includes(UserRoleEnum.MED_VET as string) &&
 			!ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)
@@ -374,7 +375,7 @@ export class HospitalizationsService {
 			hospitalizationIdOrErr.right,
 		);
 		if (hospitalizationOrErr.isLeft()) {
-			return left([hospitalizationOrErr.value]);
+			return left(hospitalizationOrErr.value);
 		}
 
 		const hospitalization = hospitalizationOrErr.right;
