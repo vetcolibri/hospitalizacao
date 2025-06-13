@@ -16,15 +16,15 @@ export function createHttpOakHospitalizationsRouter(service: HospitalizationsSer
 	router.post("/hospitalizations", adaptOakRequest(createHospitalizationHttpHandler(service)));
 	router.put(
 		"/hospitalizations/:id/contact-person",
-		adaptOakRequest(updateContactPersonHttpHandler(service)),
+		updateContactPersonHttpHandler(service),
 	);
 	router.put(
 		"/hospitalizations/:id/diagnosis",
-		adaptOakRequest(updateDiagnosisHttpHandler(service)),
+		updateDiagnosisHttpHandler(service),
 	);
 	router.post(
 		"/hospitalizations/:id/discharge",
-		adaptOakRequest(dischargeHospitalizationHttpHandler(service)),
+		dischargeHospitalizationHttpHandler(service),
 	);
 
 	// Periodic report routes
