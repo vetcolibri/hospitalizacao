@@ -15,6 +15,7 @@ import { PeriodicReport } from "./periodic_report.ts";
 import { ConsciousnessStateEnum } from "./consciousness_state_enum.ts";
 import { ComplaintEnum } from "./complaint_enum.ts";
 import { DiagnosisEnum } from "./diagnosis_enum.ts";
+import { StateAtDischargeEnum } from "./state_at_discharge_enum.ts";
 import { UserRoleEnum } from "../shared/user_role_enum.ts";
 
 import { HospitalizationRepository } from "./hospitalization_repository.ts";
@@ -450,7 +451,7 @@ export interface UpdateDiagnosisRequest {
 export interface DischargeHospitalizationRequest {
 	id: string;
 	dischargeDate: string;
-	stateAtDischarge: string;
+	stateAtDischarge: StateAtDischargeEnum;
 }
 
 export interface CreatePeriodicReportRequest {

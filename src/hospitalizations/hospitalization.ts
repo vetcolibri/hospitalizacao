@@ -7,6 +7,8 @@ import { ContactPersonValue } from "./contact_person_value.ts";
 import { PeriodicReport } from "./periodic_report.ts";
 import { ComplaintEnum } from "./complaint_enum.ts";
 import { DiagnosisEnum } from "./diagnosis_enum.ts";
+import { HospitalizationStateEnum } from "./hospitalization_state_enum.ts";
+import { StateAtDischargeEnum } from "./state_at_discharge_enum.ts";
 import {
 	HOSPITALIZATION_CREATED_EVENT_NAME,
 	HospitalizationCreatedPayload,
@@ -65,7 +67,8 @@ export class Hospitalization {
 	readonly #admissionDate: DateValue;
 	#estimatedDischargeDate: DateValue;
 	#dischargeDate?: DateValue;
-	#stateAtDischarge?: string;
+	#state: HospitalizationStateEnum;
+	#stateAtDischarge?: StateAtDischargeEnum;
 	#initialDiagnosis: DiagnosisEnum[];
 	#actualDiagnosis: DiagnosisEnum[];
 	#complaints: ComplaintEnum[];
@@ -121,6 +124,7 @@ export class Hospitalization {
 		this.#ownerName = ownerName;
 		this.#contactPerson = contactPerson;
 		this.#periodicReports = [];
+		this.#state = HospitalizationStateEnum.ON_GOING;
 
 		const errors: string[] = [];
 
@@ -202,7 +206,11 @@ export class Hospitalization {
 		return this.#dischargeDate;
 	}
 
-	get stateAtDischarge(): string | undefined {
+	get state(): HospitalizationStateEnum {
+		return this.#state;
+	}
+
+	get stateAtDischarge(): StateAtDischargeEnum | undefined {
 		return this.#stateAtDischarge;
 	}
 
@@ -252,7 +260,7 @@ export class Hospitalization {
 	}
 
 	get isActive(): boolean {
-		return this.#dischargeDate === undefined;
+		return this.#state === HospitalizationStateEnum.ON_GOING;
 	}
 
 	updateEstimatedDischargeDate(estimatedDischargeDate: DateValue): Either<ValidationError, void> {
@@ -369,7 +377,7 @@ export class Hospitalization {
 
 	dischargePatient(
 		dischargeDate: DateValue,
-		stateAtDischarge: string,
+		stateAtDischarge: StateAtDischargeEnum,
 	): Either<ValidationError, void> {
 		if (!this.isActive) {
 			return left(
@@ -397,8 +405,9 @@ export class Hospitalization {
 
 		this.#dischargeDate = dischargeDate;
 		this.#stateAtDischarge = stateAtDischarge;
+		this.#state = HospitalizationStateEnum.CLOSED;
 
-		const evt = this.#createHospitalizationDischargedEvent(this);
+		const evt = this.#createPatientDischargedEvent(this);
 		this.#uncommitedEvents.push(evt);
 
 		return right(undefined);
@@ -435,6 +444,7 @@ export class Hospitalization {
 				ownerName: hospitalization.ownerName,
 				contactPersonName: hospitalization.contactPerson.fullName,
 				contactPersonWhatsApp: hospitalization.contactPerson.phoneNumber.formattedNumber,
+				state: hospitalization.state, // Add current state
 			}),
 		);
 	}
@@ -459,7 +469,7 @@ export class Hospitalization {
 		);
 	}
 
-	#createHospitalizationDischargedEvent(
+	#createPatientDischargedEvent(
 		hospitalization: Hospitalization,
 	): Event<PatientDischargedPayload> {
 		return Event.create<PatientDischargedPayload>(
@@ -493,6 +503,7 @@ export class Hospitalization {
 		cloned.#actualDiagnosis = [...this.#actualDiagnosis];
 		cloned.#complaints = [...this.#complaints];
 		cloned.#dischargeDate = this.#dischargeDate;
+		cloned.#state = this.#state; // Clone the state
 		cloned.#stateAtDischarge = this.#stateAtDischarge;
 		cloned.#periodicReports = [...this.#periodicReports];
 

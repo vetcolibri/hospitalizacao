@@ -17,10 +17,13 @@ import { PeriodicReport } from "./periodic_report.ts";
 import { PATIENT_DISCHARGED_EVENT_NAME } from "./patient_discharged_event.ts";
 import { ValidationError } from "@shared/validation_error.ts";
 import { ConsciousnessStateEnum } from "./consciousness_state_enum.ts";
+import { HospitalizationCreatedPayload } from "./hospitalization_created_event.ts";
 import { HospitalizationUpdatedPayload } from "./hospitalization_updated_event.ts";
 import { ComplaintEnum } from "./complaint_enum.ts";
 import { DiagnosisEnum } from "./diagnosis_enum.ts";
 import { UserRoleEnum } from "../shared/user_role_enum.ts";
+import { HospitalizationStateEnum } from "./hospitalization_state_enum.ts";
+import { StateAtDischargeEnum } from "./state_at_discharge_enum.ts";
 import {
 	PERIODIC_REPORT_RELEASED_EVENT_NAME,
 	PeriodicReportReleasedPayload,
@@ -32,9 +35,11 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 		"Deve criar uma hospitalização com sucesso se todos os dados forem válidos",
 		async () => {
 			let eventPublished = false;
+			let createdPayload: HospitalizationCreatedPayload | null = null;
 			const publish = <T>(evt: Event<T>) => {
 				if (evt.header("EventName") === HOSPITALIZATION_CREATED_EVENT_NAME) {
 					eventPublished = true;
+					createdPayload = evt.payload as HospitalizationCreatedPayload;
 				}
 			};
 
@@ -70,15 +75,25 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 
 			const result = await service.createHospitalization(context, request);
 
-			assertEquals(result.isRight(), true, `Expected right, got left: ${result.value}`);
-			assertEquals(eventPublished, true);
+			assertEquals(result.isRight(), true, `Expected right, got left: ${JSON.stringify(result.value)}`);
+			assertEquals(eventPublished, true, "HospitalizationCreatedEvent não foi publicado.");
 
-			const hospitalizationOrErr = await hospitalizationRepository.findById(result.right);
+			const hospitalizationOrErr = await hospitalizationRepository.findById(result.right!);
 			assertEquals(hospitalizationOrErr.isRight(), true);
+			const hospitalization = hospitalizationOrErr.right!;
 			assertEquals(
-				hospitalizationOrErr.right.actualDiagnosis,
-				hospitalizationOrErr.right.initialDiagnosis,
+				hospitalization.actualDiagnosis,
+				hospitalization.initialDiagnosis,
 			);
+			assertEquals(hospitalization.state, HospitalizationStateEnum.ON_GOING);
+			assertEquals(hospitalization.isActive, true);
+
+			if (createdPayload) {
+				const payload = createdPayload as HospitalizationCreatedPayload; // Explicit cast
+				assertEquals(payload.state, HospitalizationStateEnum.ON_GOING);
+			} else {
+				assert(false, "createdPayload should not be null");
+			}
 		},
 	);
 
@@ -489,20 +504,21 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 		const dischargeRequest = {
 			id: hospitalizationId.value,
 			dischargeDate: "2024-01-02",
-			stateAtDischarge: "Recuperado completamente",
-		};
+			stateAtDischarge: StateAtDischargeEnum.CURED,
+				};
 
-		const result = await service.dischargeHospitalization(context, dischargeRequest);
+				const result = await service.dischargeHospitalization(context, dischargeRequest);
 
-		assertEquals(result.isRight(), true, `Expected right, got left: ${JSON.stringify(result.value)}`);
-		assertEquals(eventPublished, true, "PatientDischargedEvent não foi publicado.");
+				assertEquals(result.isRight(), true, `Expected right, got left: ${JSON.stringify(result.value)}`);
+				assertEquals(eventPublished, true, "PatientDischargedEvent não foi publicado.");
 
-		const dischargedHospitalizationOrErr = await hospitalizationRepository.findById(
-			hospitalizationId,
-		);
-		assertEquals(dischargedHospitalizationOrErr.isRight(), true);
-		const dischargedHospitalization = dischargedHospitalizationOrErr.right!;
-		assertEquals(dischargedHospitalization.isActive, false);
+				const dischargedHospitalizationOrErr = await hospitalizationRepository.findById(
+					hospitalizationId,
+				);
+				assertEquals(dischargedHospitalizationOrErr.isRight(), true);
+				const dischargedHospitalization = dischargedHospitalizationOrErr.right!;
+				assertEquals(dischargedHospitalization.isActive, false);
+				assertEquals(dischargedHospitalization.state, HospitalizationStateEnum.CLOSED);
 		assertEquals(
 			dischargedHospitalization.stateAtDischarge,
 			dischargeRequest.stateAtDischarge,
@@ -554,11 +570,10 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 		const dischargeRequest = {
 			id: hospitalizationId.value,
 			dischargeDate: "2024-01-02",
-			stateAtDischarge: "Recuperado",
+			stateAtDischarge: StateAtDischargeEnum.CURED,
 		};
 
 		const result = await service.dischargeHospitalization(ctx, dischargeRequest);
-
 		assertEquals(result.isLeft(), true);
 		assertInstanceOf(result.value, ForbiddenError);
 	});
@@ -665,7 +680,7 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 			// Dar alta à hospitalização
 			const dischargeResult = hospitalization.dischargePatient(
 				DateValue.fromString("2024-01-02").right,
-				"Recuperado",
+				StateAtDischargeEnum.CURED,
 			);
 			assertEquals(dischargeResult.isRight(), true);
 			await hospitalizationRepository.save(hospitalization);
