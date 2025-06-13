@@ -457,7 +457,10 @@ Deno.test("HospitalizationsService.updateDiagnosis", async (t) => {
 		async () => {
 			const { service } = setupService();
 			const forbiddenContext: Context = { principal: "test", roles: [UserRoleEnum.TRAINEE] };
-			const updateRequest = { id: IdValue.random().value, actualDiagnosis: [DiagnosisEnum.TO_BE_DEFINED] };
+			const updateRequest = {
+				id: IdValue.random().value,
+				actualDiagnosis: [DiagnosisEnum.TO_BE_DEFINED],
+			};
 			const result = await service.updateDiagnosis(forbiddenContext, updateRequest);
 			assertEquals(result.isLeft(), true);
 			assertInstanceOf(result.value, ForbiddenError);

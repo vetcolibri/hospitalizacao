@@ -32,6 +32,7 @@
     "fmt": "deno fmt",
     "fmt:check": "deno fmt --check",
     "check": "deno check src/**/*.ts",
+    "ci": "deno test --allow-net --allow-read --allow-write --allow-env && deno check src/**/*.ts && deno lint src/ && deno fmt --check src/",
     "cache": "deno cache --reload",
     "compile": "deno compile --allow-net --allow-read --allow-write --allow-env --output=bin/hospitalizacao-v2 src/main.ts"
   },

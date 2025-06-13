@@ -48,7 +48,10 @@ export class HospitalizationsService {
 		ctx: Context,
 		request: CreateHospitalizationRequest,
 	): Promise<Either<ValidationError[] | ForbiddenError | IOError, IdValue>> {
-		if (!ctx.roles.includes(UserRoleEnum.MED_VET as string) && !ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)) {
+		if (
+			!ctx.roles.includes(UserRoleEnum.MED_VET as string) &&
+			!ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)
+		) {
 			return left(new ForbiddenError(CREATE_HOSPITALIZATION_CAUSE));
 		}
 
@@ -158,7 +161,10 @@ export class HospitalizationsService {
 		ctx: Context,
 		request: UpdateContactPersonRequest,
 	): Promise<Either<ValidationError[] | ForbiddenError | IOError, void>> {
-		if (!ctx.roles.includes(UserRoleEnum.MED_VET as string) && !ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)) {
+		if (
+			!ctx.roles.includes(UserRoleEnum.MED_VET as string) &&
+			!ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)
+		) {
 			return left(new ForbiddenError(UPDATE_CONTACT_PERSON_CAUSE));
 		}
 
@@ -229,7 +235,10 @@ export class HospitalizationsService {
 		ctx: Context,
 		request: UpdateDiagnosisRequest,
 	): Promise<Either<ValidationError[] | ForbiddenError | IOError, void>> {
-		if (!ctx.roles.includes(UserRoleEnum.MED_VET as string) && !ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)) {
+		if (
+			!ctx.roles.includes(UserRoleEnum.MED_VET as string) &&
+			!ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)
+		) {
 			return left(new ForbiddenError(UPDATE_DIAGNOSIS_CAUSE));
 		}
 
@@ -338,7 +347,10 @@ export class HospitalizationsService {
 		ctx: Context,
 		request: CreatePeriodicReportRequest,
 	): Promise<Either<ValidationError[] | ForbiddenError | IOError, void>> {
-		if (!ctx.roles.includes(UserRoleEnum.MED_VET as string) && !ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)) {
+		if (
+			!ctx.roles.includes(UserRoleEnum.MED_VET as string) &&
+			!ctx.roles.includes(UserRoleEnum.VET_ASSISTANT as string)
+		) {
 			return left(new ForbiddenError(CREATE_REPORT_CAUSE));
 		}
 

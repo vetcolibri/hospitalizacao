@@ -34,6 +34,7 @@ export function createHospitalizationHttpHandler(service: HospitalizationsServic
 				admissionDate: body.admissionDate,
 				estimatedDischargeDate: body.estimatedDischargeDate,
 				initialDiagnosis: body.initialDiagnosis,
+				complaints: body.complaints,
 				petId: body.petId,
 				petName: body.petName,
 				petAge: body.petAge,
@@ -42,6 +43,7 @@ export function createHospitalizationHttpHandler(service: HospitalizationsServic
 				ownerName: body.ownerName,
 				contactPersonName: body.contactPersonName,
 				contactPersonPhoneNumber: body.contactPersonWhatsApp,
+				contactPersonHasWhatsApp: body.contactPersonHasWhatsApp,
 				contactPersonCountryCode: body.contactPersonCountryCode,
 				contactPersonEmail: body.contactPersonEmail,
 			});
