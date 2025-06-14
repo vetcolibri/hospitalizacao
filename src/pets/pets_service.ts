@@ -185,9 +185,7 @@ export class PetsService {
 
 			if (orangeId.isRight()) {
 				const exists = await this.#ownerRepository.existsWithOrangestId(orangeId.right);
-				err = exists
-					? new DuplicatedOrangestIdError(owner.orangestId)
-					: undefined;
+				err = exists ? new DuplicatedOrangestIdError(owner.orangestId) : undefined;
 			}
 
 			if (err) {

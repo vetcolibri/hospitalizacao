@@ -288,7 +288,7 @@ Deno.test("HospitalizationsService.updateContactPerson", async (t) => {
 			assertEquals(result.isLeft(), true);
 			assertInstanceOf(result.value, Array);
 			const error = (result.value as ValidationError[])[0];
-			assert(error.message.includes("not found"));
+			assert(error.errors.join("").includes("not found"));
 		},
 	);
 

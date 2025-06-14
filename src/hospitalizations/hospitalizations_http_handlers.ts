@@ -80,7 +80,10 @@ export function updateContactPersonHttpHandler(service: HospitalizationsService)
 	return async (ctx: RouterContext<"/hospitalizations/:id/contact-person">) => {
 		try {
 			const body = await ctx.request.body({ type: "json" }).value;
-			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const stdRequest = new Request(ctx.request.url.toString(), {
+				headers: ctx.request.headers,
+				method: ctx.request.method,
+			});
 			const requestContext = await getRequestContext(stdRequest);
 			const id = ctx.params?.id;
 
@@ -136,7 +139,10 @@ export function updateDiagnosisHttpHandler(service: HospitalizationsService) {
 	return async (ctx: RouterContext<"/hospitalizations/:id/diagnosis">) => {
 		try {
 			const body = await ctx.request.body({ type: "json" }).value;
-			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const stdRequest = new Request(ctx.request.url.toString(), {
+				headers: ctx.request.headers,
+				method: ctx.request.method,
+			});
 			const requestContext = await getRequestContext(stdRequest);
 			const id = ctx.params?.id;
 
@@ -189,7 +195,10 @@ export function dischargeHospitalizationHttpHandler(service: HospitalizationsSer
 	return async (ctx: RouterContext<"/hospitalizations/:id/discharge">) => {
 		try {
 			const body = await ctx.request.body({ type: "json" }).value;
-			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const stdRequest = new Request(ctx.request.url.toString(), {
+				headers: ctx.request.headers,
+				method: ctx.request.method,
+			});
 			const requestContext = await getRequestContext(stdRequest);
 			const id = ctx.params?.id;
 
@@ -241,7 +250,10 @@ export function createPeriodicReportHttpHandler(service: HospitalizationsService
 	return async (ctx: RouterContext<"/hospitalizations/:id/periodic-reports">) => {
 		try {
 			const body = await ctx.request.body({ type: "json" }).value;
-			const stdRequest = new Request(ctx.request.url.toString(), { headers: ctx.request.headers, method: ctx.request.method });
+			const stdRequest = new Request(ctx.request.url.toString(), {
+				headers: ctx.request.headers,
+				method: ctx.request.method,
+			});
 			const requestContext = await getRequestContext(stdRequest);
 			const hospitalizationId = ctx.params?.id;
 

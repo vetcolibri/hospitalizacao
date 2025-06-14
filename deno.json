@@ -1,75 +1,75 @@
 {
-  "imports": {
-    "@deps/assert": "jsr:@std/assert",
-    "@deps/crypto": "node:crypto",
-    "@deps/oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
-    "@deps/cors": "https://deno.land/x/cors@v1.2.2/mod.ts",
-    "@deps/zod": "https://deno.land/x/zod@v3.22.2/mod.ts",
-    "@deps/croner": "https://deno.land/x/croner@8.0.0/dist/croner.js",
-    "@deps/sqlite": "https://deno.land/x/sqlite@v3.8/mod.ts",
-    "@deps/postgres": "https://deno.land/x/postgres@v0.19.3/mod.ts",
-    "@deps/jose": "https://deno.land/x/jose@v5.9.6/index.ts",
-    "@deps/mock": "jsr:@std/testing/mock",
+	"imports": {
+		"@deps/assert": "jsr:@std/assert",
+		"@deps/crypto": "node:crypto",
+		"@deps/oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
+		"@deps/cors": "https://deno.land/x/cors@v1.2.2/mod.ts",
+		"@deps/zod": "https://deno.land/x/zod@v3.22.2/mod.ts",
+		"@deps/croner": "https://deno.land/x/croner@8.0.0/dist/croner.js",
+		"@deps/sqlite": "https://deno.land/x/sqlite@v3.8/mod.ts",
+		"@deps/postgres": "https://deno.land/x/postgres@v0.19.3/mod.ts",
+		"@deps/jose": "https://deno.land/x/jose@v5.9.6/index.ts",
+		"@deps/mock": "jsr:@std/testing/mock",
 
-    "@shared/": "./src/shared/",
-    "@hospitalizations/": "./src/hospitalizations/",
-    "@pets/": "./src/pets/",
-    "@finances/": "./src/finances/",
-    "@notifications/": "./src/notifications/",
-    "@nursery/": "./src/nursery/",
+		"@shared/": "./src/shared/",
+		"@hospitalizations/": "./src/hospitalizations/",
+		"@pets/": "./src/pets/",
+		"@finances/": "./src/finances/",
+		"@notifications/": "./src/notifications/",
+		"@nursery/": "./src/nursery/",
 
-    "@testDoubles/": "./src/test_doubles/"
-  },
+		"@testDoubles/": "./src/test_doubles/"
+	},
 
-  "tasks": {
-    "dev": "deno run --watch --allow-net --allow-read --allow-write --allow-env src/main.ts",
-    "start": "deno run --allow-net --allow-read --allow-write --allow-env src/main.ts",
-    "test": "deno test --allow-net --allow-read --allow-write --allow-env",
-    "test:watch": "deno test --watch --allow-net --allow-read --allow-write --allow-env",
-    "test:coverage": "deno test --coverage=coverage --allow-net --allow-read --allow-write --allow-env && deno coverage coverage",
-    "lint": "deno lint",
-    "lint:fix": "deno lint --fix",
-    "fmt": "deno fmt",
-    "fmt:check": "deno fmt --check",
-    "check": "deno check src/**/*.ts",
-    "ci": "deno test --allow-net --allow-read --allow-write --allow-env && deno lint src/ && deno fmt --check src/",
-    "cache": "deno cache --reload",
-    "compile": "deno compile --allow-net --allow-read --allow-write --allow-env --output=bin/hospitalizacao-v2 src/main.ts"
-  },
+	"tasks": {
+		"dev": "deno run --watch --allow-net --allow-read --allow-write --allow-env src/main.ts",
+		"start": "deno run --allow-net --allow-read --allow-write --allow-env src/main.ts",
+		"test": "deno test --allow-net --allow-read --allow-write --allow-env",
+		"test:watch": "deno test --watch --allow-net --allow-read --allow-write --allow-env",
+		"test:coverage": "deno test --coverage=coverage --allow-net --allow-read --allow-write --allow-env && deno coverage coverage",
+		"lint": "deno lint",
+		"lint:fix": "deno lint --fix",
+		"fmt": "deno fmt",
+		"fmt:check": "deno fmt --check",
+		"check": "deno check src/**/*.ts",
+		"ci": "deno test --allow-net --allow-read --allow-write --allow-env && deno lint src/ && deno fmt --check src/",
+		"cache": "deno cache --reload",
+		"compile": "deno compile --allow-net --allow-read --allow-write --allow-env --output=bin/hospitalizacao-v2 src/main.ts"
+	},
 
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noFallthroughCasesInSwitch": true,
-    "useUnknownInCatchVariables": true,
-    "lib": ["dom", "dom.iterable", "es2022", "deno.ns"]
-  },
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noFallthroughCasesInSwitch": true,
+		"useUnknownInCatchVariables": true,
+		"lib": ["dom", "dom.iterable", "es2022", "deno.ns"]
+	},
 
-  "lint": {
-    "include": ["src/"],
-    "exclude": ["src/test_doubles/", "**/*_test.ts", "**/test_*.ts"],
-    "rules": {
-      "tags": ["recommended"],
-      "exclude": ["no-unused-vars", "no-explicit-any", "require-await"]
-    }
-  },
+	"lint": {
+		"include": ["src/"],
+		"exclude": ["src/test_doubles/", "**/*_test.ts", "**/test_*.ts"],
+		"rules": {
+			"tags": ["recommended"],
+			"exclude": ["no-unused-vars", "no-explicit-any", "require-await"]
+		}
+	},
 
-  "fmt": {
-    "useTabs": true,
-    "indentWidth": 2,
-    "lineWidth": 100,
-    "singleQuote": false,
-    "proseWrap": "preserve"
-  },
+	"fmt": {
+		"useTabs": true,
+		"indentWidth": 2,
+		"lineWidth": 100,
+		"singleQuote": false,
+		"proseWrap": "preserve"
+	},
 
-  "test": {
-    "include": ["src/**/*_test.ts", "src/**/test_*.ts"],
-    "exclude": ["src/test_doubles/"]
-  },
+	"test": {
+		"include": ["src/**/*_test.ts", "src/**/test_*.ts"],
+		"exclude": ["src/test_doubles/"]
+	},
 
-  "exclude": ["node_modules/", "coverage/", "dist/", "build/", ".git/"],
+	"exclude": ["node_modules/", "coverage/", "dist/", "build/", ".git/"],
 
-  "lock": false
+	"lock": false
 }

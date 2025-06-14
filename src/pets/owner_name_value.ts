@@ -1,31 +1,30 @@
 import { ValidationError } from "@shared/validation_error.ts";
 import { Either, left, right } from "@shared/either.ts";
+import { z } from "@deps/zod";
 
 export class OwnerNameValue {
-	static fromString(v: string): Either<ValidationError, OwnerNameValue> {
-		try {
-			return right(new OwnerNameValue(v));
-		} catch (error) {
-			return left(error as ValidationError);
+	static schema = z.object({
+		value: z.string()
+			.refine(
+				(v) => v.split(" ").length >= 2,
+				"O nome do tutor deve conter pelo menos um nome e um sobrenome",
+			)
+			.refine(
+				(v) => v.split(" ").every((s) => /^[a-zA-Z]{2,}$/.test(s)),
+				"Cada parte do nome do tutor deve conter pelo menos 2 letras",
+			),
+	}).transform((data) => new OwnerNameValue(data.value));
+
+	static fromString(value: string): Either<ValidationError, OwnerNameValue> {
+		const result = OwnerNameValue.schema.safeParse({ value });
+
+		if (!result.success) {
+			const errors = result.error.errors.map((err) => err.message);
+			return left(new ValidationError("OwnerNameValue", errors));
 		}
+
+		return right(result.data);
 	}
 
-	private constructor(readonly value: string) {
-		const re = /^[a-zA-Z]{2,}$/;
-		const errors = [];
-		const splits = value.split(" ");
-		if (splits.length < 2) {
-			errors.push("O nome do tutor deve conter pelo menos um nome e um sobrenome");
-		}
-
-		for (const split of splits) {
-			if (!re.test(split)) {
-				errors.push(`${split}: no nome do tutor deve 2 ou mais letras`);
-			}
-		}
-
-		if (errors.length > 0) {
-			throw new ValidationError("OwnerNameValue", errors);
-		}
-	}
+	private constructor(readonly value: string) {}
 }

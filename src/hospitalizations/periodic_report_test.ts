@@ -43,7 +43,7 @@ Deno.test("PeriodicReport", async (t) => {
 
 		assertEquals(reportOrErr.isLeft(), true);
 		const error = reportOrErr.value as ValidationError;
-		assertEquals(error.message.includes("O timestamp é obrigatório"), true);
+		assertEquals(error.errors.join("").includes("O timestamp é obrigatório"), true);
 	});
 
 	await t.step("Deve retornar erro se as anotações excederem 1000 caracteres", () => {
@@ -64,7 +64,7 @@ Deno.test("PeriodicReport", async (t) => {
 		assertEquals(reportOrErr.isLeft(), true);
 		const error = reportOrErr.value as ValidationError;
 		assertEquals(
-			error.message.includes("As anotações não podem ter mais de 1000 caracteres"),
+			error.errors.join("").includes("As anotações não podem ter mais de 1000 caracteres"),
 			true,
 		);
 	});

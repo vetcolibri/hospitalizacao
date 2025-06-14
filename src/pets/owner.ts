@@ -7,19 +7,48 @@ import { Either, left, right } from "@shared/either.ts";
 import { Event, withHeader, withPayload } from "@shared/event.ts";
 import { OWNER_CREATED_EVENT_NAME, OwnerCreatedPayload } from "./owner_created_event.ts";
 import { OWNER_UPDATED_EVENT_NAME, OwnerUpdatedPayload } from "./owner_updated_event.ts";
+import { z } from "@deps/zod";
+
+const phoneNumbersSchema = z.array(
+	z.custom<PhoneNumberValue>(
+		(val) => val instanceof PhoneNumberValue,
+		"Número de telefone inválido",
+	),
+).min(1, "O tutor deve ter pelo menos um número de telefone");
 
 export class Owner {
+	static readonly schema = z.object({
+		id: z.custom((val) => val instanceof IdValue, "ID inválido"),
+		orangestId: z.custom((val) => val instanceof OrangestIdValue, "ID Orangest inválido"),
+		name: z.custom((val) => val instanceof OwnerNameValue, "Nome inválido"),
+		phoneNumbers: z.array(
+			z.custom<PhoneNumberValue>(
+				(val) => val instanceof PhoneNumberValue,
+				"Número de telefone inválido",
+			),
+		).min(1, "O tutor deve ter pelo menos um número de telefone"),
+	}).transform((data) => new Owner(data.id, data.orangestId, data.name, data.phoneNumbers));
+
 	static create(
 		id: IdValue,
 		orangestId: OrangestIdValue,
 		name: OwnerNameValue,
 		phoneNumbers: PhoneNumberValue[],
 	): Either<ValidationError, Owner> {
-		try {
-			return right(new Owner(id, orangestId, name, phoneNumbers));
-		} catch (error) {
-			return left(error as ValidationError);
+		// Validate constructor parameters using Zod
+		const result = Owner.schema.safeParse({
+			id,
+			orangestId,
+			name,
+			phoneNumbers,
+		});
+
+		if (!result.success) {
+			const errors = result.error.errors.map((err) => err.message);
+			return left(new ValidationError("Owner", errors));
 		}
+
+		return right(result.data);
 	}
 
 	readonly #id: IdValue;
@@ -39,12 +68,6 @@ export class Owner {
 		this.#orangestId = orangestId;
 		this.#name = name;
 		this.#phoneNumbers = phoneNumbers;
-
-		if (phoneNumbers.length === 0) {
-			throw new ValidationError("Pets.Owner:constructor", [
-				"O tutor deve ter pelo menos um número de telefone",
-			]);
-		}
 
 		this.#uncommitedEvents = [];
 		this.#uncommitedEvents.push(this.#createOwnerCreatedEvent(this));
@@ -88,12 +111,11 @@ export class Owner {
 	}
 
 	updatePhoneNumbers(phoneNumbers: PhoneNumberValue[]): Either<ValidationError, void> {
-		if (!phoneNumbers || phoneNumbers.length === 0) {
-			return left(
-				new ValidationError("Pets.Owner:updatePhoneNumbers", [
-					"O tutor deve ter pelo menos um número de telefone",
-				]),
-			);
+		const validationResult = phoneNumbersSchema.safeParse(phoneNumbers);
+
+		if (!validationResult.success) {
+			const errors = validationResult.error.errors.map((err) => err.message);
+			return left(new ValidationError("Pets.Owner:updatePhoneNumbers", errors));
 		}
 
 		this.#phoneNumbers = phoneNumbers;

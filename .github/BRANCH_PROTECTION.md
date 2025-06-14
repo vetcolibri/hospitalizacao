@@ -9,29 +9,36 @@ Configure these settings in GitHub repository settings under **Settings > Branch
 ### For `main` branch (and other protected branches):
 
 #### 1. Require a pull request before merging
+
 - ✅ **Require a pull request before merging**
 - ✅ **Require approvals**: 1 (minimum)
 - ✅ **Dismiss stale PR approvals when new commits are pushed**
 - ✅ **Require review from code owners** (if CODEOWNERS file exists)
 
 #### 2. Require status checks to pass before merging
+
 - ✅ **Require status checks to pass before merging**
 - ✅ **Require branches to be up to date before merging**
 
 **Required status checks:**
+
 - `test` (from CI workflow)
 - `require-tests` (from CI workflow)
 
 #### 3. Require conversation resolution before merging
+
 - ✅ **Require conversation resolution before merging**
 
 #### 4. Require signed commits (optional but recommended)
+
 - ✅ **Require signed commits**
 
 #### 5. Require linear history (optional)
+
 - ✅ **Require linear history**
 
 #### 6. Administrative settings
+
 - ✅ **Do not allow bypassing the above settings**
 - ✅ **Restrict pushes that create files that do not already exist**
 
@@ -122,15 +129,18 @@ With these protections in place:
 ## Troubleshooting
 
 ### Status checks not appearing
+
 - Ensure the workflow has run at least once on the branch
 - Check that the job names in the workflow match the required status checks
 
 ### Tests failing in CI but passing locally
+
 - Check Deno version compatibility
 - Ensure all necessary permissions are set in the workflow
 - Verify file paths are correct (case-sensitive in CI)
 
 ### Branch protection not enforcing
+
 - Verify you have admin permissions on the repository
 - Ensure the branch name matches exactly (including case)
 - Check that required status checks are spelled correctly
