@@ -3,6 +3,7 @@ import { ValidationError } from "@shared/validation_error.ts";
 import { Either, left, right } from "@shared/either.ts";
 import { ConsciousnessStateEnum } from "./consciousness_state_enum.ts";
 import { IdValue } from "@shared/id_value.ts";
+import { z } from "@deps/zod";
 
 export class PeriodicReport {
 	static create(
@@ -11,18 +12,26 @@ export class PeriodicReport {
 		consciousnessStates: ConsciousnessStateEnum,
 		annotations: string,
 	): Either<ValidationError, PeriodicReport> {
-		try {
-			return right(
-				new PeriodicReport(
-					id,
-					timestamp,
-					consciousnessStates,
-					annotations,
-				),
-			);
-		} catch (error) {
-			return left(error as ValidationError);
+		const result = PERIODIC_REPORT_SCHEMA.safeParse({
+			id,
+			timestamp,
+			consciousnessStates,
+			annotations,
+		});
+
+		if (!result.success) {
+			const errors = result.error.issues.map((issue) => issue.message);
+			return left(new ValidationError("PeriodicReport", errors));
 		}
+
+		return right(
+			new PeriodicReport(
+				result.data.id,
+				result.data.timestamp,
+				result.data.consciousnessStates,
+				result.data.annotations,
+			),
+		);
 	}
 
 	readonly id: IdValue;
@@ -40,23 +49,15 @@ export class PeriodicReport {
 		this.timestamp = timestamp;
 		this.consciousnessStates = consciousnessStates;
 		this.annotations = annotations;
-
-		const errors: string[] = [];
-
-		if (id === null || id === undefined) {
-			errors.push("O ID do relatório periódico é obrigatório");
-		}
-
-		if (timestamp === null || timestamp === undefined) {
-			errors.push("O timestamp é obrigatório");
-		}
-
-		if (annotations && annotations.length > 1000) {
-			errors.push("As anotações não podem ter mais de 1000 caracteres");
-		}
-
-		if (errors.length > 0) {
-			throw new ValidationError("PeriodicReport", errors);
-		}
 	}
 }
+
+export const PERIODIC_REPORT_SCHEMA = z.object({
+	id: z.custom<IdValue>(
+		(val) => val instanceof IdValue,
+		"O ID do relatório periódico é obrigatório",
+	),
+	timestamp: z.custom<DateValue>((val) => val instanceof DateValue, "O timestamp é obrigatório"),
+	consciousnessStates: z.enum(ConsciousnessStateEnum),
+	annotations: z.string().max(1000, "As anotações não podem ter mais de 1000 caracteres"),
+});

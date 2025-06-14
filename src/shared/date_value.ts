@@ -1,24 +1,24 @@
 import { Either, left, right } from "@shared/either.ts";
 import { ValidationError } from "@shared/validation_error.ts";
+import { z } from "@deps/zod";
 
 export class DateValue {
 	readonly value: string;
 
 	private constructor(value: string) {
-		const regex = /^\d{4}-\d{2}-\d{2}$/;
-		if (!regex.test(value)) {
-			throw new ValidationError("DateValue", [`O [Date Value] tem um valor inválido [${value}]`]);
-		}
-
+		// Validation is now handled by Zod schema in fromString
 		this.value = value;
 	}
 
 	static fromString(dateString: string): Either<ValidationError, DateValue> {
-		try {
-			return right(new DateValue(dateString));
-		} catch (error) {
-			return left(error as ValidationError);
+		const result = DATE_VALUE_SCHEMA.safeParse({ value: dateString });
+
+		if (!result.success) {
+			const errors = result.error.issues.map((err) => err.message);
+			return left(new ValidationError("DateValue", errors));
 		}
+
+		return right(new DateValue(result.data.value));
 	}
 
 	static today(): DateValue {
@@ -42,3 +42,8 @@ export class DateValue {
 		return this.toDate() < other.toDate();
 	}
 }
+
+export const DATE_VALUE_SCHEMA = z.object({
+	value: z.string()
+		.regex(/^\d{4}-\d{2}-\d{2}$/, "O [Date Value] tem um valor inválido"),
+});

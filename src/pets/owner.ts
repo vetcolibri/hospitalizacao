@@ -9,26 +9,7 @@ import { OWNER_CREATED_EVENT_NAME, OwnerCreatedPayload } from "./owner_created_e
 import { OWNER_UPDATED_EVENT_NAME, OwnerUpdatedPayload } from "./owner_updated_event.ts";
 import { z } from "@deps/zod";
 
-const phoneNumbersSchema = z.array(
-	z.custom<PhoneNumberValue>(
-		(val) => val instanceof PhoneNumberValue,
-		"Número de telefone inválido",
-	),
-).min(1, "O tutor deve ter pelo menos um número de telefone");
-
 export class Owner {
-	static readonly schema = z.object({
-		id: z.custom((val) => val instanceof IdValue, "ID inválido"),
-		orangestId: z.custom((val) => val instanceof OrangestIdValue, "ID Orangest inválido"),
-		name: z.custom((val) => val instanceof OwnerNameValue, "Nome inválido"),
-		phoneNumbers: z.array(
-			z.custom<PhoneNumberValue>(
-				(val) => val instanceof PhoneNumberValue,
-				"Número de telefone inválido",
-			),
-		).min(1, "O tutor deve ter pelo menos um número de telefone"),
-	}).transform((data) => new Owner(data.id, data.orangestId, data.name, data.phoneNumbers));
-
 	static create(
 		id: IdValue,
 		orangestId: OrangestIdValue,
@@ -36,7 +17,7 @@ export class Owner {
 		phoneNumbers: PhoneNumberValue[],
 	): Either<ValidationError, Owner> {
 		// Validate constructor parameters using Zod
-		const result = Owner.schema.safeParse({
+		const result = OWNER_SCHEMA.safeParse({
 			id,
 			orangestId,
 			name,
@@ -44,11 +25,24 @@ export class Owner {
 		});
 
 		if (!result.success) {
-			const errors = result.error.errors.map((err) => err.message);
+			const errors = result.error.issues.map((err) => err.message);
 			return left(new ValidationError("Owner", errors));
 		}
 
-		return right(result.data);
+		return right(
+			new Owner(result.data.id, result.data.orangestId, result.data.name, result.data.phoneNumbers),
+		);
+	}
+
+	static recreate(
+		id: IdValue,
+		orangestId: OrangestIdValue,
+		name: OwnerNameValue,
+		phoneNumbers: PhoneNumberValue[],
+	): Owner {
+		const owner = Owner.create(id, orangestId, name, phoneNumbers).right;
+		owner.clearUncommitedEvents();
+		return owner;
 	}
 
 	readonly #id: IdValue;
@@ -111,10 +105,10 @@ export class Owner {
 	}
 
 	updatePhoneNumbers(phoneNumbers: PhoneNumberValue[]): Either<ValidationError, void> {
-		const validationResult = phoneNumbersSchema.safeParse(phoneNumbers);
+		const validationResult = PHONE_NUMBERS_SCHEMA.safeParse(phoneNumbers);
 
 		if (!validationResult.success) {
-			const errors = validationResult.error.errors.map((err) => err.message);
+			const errors = validationResult.error.issues.map((err) => err.message);
 			return left(new ValidationError("Pets.Owner:updatePhoneNumbers", errors));
 		}
 
@@ -176,3 +170,20 @@ export class Owner {
 		);
 	}
 }
+
+export const PHONE_NUMBERS_SCHEMA = z.array(
+	z.custom<PhoneNumberValue>(
+		(val) => val instanceof PhoneNumberValue,
+		"Número de telefone inválido",
+	),
+).min(1, "O tutor deve ter pelo menos um número de telefone");
+
+export const OWNER_SCHEMA = z.object({
+	id: z.custom<IdValue>((val) => val instanceof IdValue, "ID inválido"),
+	orangestId: z.custom<OrangestIdValue>(
+		(val) => val instanceof OrangestIdValue,
+		"ID Orangest inválido",
+	), // Corrected type here
+	name: z.custom<OwnerNameValue>((val) => val instanceof OwnerNameValue, "Nome inválido"),
+	phoneNumbers: PHONE_NUMBERS_SCHEMA, // Use the extracted schema
+});

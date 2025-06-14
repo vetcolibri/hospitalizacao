@@ -2,6 +2,7 @@ import { DateValue } from "@shared/date_value.ts";
 import { IdValue } from "@shared/id_value.ts";
 import { OrangestIdValue } from "@shared/orangest_id_value.ts";
 import { ValidationError } from "@shared/validation_error.ts";
+import { z } from "@deps/zod";
 
 import DOG_BREEDS from "./dog_breeds.json" with { type: "json" };
 import CAT_BREEDS from "./cat_breeds.json" with { type: "json" };
@@ -37,39 +38,7 @@ export class Pet {
 		this.#orangestId = orangestId;
 		this.#weight = weight;
 
-		const errs: string[] = [];
-
-		if (!id) {
-			errs.push("O pet deve ter um id");
-		}
-
-		if (!orangestId) {
-			errs.push("O pet deve ter um orangestId");
-		}
-
-		if (!ownerId) {
-			errs.push("O pet deve ter um ownerId");
-		}
-
-		if (name.trim().length < 2) {
-			errs.push("O nome do pet deve ter pelo menos 2 caracteres");
-		}
-
-		if (!birthday.earlierThan(DateValue.today())) {
-			errs.push("A data de nascimento do pet deve ser anterior a hoje");
-		}
-
-		if (breeds.length === 0) {
-			errs.push("O pet deve ter pelo menos uma raça");
-		}
-
-		if (weight <= 0) {
-			errs.push("O peso do pet deve ser maior que zero");
-		}
-
-		if (errs.length > 0) {
-			throw new ValidationError("Pet", errs);
-		}
+		// Validation is now handled by Zod schema in the Builder's build method
 
 		if (species === "CANINO" && !breeds.every((b) => DOG_BREEDS.includes(b))) {
 			console.warn(`[WARNING] Raça inválida para espécie CANINO: ${breeds.join(", ")}`);
@@ -95,7 +64,7 @@ export class Pet {
 		private species: "CANINO" | "FELINO" | "AVES" | "EXÓTICO";
 		private breeds: string[];
 		private ownerId: IdValue;
-		private orangestId: IdValue;
+		private orangestId: OrangestIdValue;
 		private weight: number;
 
 		constructor() {
@@ -105,7 +74,7 @@ export class Pet {
 			this.name = undefined as unknown as string;
 			this.species = undefined as unknown as "CANINO" | "FELINO" | "AVES" | "EXÓTICO";
 			this.ownerId = undefined as unknown as IdValue;
-			this.orangestId = undefined as unknown as IdValue;
+			this.orangestId = undefined as unknown as OrangestIdValue;
 			this.weight = 0;
 		}
 
@@ -134,7 +103,7 @@ export class Pet {
 			return this;
 		}
 
-		withOrangestId(orangestId: IdValue) {
+		withOrangestId(orangestId: OrangestIdValue) {
 			this.orangestId = orangestId;
 			return this;
 		}
@@ -145,16 +114,52 @@ export class Pet {
 		}
 
 		build(): Pet {
+			const result = PET_SCHEMA.safeParse({
+				id: this.id,
+				orangestId: this.orangestId,
+				ownerId: this.ownerId,
+				name: this.name,
+				birthday: this.birthday,
+				species: this.species,
+				breeds: this.breeds,
+				weight: this.weight,
+			});
+
+			if (!result.success) {
+				const errors = result.error.issues.map((err) => `${err.path.join(".")}: ${err.message}`);
+				throw new ValidationError("Pet.Builder", errors);
+			}
+			const data = result.data;
 			return new Pet(
-				this.id,
-				this.orangestId,
-				this.ownerId,
-				this.name,
-				this.birthday,
-				this.species,
-				this.breeds,
-				this.weight,
+				data.id,
+				data.orangestId,
+				data.ownerId,
+				data.name,
+				data.birthday,
+				data.species,
+				data.breeds,
+				data.weight,
 			);
 		}
 	};
 }
+
+export const PET_SCHEMA = z.object({
+	id: z.custom<IdValue>((val) => val instanceof IdValue, "O pet deve ter um id"),
+	orangestId: z.custom<OrangestIdValue>(
+		(val) => val instanceof OrangestIdValue,
+		"O pet deve ter um orangestId",
+	),
+	ownerId: z.custom<IdValue>((val) => val instanceof IdValue, "O pet deve ter um ownerId"),
+	name: z.string().trim().min(2, "O nome do pet deve ter pelo menos 2 caracteres"),
+	birthday: z.custom<DateValue>((val) => val instanceof DateValue, "Data de nascimento inválida"),
+	species: z.enum(["CANINO", "FELINO", "AVES", "EXÓTICO"]),
+	breeds: z.array(z.string()).min(1, "O pet deve ter pelo menos uma raça"),
+	weight: z.number().positive("O peso do pet deve ser maior que zero"),
+}).refine(
+	(data) => data.birthday.earlierThan(DateValue.today()),
+	{
+		message: "A data de nascimento do pet deve ser anterior a hoje",
+		path: ["birthday"],
+	},
+);

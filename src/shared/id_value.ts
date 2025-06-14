@@ -5,12 +5,6 @@ import { z } from "@deps/zod";
 const CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 export class IdValue {
-	static schema = z.object({
-		value: z.string()
-			.length(8, "O [Id Value] deve ter exactamente 8 caracteres")
-			.regex(/^[a-zA-Z0-9]{8}$/, "O [Id Value] deve conter apenas letras e números"),
-	}).transform((data) => new IdValue(data.value));
-
 	static random(): IdValue {
 		const randomId = Array
 			.from({ length: 8 }, () => CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)])
@@ -20,15 +14,21 @@ export class IdValue {
 	}
 
 	static fromString(value: string): Either<ValidationError, IdValue> {
-		const result = IdValue.schema.safeParse({ value });
+		const result = ID_VALUE_SCHEMA.safeParse({ value });
 
 		if (!result.success) {
-			const errors = result.error.errors.map((err) => err.message);
+			const errors = result.error.issues.map((err) => err.message);
 			return left(new ValidationError("IdValue", errors));
 		}
 
-		return right(result.data);
+		return right(new IdValue(result.data.value));
 	}
 
 	private constructor(readonly value: string) {}
 }
+
+export const ID_VALUE_SCHEMA = z.object({
+	value: z.string()
+		.length(8, "O [Id Value] deve ter exactamente 8 caracteres")
+		.regex(/^[a-zA-Z0-9]{8}$/, "O [Id Value] deve conter apenas letras e números"),
+});

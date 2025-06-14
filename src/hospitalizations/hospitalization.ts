@@ -3,6 +3,7 @@ import { DateValue } from "@shared/date_value.ts";
 import { ValidationError } from "@shared/validation_error.ts";
 import { Either, left, right } from "@shared/either.ts";
 import { Event, withHeader, withPayload } from "@shared/event.ts";
+import { z } from "@deps/zod";
 import { ContactPersonValue } from "./contact_person_value.ts";
 import { PeriodicReport } from "./periodic_report.ts";
 import { ComplaintEnum } from "./complaint_enum.ts";
@@ -89,67 +90,6 @@ export class Hospitalization {
 		this.#contactPerson = contactPerson;
 		this.#periodicReports = [];
 		this.#state = HospitalizationStateEnum.ON_GOING;
-
-		const errors: string[] = [];
-
-		if (!id) {
-			errors.push("O ID da hospitalização é obrigatório");
-		}
-
-		if (!admissionDate) {
-			errors.push("A data de admissão é obrigatória");
-		}
-
-		if (!estimatedDischargeDate) {
-			errors.push("A data estimada de alta é obrigatória");
-		}
-
-		if (
-			admissionDate && estimatedDischargeDate && estimatedDischargeDate.earlierThan(admissionDate)
-		) {
-			errors.push("A data estimada de alta deve ser posterior à data de admissão");
-		}
-
-		if (!initialDiagnosis || initialDiagnosis.length === 0) {
-			errors.push("Deve haver pelo menos um diagnóstico inicial");
-		}
-
-		if (initialDiagnosis && initialDiagnosis.length > 10) {
-			errors.push("Não podem haver mais de 10 diagnósticos iniciais");
-		}
-
-		if (!complaints || complaints.length === 0) {
-			errors.push("Deve haver pelo menos uma queixa");
-		}
-
-		if (complaints && complaints.length > 15) {
-			errors.push("Não podem haver mais de 15 queixas");
-		}
-
-		if (!petId || !petName || petName.trim().length < 2) {
-			errors.push("Os dados do pet são obrigatórios e o nome deve ter pelo menos 2 caracteres");
-		}
-
-		if (!petAge || petAge.trim().length < 1) {
-			errors.push("A idade do pet é obrigatória");
-		}
-
-		if (!petWeight || petWeight <= 0) {
-			errors.push("O peso do pet deve ser maior que zero");
-		}
-
-		if (!ownerId || !ownerName || ownerName.trim().length < 2) {
-			errors.push("Os dados do tutor são obrigatórios e o nome deve ter pelo menos 2 caracteres");
-		}
-
-		if (!contactPerson) {
-			errors.push("A pessoa de contacto é obrigatória");
-		}
-
-		if (errors.length > 0) {
-			throw new ValidationError("Hospitalization", errors);
-		}
-
 		this.#uncommitedEvents = [];
 		this.#uncommitedEvents.push(this.#createHospitalizationCreatedEvent(this));
 	}
@@ -567,20 +507,78 @@ export class Hospitalization {
 		}
 
 		build(): Hospitalization {
+			const result = HOSPITALIZATION_SCHEMA.safeParse({
+				id: this.id,
+				admissionDate: this.admissionDate,
+				estimatedDischargeDate: this.estimatedDischargeDate,
+				initialDiagnosis: this.initialDiagnosis,
+				complaints: this.complaints,
+				petId: this.petId,
+				petName: this.petName,
+				petAge: this.petAge,
+				petWeight: this.petWeight,
+				ownerId: this.ownerId,
+				ownerName: this.ownerName,
+				contactPerson: this.contactPerson,
+			});
+
+			if (!result.success) {
+				const errors = result.error.issues.map((err) => `${err.path.join(".")}: ${err.message}`);
+				throw new ValidationError("Hospitalization.Builder", errors);
+			}
+
+			// Explicitly call the constructor with validated data
+			const data = result.data;
 			return new Hospitalization(
-				this.id,
-				this.admissionDate,
-				this.estimatedDischargeDate,
-				this.initialDiagnosis,
-				this.complaints,
-				this.petId,
-				this.petName,
-				this.petAge,
-				this.petWeight,
-				this.ownerId,
-				this.ownerName,
-				this.contactPerson,
+				data.id,
+				data.admissionDate,
+				data.estimatedDischargeDate,
+				data.initialDiagnosis,
+				data.complaints,
+				data.petId,
+				data.petName,
+				data.petAge,
+				data.petWeight,
+				data.ownerId,
+				data.ownerName,
+				data.contactPerson,
 			);
 		}
 	};
 }
+
+export const HOSPITALIZATION_SCHEMA = z.object({
+	id: z.custom<IdValue>((val) => val instanceof IdValue, "O ID da hospitalização é obrigatório"),
+	admissionDate: z.custom<DateValue>(
+		(val) => val instanceof DateValue,
+		"A data de admissão é obrigatória",
+	),
+	estimatedDischargeDate: z.custom<DateValue>(
+		(val) => val instanceof DateValue,
+		"A data estimada de alta é obrigatória",
+	),
+	initialDiagnosis: z.array(z.nativeEnum(DiagnosisEnum))
+		.min(1, "Deve haver pelo menos um diagnóstico inicial")
+		.max(10, "Não podem haver mais de 10 diagnósticos iniciais"),
+	complaints: z.array(z.nativeEnum(ComplaintEnum))
+		.min(1, "Deve haver pelo menos uma queixa")
+		.max(15, "Não podem haver mais de 15 queixas"),
+	petId: z.custom<IdValue>((val) => val instanceof IdValue, "O ID do pet é obrigatório"),
+	petName: z.string().trim().min(2, "O nome do pet deve ter pelo menos 2 caracteres"),
+	petAge: z.string().trim().min(1, "A idade do pet é obrigatória"),
+	petWeight: z.number().positive("O peso do pet deve ser maior que zero"),
+	ownerId: z.custom<IdValue>((val) => val instanceof IdValue, "O ID do tutor é obrigatório"),
+	ownerName: z.string().trim().min(2, "O nome do tutor deve ter pelo menos 2 caracteres"),
+	contactPerson: z.custom<ContactPersonValue>(
+		(val) => val instanceof ContactPersonValue,
+		"A pessoa de contacto é obrigatória",
+	),
+}).refine((data) => {
+	if (data.admissionDate && data.estimatedDischargeDate) {
+		return !data.estimatedDischargeDate.earlierThan(data.admissionDate);
+	}
+	return true;
+}, {
+	message: "A data estimada de alta deve ser posterior à data de admissão",
+	path: ["estimatedDischargeDate"], // Specify the field this refinement applies to
+});

@@ -4,7 +4,7 @@
 		"@deps/crypto": "node:crypto",
 		"@deps/oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
 		"@deps/cors": "https://deno.land/x/cors@v1.2.2/mod.ts",
-		"@deps/zod": "https://deno.land/x/zod@v3.22.2/mod.ts",
+		"@deps/zod": "npm:zod/v4",
 		"@deps/croner": "https://deno.land/x/croner@8.0.0/dist/croner.js",
 		"@deps/sqlite": "https://deno.land/x/sqlite@v3.8/mod.ts",
 		"@deps/postgres": "https://deno.land/x/postgres@v0.19.3/mod.ts",
