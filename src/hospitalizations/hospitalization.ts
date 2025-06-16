@@ -74,12 +74,17 @@ export class Hospitalization {
 		ownerId: IdValue,
 		ownerName: string,
 		contactPerson: ContactPersonValue,
+		state: HospitalizationStateEnum = HospitalizationStateEnum.ON_GOING,
+		actualDiagnosis: DiagnosisEnum[] | undefined = undefined,
+		dischargeDate: DateValue | undefined = undefined,
+		stateAtDischarge: StateAtDischargeEnum | undefined = undefined,
+		periodicReports: PeriodicReport[] = [],
 	) {
 		this.#id = id;
 		this.#admissionDate = admissionDate;
 		this.#estimatedDischargeDate = estimatedDischargeDate;
 		this.#initialDiagnosis = [...initialDiagnosis];
-		this.#actualDiagnosis = [...initialDiagnosis]; // Start with initial diagnosis
+		this.#actualDiagnosis = actualDiagnosis ?? [...initialDiagnosis];
 		this.#complaints = [...complaints];
 		this.#petId = petId;
 		this.#petName = petName;
@@ -88,8 +93,12 @@ export class Hospitalization {
 		this.#ownerId = ownerId;
 		this.#ownerName = ownerName;
 		this.#contactPerson = contactPerson;
-		this.#periodicReports = [];
-		this.#state = HospitalizationStateEnum.ON_GOING;
+		this.#periodicReports = [...periodicReports];
+		this.#state = state;
+
+		this.#dischargeDate = dischargeDate;
+		this.#stateAtDischarge = stateAtDischarge;
+
 		this.#uncommitedEvents = [];
 		this.#uncommitedEvents.push(this.#createHospitalizationCreatedEvent(this));
 	}
@@ -430,6 +439,11 @@ export class Hospitalization {
 		private ownerId: IdValue;
 		private ownerName: string;
 		private contactPerson: ContactPersonValue;
+		private state: HospitalizationStateEnum = HospitalizationStateEnum.ON_GOING;
+		private actualDiagnosis: DiagnosisEnum[] | undefined;
+		private dischargeDate: DateValue | undefined;
+		private stateAtDischarge: StateAtDischargeEnum | undefined;
+		private periodicReports: PeriodicReport[] = [];
 
 		constructor() {
 			this.id = IdValue.random();
@@ -506,8 +520,8 @@ export class Hospitalization {
 			return this;
 		}
 
-		build(): Hospitalization {
-			const result = HOSPITALIZATION_SCHEMA.safeParse({
+		build(): Either<ValidationError, Hospitalization> {
+			const result = HOSPITALIZATION_CONSTRUCTOR_SCHEMA.safeParse({
 				id: this.id,
 				admissionDate: this.admissionDate,
 				estimatedDischargeDate: this.estimatedDischargeDate,
@@ -524,12 +538,57 @@ export class Hospitalization {
 
 			if (!result.success) {
 				const errors = result.error.issues.map((err) => `${err.path.join(".")}: ${err.message}`);
+				return left(new ValidationError("Hospitalization.Builder", errors));
+			}
+
+			const data = result.data;
+			return right(
+				new Hospitalization(
+					data.id,
+					data.admissionDate,
+					data.estimatedDischargeDate,
+					data.initialDiagnosis,
+					data.complaints,
+					data.petId,
+					data.petName,
+					data.petAge,
+					data.petWeight,
+					data.ownerId,
+					data.ownerName,
+					data.contactPerson,
+				),
+			);
+		}
+
+		rebuild(): Hospitalization {
+			const result = HOSPITALIZATION_SCHEMA.safeParse({
+				id: this.id,
+				admissionDate: this.admissionDate,
+				estimatedDischargeDate: this.estimatedDischargeDate,
+				initialDiagnosis: this.initialDiagnosis,
+				complaints: this.complaints,
+				petId: this.petId,
+				petName: this.petName,
+				petAge: this.petAge,
+				petWeight: this.petWeight,
+				ownerId: this.ownerId,
+				ownerName: this.ownerName,
+				contactPerson: this.contactPerson,
+
+				state: this.state,
+				actualDiagnosis: this.actualDiagnosis,
+				dischargeDate: this.dischargeDate,
+				stateAtDischarge: this.stateAtDischarge,
+				periodicReports: this.periodicReports,
+			});
+
+			if (!result.success) {
+				const errors = result.error.issues.map((err) => `${err.path.join(".")}: ${err.message}`);
 				throw new ValidationError("Hospitalization.Builder", errors);
 			}
 
-			// Explicitly call the constructor with validated data
 			const data = result.data;
-			return new Hospitalization(
+			const hospitalization = new Hospitalization(
 				data.id,
 				data.admissionDate,
 				data.estimatedDischargeDate,
@@ -542,12 +601,20 @@ export class Hospitalization {
 				data.ownerId,
 				data.ownerName,
 				data.contactPerson,
+				data.state,
+				data.actualDiagnosis,
+				data.dischargeDate,
+				data.stateAtDischarge,
+				data.periodicReports,
 			);
+
+			hospitalization.clearUncommitedEvents();
+			return hospitalization;
 		}
 	};
 }
 
-export const HOSPITALIZATION_SCHEMA = z.object({
+export const HOSPITALIZATION_CONSTRUCTOR_SCHEMA = z.object({
 	id: z.custom<IdValue>((val) => val instanceof IdValue, "O ID da hospitalização é obrigatório"),
 	admissionDate: z.custom<DateValue>(
 		(val) => val instanceof DateValue,
@@ -557,10 +624,10 @@ export const HOSPITALIZATION_SCHEMA = z.object({
 		(val) => val instanceof DateValue,
 		"A data estimada de alta é obrigatória",
 	),
-	initialDiagnosis: z.array(z.nativeEnum(DiagnosisEnum))
+	initialDiagnosis: z.array(z.enum(DiagnosisEnum))
 		.min(1, "Deve haver pelo menos um diagnóstico inicial")
 		.max(10, "Não podem haver mais de 10 diagnósticos iniciais"),
-	complaints: z.array(z.nativeEnum(ComplaintEnum))
+	complaints: z.array(z.enum(ComplaintEnum))
 		.min(1, "Deve haver pelo menos uma queixa")
 		.max(15, "Não podem haver mais de 15 queixas"),
 	petId: z.custom<IdValue>((val) => val instanceof IdValue, "O ID do pet é obrigatório"),
@@ -573,6 +640,7 @@ export const HOSPITALIZATION_SCHEMA = z.object({
 		(val) => val instanceof ContactPersonValue,
 		"A pessoa de contacto é obrigatória",
 	),
+	state: z.literal(undefined),
 }).refine((data) => {
 	if (data.admissionDate && data.estimatedDischargeDate) {
 		return !data.estimatedDischargeDate.earlierThan(data.admissionDate);
@@ -580,5 +648,20 @@ export const HOSPITALIZATION_SCHEMA = z.object({
 	return true;
 }, {
 	message: "A data estimada de alta deve ser posterior à data de admissão",
-	path: ["estimatedDischargeDate"], // Specify the field this refinement applies to
+	path: ["admissionDate", "estimatedDischargeDate"],
+});
+
+export const HOSPITALIZATION_SCHEMA = HOSPITALIZATION_CONSTRUCTOR_SCHEMA.extend({
+	state: z.enum(HospitalizationStateEnum),
+	actualDiagnosis: z.array(z.enum(DiagnosisEnum)),
+	dischargeDate: z.custom<DateValue>().optional(),
+	stateAtDischarge: z.enum(StateAtDischargeEnum).optional(),
+	periodicReports: z.custom<PeriodicReport[]>().default([]),
+}).refine((data) => {
+	if (data.dischargeDate && data.admissionDate) {
+		return !data.dischargeDate.earlierThan(data.admissionDate);
+	}
+	return true;
+}, {
+	message: "A data de alta deve ser posterior à data de admissão",
 });

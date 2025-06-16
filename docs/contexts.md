@@ -112,13 +112,99 @@ This entity captures a snapshot of the pet's status at a specific point in time.
   - Payment (ID, Amount, Method, Date)
   - Budget Estimate (Treatment Plan, Estimated Cost, Approved Status)
 
-## 4. Rounds & Measurement Context (Nursery)
+## 4. Nursery Context
 
-- **Purpose**: Logs vital signs, medical observations, and treatment progress.
-- **Key Entities**:
-  - Round (Vet, Pet, Date, Notes, Next Round Due)
-  - Measurement (Temperature, Heart Rate, Weight, Custom Vitals)
-  - Treatment Plan (Medication, Dosage, Schedule)
+---
+
+This section details the **Nursery Context** of the application, which is crucial for monitoring a pet's health and treatment progress during its hospitalization. It primarily focuses on capturing vital signs, medical observations, and tracking treatment efficacy.
+
+### **Key Entities**
+
+#### **4.1. Daily Round**
+
+The **Daily Round** is the central aggregate within the Nursery Context, representing a comprehensive assessment of a pet's status at a specific point in time. It encapsulates all observations, measurements, and actions taken during a veterinarian's or technician's check-up.
+
+- **Attributes:**
+
+  - `RoundID`: A unique identifier for this specific daily round.
+  - `HospitalizationID`: A reference to the `Hospitalization` entity this round belongs to.
+  - `RoundTimestamp`: The exact date and time the round was conducted.
+  - `VeterinarianID`: The ID of the veterinarian or veterinary technician who performed the round.
+  - `VeterinarianName`: The name of the veterinarian or veterinary technician.
+  - `GeneralNotes`: Overall observations and comments from the veterinary staff (e.g., "Pet appears more energetic," "Minimal response to stimuli").
+  - `NextRoundDue`: The planned date and time for the next scheduled round, aiding in proactive care.
+
+- **Behaviors (Actions):**
+  - `StartNewRound()`: Initiates a new daily round for a hospitalized pet.
+  - `AddObservation()`: Records a general observation or note.
+  - `RecordMeasurement()`: Adds a new `Measurement Record` to the round.
+  - `LogFeeding()`: Adds a `Feeding Record` to the round.
+  - `LogPhysicalDischarge()`: Adds a `Physical Discharge` record to the round.
+  - `FinalizeRound()`: Marks the round as complete and calculates `NextRoundDue`.
+
+#### **4.2. Measurement Parameter**
+
+**Measurement Parameter** defines the various vital signs or health indicators that can be monitored. It provides the metadata for how to interpret raw measurement values.
+
+- **Attributes:**
+  - `ParameterID`: A unique identifier for the measurement parameter (e.g., `TEMP`, `HR`, `BP`).
+  - `Name`: A human-readable name for the parameter (e.g., "Body Temperature," "Heart Rate," "Blood Pressure").
+  - `Unit`: The unit of measurement (e.g., `°C`, `BPM`, `mmHg`).
+  - `NormalRange`: A defined range of values considered normal (e.g., `{Min: 37.5, Max: 39.2}`).
+  - `HighThreshold`: The upper limit beyond which a measurement is considered high or critical.
+  - `LowThreshold`: The lower limit below which a measurement is considered low or critical.
+
+#### **4.3. Measurement Record**
+
+A **Measurement Record** captures a single, specific measurement taken during a daily round.
+
+- **Attributes:**
+  - `RecordID`: A unique identifier for this measurement record.
+  - `ParameterID`: A reference to the `Measurement Parameter` being recorded.
+  - `Value`: The numerical value of the measurement (e.g., `38.5`, `120`, `90/60`).
+  - `MeasurementTimestamp`: The exact date and time the measurement was taken (often the same as `RoundTimestamp` but can be more granular).
+  - `Notes` (Optional): Specific comments related to this individual measurement.
+
+#### **4.4. Feeding Record**
+
+A **Feeding Record** details the pet's nutritional intake during a round.
+
+- **Attributes:**
+  - `FeedingID`: A unique identifier for this feeding instance.
+  - `TimeOfFeeding`: The precise time the pet was fed.
+  - `FoodType`: A description of the food provided (e.g., "Kibble," "Wet Food," "Prescription Diet").
+  - `AmountGiven`: The quantity of food provided (e.g., "1 cup," "50g").
+  - `Appetite`: A qualitative assessment of the pet's appetite (e.g., `Excellent`, `Good`, `Partial`, `Refused`).
+  - `Notes` (Optional): Any additional observations related to feeding (e.g., "Ate slowly," "Vomited after eating").
+
+#### **4.5. Physical Discharge**
+
+**Physical Discharge** records any bodily excretions or discharges observed.
+
+- **Attributes:**
+  - `DischargeID`: A unique identifier for this discharge instance.
+  - `DischargeType`: The type of discharge (e.g., `Urine`, `Feces`, `Vomit`, `Diarrhea`, `Bleeding`).
+  - `Aspect`: A detailed description of the discharge's appearance, consistency, color, and volume (e.g., "Clear yellow urine, normal volume," "Dark brown, semi-formed feces," "Bloody vomit").
+  - `Timestamp`: The time the discharge was observed.
+  - `Notes` (Optional): Additional context or observations.
+
+---
+
+### **Rules and Workflows Explained**
+
+#### **Monitoring and Documentation**
+
+1.  **Scheduled Rounds:** Veterinarians or technicians initiate a `Daily Round` at scheduled intervals (e.g., every few hours, once a day) for each hospitalized pet.
+2.  **Comprehensive Assessment:** During a round, staff record `Measurement Records` (e.g., temperature, heart rate, blood pressure), `Feeding Records`, and `Physical Discharges`. `GeneralNotes` are used to capture broader observations about the pet's demeanor, activity level, and overall well-being.
+3.  **Dynamic Parameter Definition:** The `Measurement Parameter` entity allows for flexible definition of what vital signs are tracked, including their units and normal ranges. This supports different species, conditions, and evolving medical practices.
+4.  **Chronological Logging:** Each `Daily Round` maintains a chronological log of all observations and treatments, providing a detailed history of the pet's progress throughout its hospitalization. This log is crucial for assessing treatment effectiveness and making informed decisions.
+
+#### **Proactive Care and Communication**
+
+1.  **Next Round Planning:** The `NextRoundDue` attribute in the `Daily Round` helps in planning and scheduling subsequent assessments, ensuring continuous and timely monitoring of the pet.
+2.  **Integration with Hospitalization:** Each `Daily Round` is explicitly linked to a `Hospitalization` record, ensuring that all nursery-related data is associated with the correct pet's stay. This facilitates a holistic view of the pet's journey from admission to discharge.
+
+---
 
 ## 5. Alert & Notification Context
 
