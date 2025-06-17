@@ -1,0 +1,6 @@
+export enum FeedingTypeEnum {
+	ORAL_FLUIDS = "ORAL_FLUIDS",
+	IV_FLUIDS = "IV_FLUIDS",
+	FEEDING = "FEEDING",
+	MEDICATIONS = "MEDICATIONS",
+}

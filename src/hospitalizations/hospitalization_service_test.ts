@@ -113,7 +113,7 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 
 		// Criar hospitalização ativa
 		const petId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(IdValue.random())
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
@@ -127,6 +127,7 @@ Deno.test("HospitalizationsService.createHospitalization", async (t) => {
 			.withOwnerName("Pedro Silva")
 			.withContactPerson(contactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		// Tentar criar outra hospitalização para o mesmo pet
@@ -232,7 +233,7 @@ Deno.test("HospitalizationsService.updateContactPerson", async (t) => {
 			"antigo@email.com",
 		).right!;
 		const hospitalizationId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
@@ -246,6 +247,7 @@ Deno.test("HospitalizationsService.updateContactPerson", async (t) => {
 			.withOwnerName("OwnerName")
 			.withContactPerson(initialContactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		const updateRequest = {
@@ -299,7 +301,7 @@ Deno.test("HospitalizationsService.updateContactPerson", async (t) => {
 			"Nome Valido",
 			PhoneNumberValue.create("911111111", true, "351").right!,
 		).right!;
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
@@ -313,6 +315,7 @@ Deno.test("HospitalizationsService.updateContactPerson", async (t) => {
 			.withOwnerName("Owner Name")
 			.withContactPerson(contactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		const updateRequest = {
@@ -366,7 +369,7 @@ Deno.test("HospitalizationsService.updateDiagnosis", async (t) => {
 			PhoneNumberValue.create("911111111", true, "351").right!,
 		).right!;
 		const hospitalizationId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
@@ -380,6 +383,7 @@ Deno.test("HospitalizationsService.updateDiagnosis", async (t) => {
 			.withOwnerName("OwnerName")
 			.withContactPerson(contactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		const newDiagnosis = [DiagnosisEnum.GASTROENTERITIS, DiagnosisEnum.PARVOVIRUS];
@@ -426,7 +430,7 @@ Deno.test("HospitalizationsService.updateDiagnosis", async (t) => {
 				"Nome Valido",
 				PhoneNumberValue.create("911111111", true, "351").right!,
 			).right!;
-			const hospitalization = new Hospitalization.Builder()
+			const hospitalizationResult = new Hospitalization.Builder()
 				.withId(hospitalizationId)
 				.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 				.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
@@ -440,6 +444,7 @@ Deno.test("HospitalizationsService.updateDiagnosis", async (t) => {
 				.withOwnerName("Owner Name")
 				.withContactPerson(contactPerson)
 				.build();
+			const hospitalization = hospitalizationResult.right!;
 			await hospitalizationRepository.save(hospitalization);
 
 			const updateRequest = {
@@ -493,7 +498,7 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 
 		// Criar hospitalização
 		const hospitalizationId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
@@ -507,6 +512,7 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 			.withOwnerName("Luisa Santos")
 			.withContactPerson(contactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		const dischargeRequest = {
@@ -563,20 +569,21 @@ Deno.test("HospitalizationsService.dischargeHospitalization", async (t) => {
 
 		// Criar hospitalização
 		const hospitalizationId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.FRACTURE])
-			.withComplaints([ComplaintEnum.LAMENESS])
+			.withInitialDiagnosis([DiagnosisEnum.KENNEL_COUGH])
+			.withComplaints([ComplaintEnum.COUGH])
 			.withPetId(IdValue.random())
-			.withPetName("Max")
-			.withPetAge("2 anos")
-			.withPetWeight(7.8)
+			.withPetName("Rex")
+			.withPetAge("5 anos")
+			.withPetWeight(25.0)
 			.withOwnerId(IdValue.random())
-			.withOwnerName("Carla Pereira")
+			.withOwnerName("Sofia Martins")
 			.withContactPerson(contactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		const dischargeRequest = {
@@ -615,20 +622,21 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 		).right;
 
 		const hospitalizationId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.GASTROENTERITIS])
-			.withComplaints([ComplaintEnum.VOMITING])
+			.withInitialDiagnosis([DiagnosisEnum.KENNEL_COUGH])
+			.withComplaints([ComplaintEnum.COUGH])
 			.withPetId(IdValue.random())
 			.withPetName("Buddy")
 			.withPetAge("3 anos")
-			.withPetWeight(15.5)
+			.withPetWeight(12.5)
 			.withOwnerId(IdValue.random())
-			.withOwnerName("Maria Santos")
+			.withOwnerName("João Santos")
 			.withContactPerson(contactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		const reportRequest = {
@@ -678,12 +686,12 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 			).right;
 
 			const hospitalizationId = IdValue.random();
-			const hospitalization = new Hospitalization.Builder()
+			const hospitalizationResult = new Hospitalization.Builder()
 				.withId(hospitalizationId)
 				.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 				.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
 				.withInitialDiagnosis([DiagnosisEnum.FUNGAL_INFECTION])
-				.withComplaints([ComplaintEnum.FEVER])
+				.withComplaints([ComplaintEnum.FEVER, ComplaintEnum.PROSTRATION])
 				.withPetId(IdValue.random())
 				.withPetName("Luna")
 				.withPetAge("1 ano")
@@ -692,6 +700,8 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 				.withOwnerName("Pedro Silva")
 				.withContactPerson(contactPerson)
 				.build();
+			const hospitalization = hospitalizationResult.right!;
+			await hospitalizationRepository.save(hospitalization);
 
 			// Dar alta à hospitalização
 			const dischargeResult = hospitalization.dischargePatient(
@@ -738,21 +748,23 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 				whatsAppNumber,
 			).right;
 
+			const petId = IdValue.random();
 			const hospitalizationId = IdValue.random();
-			const hospitalization = new Hospitalization.Builder()
+			const hospitalizationResult = new Hospitalization.Builder()
 				.withId(hospitalizationId)
 				.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 				.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
 				.withInitialDiagnosis([DiagnosisEnum.KENNEL_COUGH])
 				.withComplaints([ComplaintEnum.COUGH])
-				.withPetId(IdValue.random())
-				.withPetName("Rex")
-				.withPetAge("5 anos")
-				.withPetWeight(25.0)
+				.withPetId(petId)
+				.withPetName("Bella")
+				.withPetAge("2 anos")
+				.withPetWeight(15.0)
 				.withOwnerId(IdValue.random())
-				.withOwnerName("Sofia Martins")
+				.withOwnerName("Maria Oliveira")
 				.withContactPerson(contactPerson)
 				.build();
+			const hospitalization = hospitalizationResult.right!;
 			await hospitalizationRepository.save(hospitalization);
 
 			const reportRequest = {
@@ -802,21 +814,23 @@ Deno.test("HospitalizationsService.createPeriodicReport", async (t) => {
 			whatsAppNumber,
 		).right;
 
+		// Criar três relatórios com datas diferentes
 		const hospitalizationId = IdValue.random();
-		const hospitalization = new Hospitalization.Builder()
+		const hospitalizationResult = new Hospitalization.Builder()
 			.withId(hospitalizationId)
 			.withAdmissionDate(DateValue.fromString("2024-01-01").right!)
 			.withEstimatedDischargeDate(DateValue.fromString("2024-01-03").right!)
-			.withInitialDiagnosis([DiagnosisEnum.DEHYDRATION])
-			.withComplaints([ComplaintEnum.ANOREXIA])
+			.withInitialDiagnosis([DiagnosisEnum.KENNEL_COUGH])
+			.withComplaints([ComplaintEnum.COUGH])
 			.withPetId(IdValue.random())
-			.withPetName("Max")
-			.withPetAge("2 anos")
-			.withPetWeight(7.8)
+			.withPetName("Charlie")
+			.withPetAge("4 anos")
+			.withPetWeight(20.0)
 			.withOwnerId(IdValue.random())
-			.withOwnerName("Teresa Silva")
+			.withOwnerName("Ana Ferreira")
 			.withContactPerson(contactPerson)
 			.build();
+		const hospitalization = hospitalizationResult.right!;
 		await hospitalizationRepository.save(hospitalization);
 
 		// Criar três relatórios com datas diferentes

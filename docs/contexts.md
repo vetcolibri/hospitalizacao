@@ -194,15 +194,15 @@ A **Feeding Record** details the pet's nutritional intake during a round.
 
 #### **Monitoring and Documentation**
 
-1.  **Scheduled Rounds:** Veterinarians or technicians initiate a `Daily Round` at scheduled intervals (e.g., every few hours, once a day) for each hospitalized pet.
-2.  **Comprehensive Assessment:** During a round, staff record `Measurement Records` (e.g., temperature, heart rate, blood pressure), `Feeding Records`, and `Physical Discharges`. `GeneralNotes` are used to capture broader observations about the pet's demeanor, activity level, and overall well-being.
-3.  **Dynamic Parameter Definition:** The `Measurement Parameter` entity allows for flexible definition of what vital signs are tracked, including their units and normal ranges. This supports different species, conditions, and evolving medical practices.
-4.  **Chronological Logging:** Each `Daily Round` maintains a chronological log of all observations and treatments, providing a detailed history of the pet's progress throughout its hospitalization. This log is crucial for assessing treatment effectiveness and making informed decisions.
+1. **Scheduled Rounds:** Veterinarians or technicians initiate a `Daily Round` at scheduled intervals (e.g., every few hours, once a day) for each hospitalized pet.
+2. **Comprehensive Assessment:** During a round, staff record `Measurement Records` (e.g., temperature, heart rate, blood pressure), `Feeding Records`, and `Physical Discharges`. `GeneralNotes` are used to capture broader observations about the pet's demeanor, activity level, and overall well-being.
+3. **Dynamic Parameter Definition:** The `Measurement Parameter` entity allows for flexible definition of what vital signs are tracked, including their units and normal ranges. This supports different species, conditions, and evolving medical practices.
+4. **Chronological Logging:** Each `Daily Round` maintains a chronological log of all observations and treatments, providing a detailed history of the pet's progress throughout its hospitalization. This log is crucial for assessing treatment effectiveness and making informed decisions.
 
 #### **Proactive Care and Communication**
 
-1.  **Next Round Planning:** The `NextRoundDue` attribute in the `Daily Round` helps in planning and scheduling subsequent assessments, ensuring continuous and timely monitoring of the pet.
-2.  **Integration with Hospitalization:** Each `Daily Round` is explicitly linked to a `Hospitalization` record, ensuring that all nursery-related data is associated with the correct pet's stay. This facilitates a holistic view of the pet's journey from admission to discharge.
+1. **Next Round Planning:** The `NextRoundDue` attribute in the `Daily Round` helps in planning and scheduling subsequent assessments, ensuring continuous and timely monitoring of the pet.
+2. **Integration with Hospitalization:** Each `Daily Round` is explicitly linked to a `Hospitalization` record, ensuring that all nursery-related data is associated with the correct pet's stay. This facilitates a holistic view of the pet's journey from admission to discharge.
 
 ---
 

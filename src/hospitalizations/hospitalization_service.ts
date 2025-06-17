@@ -116,7 +116,7 @@ export class HospitalizationsService {
 
 		let hospitalization: Hospitalization;
 		try {
-			hospitalization = new Hospitalization.Builder()
+			const hospitalizationResult = new Hospitalization.Builder()
 				.withId(id)
 				.withAdmissionDate(admissionDateOrErr.right!)
 				.withEstimatedDischargeDate(estimatedDischargeDateOrErr.right!)
@@ -130,6 +130,12 @@ export class HospitalizationsService {
 				.withOwnerName(request.ownerName)
 				.withContactPerson(contactPersonOrErr.right!)
 				.build();
+
+			if (hospitalizationResult.isLeft()) {
+				return left([hospitalizationResult.value]);
+			}
+
+			hospitalization = hospitalizationResult.right!;
 		} catch (error) {
 			return left([error as ValidationError]);
 		}
