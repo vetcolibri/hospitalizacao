@@ -1,7 +1,7 @@
 import { MeasurementType, MeasurementTypeIdValue } from "./measurement_type.ts";
 
-export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
-	HeartRate: MeasurementType.create(
+export abstract class MeasumentTypes {
+	static "HeartRate" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("HR").right,
 		"Frequência Cardíaca",
 		"BPM",
@@ -13,9 +13,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			veryHigh: ["Muito Alto", [140, 200]],
 			high: ["Alto", [120, 140]],
 		},
-	).right,
+	).right
 
-	RespiratoryRate: MeasurementType.create(
+	static "RespiratoryRate" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("RR").right,
 		"Frequência Respiratória",
 		"RPM",
@@ -27,9 +27,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			veryHigh: ["Muito Alto", [30, 40]],
 			high: ["Alto", [20, 30]],
 		},
-	).right,
+	).right
 
-	TRC: MeasurementType.create(
+	static "TRC" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("TRC").right,
 		"TRC",
 		"",
@@ -38,9 +38,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			normal: ["Maior que 2'", [">2'"]],
 			low: ["Menor que 2'", ["<2'"]],
 		},
-	).right,
+	).right
 
-	AVDN: MeasurementType.create(
+	static "AVDN" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("AVDN").right,
 		"AVDN",
 		"",
@@ -50,9 +50,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			low: ["", ["Doloso", "Verbal"]],
 			veryLow: ["", ["Não Responsivo"]],
 		},
-	).right,
+	).right
 
-	Mucous: MeasurementType.create(
+	static "Mucous" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("MCSS").right,
 		"Mucosas",
 		"",
@@ -60,9 +60,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 		{
 			normal: ["Normal", ["Cianóticas", "Congestivas", "Ictéricas", "Pálidas", "Rosadas"]],
 		},
-	).right,
+	).right
 
-	Temperature: MeasurementType.create(
+	static "Temperature" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("TEMP").right,
 		"Temperatura",
 		"°C",
@@ -74,9 +74,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			high: ["Alto", [39, 40]],
 			veryHigh: ["Muito Alto", [40, 42]],
 		},
-	).right,
+	).right
 
-	Glycemia: MeasurementType.create(
+	static "Glycemia" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("GLY").right,
 		"Glicemia",
 		"mg/dL",
@@ -88,9 +88,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			high: ["Alto", [100, 180]],
 			veryHigh: ["Muito Alto", [180, 300]],
 		},
-	).right,
+	).right
 
-	HTC_Canine: MeasurementType.create(
+	static "HTC_Canine" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("HTC").right,
 		"HTCC",
 		"%",
@@ -101,9 +101,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			low: ["Baixo", [20, 37]],
 			high: ["Alto", [55, 70]],
 		},
-	).right,
+	).right
 
-	HTC_Feline: MeasurementType.create(
+	static "HTC_Feline" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("HTC_FELINE").right,
 		"HTCF",
 		"%",
@@ -117,7 +117,7 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 		},
 	).right,
 
-	BloodPressure_Systolic: MeasurementType.create(
+	static "BloodPressure_Systolic" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("SBP").right,
 		"Pressão Arterial Sistólica",
 		"mmHg",
@@ -129,9 +129,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			high: ["Hipertensão", [130, 180]],
 			veryHigh: ["Muito Alto", [180, 250]],
 		},
-	).right,
+	).right
 
-	BloodPressure_Diastolic: MeasurementType.create(
+	static "BloodPressure_Diastolic" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("DBP").right,
 		"Pressão Arterial Diastólica",
 		"mmHg",
@@ -143,9 +143,9 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			high: ["Hipertensão", [80, 110]],
 			veryHigh: ["Muito Alto", [110, 150]],
 		},
-	).right,
+	).right
 
-	BloodPressure_PAM: MeasurementType.create(
+	static "BloodPressure_PAM" = MeasurementType.create(
 		MeasurementTypeIdValue.fromString("PAM").right,
 		"Pressão Arterial Média",
 		"mm/Hg",
@@ -155,5 +155,5 @@ export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
 			low: ["Hipotensão", [40, 59]],
 			high: ["Hipertensão", [61, 80]],
 		},
-	).right,
+	).right
 };

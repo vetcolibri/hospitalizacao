@@ -11,7 +11,6 @@ import { decorate, Event, withHeader } from "@shared/event.ts";
 
 import { FlowSheetRecord } from "./flowsheet_record.ts";
 import { MeasurementValue } from "./measurement_value.ts";
-import { MeasurementTypeEnum } from "./measurement_type_enum.ts";
 import { RoundPlan } from "./round_plan.ts";
 import { UserRoleEnum } from "@shared/user_role_enum.ts";
 import { PatientMeasurementsRecordedPayload } from "./patient_measurements_recorded_event.ts";
