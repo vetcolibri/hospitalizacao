@@ -23,14 +23,20 @@ export class MeasurementTypeIdValue {
 	private constructor(readonly value: string) {}
 }
 
-export type MeasurementUnit = "Continuous" | "Discrete";
+export type MeasurementUnitType = "Continuous" | "Discrete";
 
 // MeasurementRange can be either a numeric range or a list of string values
 // The first element is the name of the range, the second element is either
 // a numeric range [min, max] or a list of string values
 export type MeasurementRange = [string, [number, number]] | [string, string[]];
+export type MeasumentRanges = {
+	normal: MeasurementRange;
+	veryLow?: MeasurementRange;
+	low?: MeasurementRange;
+	high?: MeasurementRange;
+	veryHigh?: MeasurementRange;
+};
 
-// Validation schemas
 export const MEASUREMENT_TYPE_ID_VALUE_SCHEMA = z.object({
 	value: z.string()
 		.length(8, "O ID do tipo de medição deve ter exactamente 8 caracteres")
@@ -67,39 +73,34 @@ export const MEASUREMENT_TYPE_SCHEMA = z.object({
 		"ID do tipo de medição inválido",
 	),
 	name: NAME_SCHEMA,
-	unit: z.enum(["Continuous", "Discrete"]),
-	description: DESCRIPTION_SCHEMA,
-	normalRange: MEASUREMENT_RANGE_SCHEMA,
-	veryLowRange: MEASUREMENT_RANGE_SCHEMA.optional(),
-	lowRange: MEASUREMENT_RANGE_SCHEMA.optional(),
-	veryHighRange: MEASUREMENT_RANGE_SCHEMA.optional(),
-	highRange: MEASUREMENT_RANGE_SCHEMA.optional(),
+	unit: z.string()
+		.trim()
+		.min(1, "A unidade é obrigatória")
+		.max(50, "A unidade não pode ter mais de 50 caracteres"),
+	unitType: z.enum(["Continuous", "Discrete"]),
+	ranges: z.object({
+		normal: MEASUREMENT_RANGE_SCHEMA,
+		veryLow: MEASUREMENT_RANGE_SCHEMA.optional(),
+		low: MEASUREMENT_RANGE_SCHEMA.optional(),
+		high: MEASUREMENT_RANGE_SCHEMA.optional(),
+		veryHigh: MEASUREMENT_RANGE_SCHEMA.optional(),
+	}),
 });
 
 export class MeasurementType {
 	static create(
 		id: MeasurementTypeIdValue,
 		name: string,
-		unit: MeasurementUnit,
-		description: string,
-		ranges: {
-			normal: MeasurementRange;
-			veryLow?: MeasurementRange;
-			low?: MeasurementRange;
-			high?: MeasurementRange;
-			veryHigh?: MeasurementRange;
-		},
+		unit: string,
+		unitType: MeasurementUnitType,
+		ranges: MeasumentRanges,
 	): Either<ValidationError, MeasurementType> {
 		const result = MEASUREMENT_TYPE_SCHEMA.safeParse({
 			id,
 			name,
 			unit,
-			description,
-			normalRange: ranges.normal,
-			veryLowRange: ranges.veryLow,
-			lowRange: ranges.low,
-			highRange: ranges.high,
-			veryHighRange: ranges.veryHigh,
+			unitType,
+			ranges,
 		});
 
 		if (!result.success) {
@@ -112,12 +113,8 @@ export class MeasurementType {
 				result.data.id,
 				result.data.name,
 				result.data.unit,
-				result.data.description,
-				result.data.normalRange,
-				result.data.veryLowRange,
-				result.data.lowRange,
-				result.data.highRange,
-				result.data.veryHighRange,
+				result.data.unitType,
+				result.data.ranges,
 			),
 		);
 	}
@@ -125,60 +122,38 @@ export class MeasurementType {
 	static recreate(
 		id: MeasurementTypeIdValue,
 		name: string,
-		unit: MeasurementUnit,
-		description: string,
-		normalRange: MeasurementRange,
-		veryLowRange?: MeasurementRange,
-		lowRange?: MeasurementRange,
-		highRange?: MeasurementRange,
-		veryHighRange?: MeasurementRange,
+		unit: string,
+		unitType: MeasurementUnitType,
+		ranges: MeasumentRanges,
 	): MeasurementType {
 		const measurementType = MeasurementType.create(
 			id,
 			name,
 			unit,
-			description,
-			{
-				normal: normalRange,
-				veryLow: veryLowRange,
-				low: lowRange,
-				high: highRange,
-				veryHigh: veryHighRange,
-			},
+			unitType,
+			ranges,
 		).right!;
 		return measurementType;
 	}
 
 	readonly id: MeasurementTypeIdValue;
 	readonly name: string;
-	readonly unit: MeasurementUnit;
-	readonly description: string;
-	readonly normalRange: MeasurementRange;
-	readonly veryLowRange?: MeasurementRange;
-	readonly lowRange?: MeasurementRange;
-	readonly veryHighRange?: MeasurementRange;
-	readonly highRange?: MeasurementRange;
+	readonly unit: string;
+	readonly unitType: MeasurementUnitType;
+	readonly ranges: MeasumentRanges;
 
 	private constructor(
 		id: MeasurementTypeIdValue,
 		name: string,
-		unit: MeasurementUnit,
-		description: string,
-		normalRange: MeasurementRange,
-		veryLowRange?: MeasurementRange,
-		lowRange?: MeasurementRange,
-		highRange?: MeasurementRange,
-		veryHighRange?: MeasurementRange,
+		unit: string,
+		unitType: MeasurementUnitType,
+		ranges: MeasumentRanges,
 	) {
 		this.id = id;
 		this.name = name;
 		this.unit = unit;
-		this.description = description;
-		this.normalRange = normalRange;
-		this.veryLowRange = veryLowRange;
-		this.lowRange = lowRange;
-		this.highRange = highRange;
-		this.veryHighRange = veryHighRange;
+		this.unitType = unitType;
+		this.ranges = ranges;
 	}
 
 	clone(): MeasurementType {
@@ -186,12 +161,8 @@ export class MeasurementType {
 			this.id,
 			this.name,
 			this.unit,
-			this.description,
-			this.normalRange,
-			this.veryLowRange,
-			this.lowRange,
-			this.highRange,
-			this.veryHighRange,
+			this.unitType,
+			this.ranges,
 		);
 	}
 }
