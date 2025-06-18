@@ -11,9 +11,11 @@ Deno.test("MeasurementType - create() should create valid continuous measurement
 	const name = "Temperature";
 	const unit: MeasurementUnit = "Continuous";
 	const description = "Body temperature measurement";
-	const normalRange: MeasurementRange = [36.5, 37.5];
+	const normalRange: MeasurementRange = ["Normal", [36.5, 37.5]];
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isRight(), true);
 	assertEquals(result.right.id, id);
@@ -28,9 +30,11 @@ Deno.test("MeasurementType - create() should create valid discrete measurement t
 	const name = "Pain Scale";
 	const unit: MeasurementUnit = "Discrete";
 	const description = "Pain level assessment";
-	const normalRange: MeasurementRange = ["0", "1", "2"];
+	const normalRange: MeasurementRange = ["Pain Level", ["0", "1", "2"]];
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isRight(), true);
 	assertEquals(result.right.unit, unit);
@@ -42,22 +46,24 @@ Deno.test("MeasurementType - create() should create with all ranges", () => {
 	const name = "Heart Rate";
 	const unit: MeasurementUnit = "Continuous";
 	const description = "Heart rate measurement";
-	const normalRange: MeasurementRange = [60, 100];
-	const veryLowRange: MeasurementRange = [0, 40];
-	const lowRange: MeasurementRange = [40, 60];
-	const veryHighRange: MeasurementRange = [120, 200];
-	const highRange: MeasurementRange = [100, 120];
+	const normalRange: MeasurementRange = ["Normal", [60, 100]];
+	const veryLowRange: MeasurementRange = ["Very Low", [0, 40]];
+	const lowRange: MeasurementRange = ["Low", [40, 60]];
+	const veryHighRange: MeasurementRange = ["Very High", [120, 200]];
+	const highRange: MeasurementRange = ["High", [100, 120]];
 
 	const result = MeasurementType.create(
 		id,
 		name,
 		unit,
 		description,
-		normalRange,
-		veryLowRange,
-		lowRange,
-		veryHighRange,
-		highRange,
+		{
+			normal: normalRange,
+			veryLow: veryLowRange,
+			low: lowRange,
+			veryHigh: veryHighRange,
+			high: highRange,
+		},
 	);
 
 	assertEquals(result.isRight(), true);
@@ -73,9 +79,11 @@ Deno.test("MeasurementType - create() should reject empty name", () => {
 	const name = "";
 	const unit: MeasurementUnit = "Continuous";
 	const description = "Test description";
-	const normalRange: MeasurementRange = [0, 10];
+	const normalRange: MeasurementRange = ["Normal", [0, 10]];
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isLeft(), true);
 	assertEquals(result.left.errors.length > 0, true);
@@ -86,9 +94,11 @@ Deno.test("MeasurementType - create() should reject name that's too long", () =>
 	const name = "A".repeat(101); // 101 characters
 	const unit: MeasurementUnit = "Continuous";
 	const description = "Test description";
-	const normalRange: MeasurementRange = [0, 10];
+	const normalRange: MeasurementRange = ["Normal", [0, 10]];
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isLeft(), true);
 	assertEquals(result.left.errors.length > 0, true);
@@ -99,9 +109,11 @@ Deno.test("MeasurementType - create() should reject empty description", () => {
 	const name = "Test Name";
 	const unit: MeasurementUnit = "Continuous";
 	const description = "";
-	const normalRange: MeasurementRange = [0, 10];
+	const normalRange: MeasurementRange = ["Normal", [0, 10]];
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isLeft(), true);
 	assertEquals(result.left.errors.length > 0, true);
@@ -112,9 +124,11 @@ Deno.test("MeasurementType - create() should reject description that's too long"
 	const name = "Test Name";
 	const unit: MeasurementUnit = "Continuous";
 	const description = "A".repeat(501); // 501 characters
-	const normalRange: MeasurementRange = [0, 10];
+	const normalRange: MeasurementRange = ["Normal", [0, 10]];
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isLeft(), true);
 	assertEquals(result.left.errors.length > 0, true);
@@ -125,9 +139,11 @@ Deno.test("MeasurementType - create() should reject invalid continuous range", (
 	const name = "Test Name";
 	const unit: MeasurementUnit = "Continuous";
 	const description = "Test description";
-	const normalRange: MeasurementRange = [10, 5]; // max < min
+	const normalRange: MeasurementRange = ["Invalid", [10, 5]]; // max < min
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isLeft(), true);
 	assertEquals(result.left.errors.length > 0, true);
@@ -138,9 +154,11 @@ Deno.test("MeasurementType - create() should reject empty discrete range", () =>
 	const name = "Test Name";
 	const unit: MeasurementUnit = "Discrete";
 	const description = "Test description";
-	const normalRange: MeasurementRange = []; // empty array
+	const normalRange: MeasurementRange = ["Empty", []]; // empty array
 
-	const result = MeasurementType.create(id, name, unit, description, normalRange);
+	const result = MeasurementType.create(id, name, unit, description, {
+		normal: normalRange,
+	});
 
 	assertEquals(result.isLeft(), true);
 	assertEquals(result.left.errors.length > 0, true);
@@ -151,7 +169,7 @@ Deno.test("MeasurementType - recreate() should create without events", () => {
 	const name = "Temperature";
 	const unit: MeasurementUnit = "Continuous";
 	const description = "Body temperature measurement";
-	const normalRange: MeasurementRange = [36.5, 37.5];
+	const normalRange: MeasurementRange = ["Normal", [36.5, 37.5]];
 
 	const measurementType = MeasurementType.recreate(id, name, unit, description, normalRange);
 
@@ -167,12 +185,14 @@ Deno.test("MeasurementType - clone() should create identical copy", () => {
 		"Test Name",
 		"Continuous",
 		"Test description",
-		[0, 10],
-		[0, 2],
-		[2, 5],
-		[15, 20],
-		[10, 15],
-	).right;
+		{
+			normal: ["Normal", [0, 10]],
+			veryLow: ["Very Low", [0, 2]],
+			low: ["Low", [2, 5]],
+			veryHigh: ["Very High", [15, 20]],
+			high: ["High", [10, 15]],
+		},
+	).right!;
 
 	const clone = original.clone();
 
@@ -195,7 +215,9 @@ Deno.test("MeasurementType - should handle whitespace in name and description", 
 	const name = "  Test Name  ";
 	const description = "  Test description  ";
 
-	const result = MeasurementType.create(id, name, "Continuous", description, [0, 10]);
+	const result = MeasurementType.create(id, name, "Continuous", description, {
+		normal: ["Normal", [0, 10]],
+	});
 
 	assertEquals(result.isRight(), true);
 	assertEquals(result.right.name, "Test Name"); // Should be trimmed

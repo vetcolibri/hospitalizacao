@@ -1,3 +1,9 @@
+import { MeasurementType } from "./measurement_type.ts";
+
+export const MEASUREMENT_TYPES: Record<string, MeasurementType> = {
+	HeartRate: MeasurementType.create(),
+};
+
 export enum MeasurementTypeEnum {
 	// Vital Signs
 	HEART_RATE = "HR",

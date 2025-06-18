@@ -24,7 +24,11 @@ export class MeasurementTypeIdValue {
 }
 
 export type MeasurementUnit = "Continuous" | "Discrete";
-export type MeasurementRange = [number, number] | string[];
+
+// MeasurementRange can be either a numeric range or a list of string values
+// The first element is the name of the range, the second element is either
+// a numeric range [min, max] or a list of string values
+export type MeasurementRange = [string, [number, number]] | [string, string[]];
 
 // Validation schemas
 export const MEASUREMENT_TYPE_ID_VALUE_SCHEMA = z.object({
@@ -34,11 +38,17 @@ export const MEASUREMENT_TYPE_ID_VALUE_SCHEMA = z.object({
 });
 
 const MEASUREMENT_RANGE_SCHEMA = z.union([
-	z.tuple([z.number(), z.number()]).refine(
-		([min, max]) => min < max,
-		"O valor mínimo deve ser menor que o máximo",
-	),
-	z.array(z.string()).min(1, "A lista de valores deve ter pelo menos um item"),
+	z.tuple([
+		z.string(),
+		z.tuple([z.number(), z.number()]).refine(
+			([min, max]) => min < max,
+			"O valor mínimo deve ser menor que o máximo",
+		),
+	]),
+	z.tuple([
+		z.string(),
+		z.array(z.string()).min(1, "A lista de valores deve ter pelo menos um item"),
+	]),
 ]);
 
 const NAME_SCHEMA = z.string()
@@ -72,22 +82,24 @@ export class MeasurementType {
 		name: string,
 		unit: MeasurementUnit,
 		description: string,
-		normalRange: MeasurementRange,
-		veryLowRange?: MeasurementRange,
-		lowRange?: MeasurementRange,
-		highRange?: MeasurementRange,
-		veryHighRange?: MeasurementRange,
+		ranges: {
+			normal: MeasurementRange;
+			veryLow?: MeasurementRange;
+			low?: MeasurementRange;
+			high?: MeasurementRange;
+			veryHigh?: MeasurementRange;
+		},
 	): Either<ValidationError, MeasurementType> {
 		const result = MEASUREMENT_TYPE_SCHEMA.safeParse({
 			id,
 			name,
 			unit,
 			description,
-			normalRange,
-			veryLowRange,
-			lowRange,
-			veryHighRange,
-			highRange,
+			normalRange: ranges.normal,
+			veryLowRange: ranges.veryLow,
+			lowRange: ranges.low,
+			highRange: ranges.high,
+			veryHighRange: ranges.veryHigh,
 		});
 
 		if (!result.success) {
@@ -118,20 +130,22 @@ export class MeasurementType {
 		normalRange: MeasurementRange,
 		veryLowRange?: MeasurementRange,
 		lowRange?: MeasurementRange,
-		veryHighRange?: MeasurementRange,
 		highRange?: MeasurementRange,
+		veryHighRange?: MeasurementRange,
 	): MeasurementType {
 		const measurementType = MeasurementType.create(
 			id,
 			name,
 			unit,
 			description,
-			normalRange,
-			veryLowRange,
-			lowRange,
-			veryHighRange,
-			highRange,
-		).right;
+			{
+				normal: normalRange,
+				veryLow: veryLowRange,
+				low: lowRange,
+				high: highRange,
+				veryHigh: veryHighRange,
+			},
+		).right!;
 		return measurementType;
 	}
 
@@ -153,8 +167,8 @@ export class MeasurementType {
 		normalRange: MeasurementRange,
 		veryLowRange?: MeasurementRange,
 		lowRange?: MeasurementRange,
-		veryHighRange?: MeasurementRange,
 		highRange?: MeasurementRange,
+		veryHighRange?: MeasurementRange,
 	) {
 		this.id = id;
 		this.name = name;
@@ -163,8 +177,8 @@ export class MeasurementType {
 		this.normalRange = normalRange;
 		this.veryLowRange = veryLowRange;
 		this.lowRange = lowRange;
-		this.veryHighRange = veryHighRange;
 		this.highRange = highRange;
+		this.veryHighRange = veryHighRange;
 	}
 
 	clone(): MeasurementType {
@@ -176,8 +190,8 @@ export class MeasurementType {
 			this.normalRange,
 			this.veryLowRange,
 			this.lowRange,
-			this.veryHighRange,
 			this.highRange,
+			this.veryHighRange,
 		);
 	}
 }
