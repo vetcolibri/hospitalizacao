@@ -1,5 +1,5 @@
 import { HospitalizationHistoryService } from "application/hospitalization_history_service.ts";
-import { Context, Router } from "deps";
+import { Router } from "deps";
 import { Budget } from "domain/budget/budget.ts";
 import { Report } from "domain/crm/report/report.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
@@ -194,9 +194,9 @@ export default function (service: HospitalizationHistoryService) {
 		}
 	};
 
-	const legacyLinkStatusHandler = async (ctx: Context) => {
+	const legacyLinkStatusHandler = async (ctx: ContextWithParams) => {
 		try {
-			sendOk(ctx, await service.linkStatus());
+			sendOk(ctx, await service.linkStatus(ctx.params.patientId));
 		} catch (error) {
 			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
 		}
@@ -208,6 +208,8 @@ export default function (service: HospitalizationHistoryService) {
 		"/patients/:patientId/hospitalizations/:hospitalizationId",
 		detailHistoryHandler,
 	);
-	router.get("/hospitalizations/legacy-link-status", legacyLinkStatusHandler);
+	// O diagnóstico é do paciente: fica sob o mesmo path para não voltar a ser
+	// um número global mostrado em todas as fichas.
+	router.get("/patients/:patientId/legacy-link-status", legacyLinkStatusHandler);
 	return router;
 }

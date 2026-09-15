@@ -127,10 +127,11 @@ export class HospitalizationHistoryService {
 	}
 
 	/**
-	 * Diagnóstico do legado: conta (sem atribuir) os registos por classificar.
+	 * Diagnóstico do legado do paciente: conta (sem atribuir) os registos por
+	 * classificar. Fica ligado ao `system_id` do path.
 	 */
-	async linkStatus(): Promise<HospitalizationLinkStatus> {
-		return await this.#linkDiagnostic.status();
+	async linkStatus(patientId: string): Promise<HospitalizationLinkStatus> {
+		return await this.#linkDiagnostic.statusForPatient(ID.fromString(patientId));
 	}
 
 	async #resolveEffectiveContact(
