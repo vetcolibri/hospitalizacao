@@ -3,6 +3,8 @@ import { assertEquals, assertInstanceOf } from "dev_deps";
 import { Budget } from "domain/budget/budget.ts";
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { InmemBudgetRepository } from "persistence/inmem/inmem_budget_repository.ts";
+import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
+import { Hospitalization, HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
 import { ID } from "shared/id.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 import { Role, User } from "domain/auth/user.ts";
@@ -12,7 +14,7 @@ Deno.test("Budget Service - Get All", async (t) => {
 	await t.step("Deve recuperar o orçamento pelo ID da hospitalização", async () => {
 		const budgetRepository = new InmemBudgetRepository();
 		await budgetRepository.save(budget);
-		const service = new BudgetService(budgetRepository, userRepository);
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
 
 		const budgets = await service.findAll();
 
@@ -21,7 +23,7 @@ Deno.test("Budget Service - Get All", async (t) => {
 
 	await t.step("Deve retornar uma lista vazia se não existir orçamentos", async () => {
 		const budgetRepository = new InmemBudgetRepository();
-		const service = new BudgetService(budgetRepository, userRepository);
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
 
 		const budgets = await service.findAll();
 
@@ -33,7 +35,7 @@ Deno.test("Budget Service - Update", async (t) => {
 	await t.step("Deve atualizar as datas de inicio e fim do orçamento", async () => {
 		const budgetRepository = new InmemBudgetRepository();
 		await budgetRepository.save(budget);
-		const service = new BudgetService(budgetRepository, userRepository);
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
 		const data = {
 			startOn: "2024-04-20",
 			endOn: "2024-04-29",
@@ -51,7 +53,7 @@ Deno.test("Budget Service - Update", async (t) => {
 
 	await t.step("Deve retornar um @BudgetNotFound se o orçamento não existir", async () => {
 		const budgetRepository = new InmemBudgetRepository();
-		const service = new BudgetService(budgetRepository, userRepository);
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
 		const data = {
 			startOn: "2024-04-20",
 			endOn: "2024-04-29",
@@ -67,7 +69,7 @@ Deno.test("Budget Service - Update", async (t) => {
 		"Deve retornar @PermissionDenied se o utilizador não tiver permissão para efectuar um ronda",
 		async () => {
 			const budgetRepository = new InmemBudgetRepository();
-			const service = new BudgetService(budgetRepository, userRepository);
+			const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
 			const data = {
 				startOn: "2024-04-20",
 				endOn: "2024-04-29",
@@ -84,6 +86,25 @@ Deno.test("Budget Service - Update", async (t) => {
 const user1 = new User("john.doe123", "john.doe123", Role.VetAssistent);
 const user2 = new User("john.doe1234", "john.doe1234", Role.MedVet);
 const userRepository = new InmemUserRepository([user1, user2]);
+
+/**
+ * RF-16: a edição do orçamento só é aceite no episódio aberto; o fixture do
+ * orçamento aponta para a hospitalização "2020", por isso ela tem de existir
+ * aberta.
+ */
+function openHospitalizations(): InmemHospitalizationRepository {
+	return new InmemHospitalizationRepository([
+		Hospitalization.restore({
+			hospitalizationId: "2020",
+			patientId: "1904BA",
+			weight: 12,
+			complaints: ["Queixa"],
+			diagnostics: ["Diagnostico"],
+			entryDate: "2024-04-10T08:00:00.000Z",
+			status: HospitalizationStatus.Open,
+		}),
+	]);
+}
 
 const budget = new Budget(
 	ID.fromString("1010"),

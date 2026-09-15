@@ -5,6 +5,7 @@ import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
 import { ContactData } from "domain/hospitalization/contact.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { MultipleOpenHospitalizations } from "domain/hospitalization/multiple_open_hospitalizations_error.ts";
 import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { HospitalizationBuilder } from "domain/hospitalization/hospitalization_builder.ts";
@@ -353,25 +354,14 @@ export class PatientService {
 
 		const patient = <Patient> patientOrErr.value;
 
-		// Só se encerra a ÚNICA hospitalização aberta do paciente. Com zero ou
-		// duas abertas recusa-se com um erro seguro, em vez de escolher uma ao
-		// acaso (LIMIT 1). O bloqueio por paciente serializa encerramentos
-		// concorrentes do mesmo paciente.
+		// Só se encerra a ÚNICA hospitalização aberta do paciente. O bloqueio por
+		// paciente serializa encerramentos concorrentes do mesmo paciente.
 		await this.#patientRepository.lockBySystemId(patient.systemId);
 
-		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
-			patient.systemId,
-		);
+		const hospitalizationOrErr = await this.#singleOpenHospitalization(patient);
+		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
 
-		if (openHospitalizations.length !== 1) {
-			return left(
-				openHospitalizations.length === 0
-					? new HospitalizationNotFound()
-					: new MultipleOpenHospitalizations(),
-			);
-		}
-
-		const hospitalization = openHospitalizations[0];
+		const hospitalization = hospitalizationOrErr.value;
 
 		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
 			hospitalization.hospitalizationId,
@@ -430,19 +420,10 @@ export class PatientService {
 		// serializar pedidos concorrentes.
 		await this.#patientRepository.lockBySystemId(patient.systemId);
 
-		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
-			patient.systemId,
-		);
+		const hospitalizationOrErr = await this.#singleOpenHospitalization(patient);
+		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
 
-		if (openHospitalizations.length !== 1) {
-			return left(
-				openHospitalizations.length === 0
-					? new HospitalizationNotFound()
-					: new MultipleOpenHospitalizations(),
-			);
-		}
-
-		const openHospitalization = openHospitalizations[0];
+		const openHospitalization = hospitalizationOrErr.value;
 
 		if (!openHospitalization.hospitalizationId.equals(ID.fromString(hospitalizationId))) {
 			return left(new HospitalizationNotFound());
@@ -477,6 +458,24 @@ export class PatientService {
 		await this.#patientRepository.update(patient);
 
 		return right(undefined);
+	}
+
+	async #singleOpenHospitalization(
+		patient: Patient,
+	): Promise<Either<HospitalizationNotFound | MultipleOpenHospitalizations, Hospitalization>> {
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
+			patient.systemId,
+		);
+
+		if (openHospitalizations.length !== 1) {
+			return left(
+				openHospitalizations.length === 0
+					? new HospitalizationNotFound()
+					: new MultipleOpenHospitalizations(),
+			);
+		}
+
+		return right(openHospitalizations[0]);
 	}
 
 	#isInvalidNumber(length: number, limit: number): boolean {
