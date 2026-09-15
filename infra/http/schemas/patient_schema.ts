@@ -1,31 +1,31 @@
 import { z } from "deps";
 
 const patientSchema = z.object({
-	patientId: z.string(),
-	name: z.string(),
-	specie: z.string(),
-	breed: z.string(),
-	birthDate: z.string(),
+	patientId: z.string().min(1),
+	name: z.string().min(1),
+	specie: z.string().min(1),
+	breed: z.string().min(1),
+	birthDate: z.string().min(1),
 });
 
 const ownerSchema = z.object({
-	ownerId: z.string(),
-	name: z.string(),
-	phoneNumber: z.string(),
+	ownerId: z.string().min(1),
+	name: z.string().min(1),
+	phoneNumber: z.string().min(1),
 	whatsapp: z.boolean().optional(),
 });
 
 const hospitalizationSchema = z.object({
-	weight: z.number().lte(100),
-	entryDate: z.string(),
+	weight: z.number().gte(1).lte(100),
+	entryDate: z.string().min(1),
 	dischargeDate: z.string().optional(),
-	complaints: z.string().array(),
-	diagnostics: z.string().array(),
+	complaints: z.string().array().min(1),
+	diagnostics: z.string().array().min(1),
 });
 
 const budgetSchema = z.object({
-	startOn: z.string(),
-	endOn: z.string(),
+	startOn: z.string().min(1),
+	endOn: z.string().min(1),
 	status: z.enum([
 		"NÃO PAGO",
 		"PENDENTE",

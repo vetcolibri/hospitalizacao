@@ -13,7 +13,7 @@ export function sendResponse(
 }
 
 export function sendBadRequest(ctx: Context, body?: ResponseBody) {
-	sendResponse(ctx, Status.BadRequest, { message: body });
+	sendResponse(ctx, Status.BadRequest, typeof body === "object" ? body : { message: body });
 }
 
 export function sendCreated(ctx: Context, body?: ResponseBody) {

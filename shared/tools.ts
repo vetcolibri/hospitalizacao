@@ -28,7 +28,20 @@ export function validate(schema: z.ZodTypeAny) {
 			ctx.state.validatedData = validatedData;
 			await next();
 		} catch (error) {
-			sendBadRequest(ctx, error.message);
+			if (error instanceof z.ZodError) {
+				sendBadRequest(ctx, {
+					code: "VALIDATION_ERROR",
+					message: "Corrija os campos indicados.",
+					errors: error.issues.map((issue) => ({
+						code: issue.code,
+						path: issue.path.join("."),
+						message: issue.message,
+					})),
+				});
+				return;
+			}
+
+			sendBadRequest(ctx, error instanceof Error ? error.message : "Pedido inválido");
 		}
 	};
 }
