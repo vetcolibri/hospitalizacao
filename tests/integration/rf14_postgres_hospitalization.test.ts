@@ -96,6 +96,13 @@ async function createTestPatient(client: Client, ids: TestIds): Promise<void> {
 }
 
 async function deleteTestPatient(client: Client, ids: TestIds): Promise<void> {
+	// RF-16: a FK budgets -> hospitalizations é RESTRICT, por isso o orçamento
+	// tem de ser removido explicitamente antes do episódio/paciente.
+	await client.queryObject(
+		"DELETE FROM budgets WHERE hospitalization_id IN (SELECT hospitalization_id FROM hospitalizations WHERE system_id = $1)",
+		[ids.systemId],
+	);
+	await client.queryObject("DELETE FROM hospitalizations WHERE system_id = $1", [ids.systemId]);
 	await client.queryObject("DELETE FROM patients WHERE system_id = $1", [ids.systemId]);
 	await client.queryObject("DELETE FROM owners WHERE owner_id = $1", [ids.ownerId]);
 }
