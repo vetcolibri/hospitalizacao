@@ -50,3 +50,13 @@ Deno.test("non hospitalized patients include every discharge state", async () =>
 	assertEquals(calls[0].sql.includes("status <> $HOSPITALIZED"), true);
 	assertEquals(calls[0].values, { hospitalized: PatientStatus.Hospitalized });
 });
+
+Deno.test("opening a hospitalization locks the patient row until the end of the transaction", async () => {
+	const { client, calls } = makeClient([]);
+
+	await new PostgresPatientRepository(client).lockBySystemId(ID.fromString("sys-1"));
+
+	assertEquals(calls.length, 1, "Deve executar uma única consulta.");
+	assertEquals(calls[0].sql.includes("WHERE system_id = $SYSTEM_ID FOR UPDATE"), true);
+	assertEquals(calls[0].values, { system_id: "sys-1" });
+});
