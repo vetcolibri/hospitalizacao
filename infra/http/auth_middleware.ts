@@ -7,7 +7,6 @@ import { VerifyToken } from "domain/auth/token_generator.ts";
 const EXEMPT_URLS = [
     "/auth/login",
     "/alerts/notifications",
-    "/owners/reports",
 ]
 
 
@@ -27,6 +26,11 @@ export const authMiddleware = (service: AuthService) => {
 
         try {
             const userOrErr = await service.verifyToken(token)
+            if (userOrErr.isLeft()) {
+                sendUnauthorized(ctx)
+                return
+            }
+
             const user = <VerifyToken>userOrErr.value
             ctx.state.username = user.username
             await next()
