@@ -14,7 +14,12 @@ import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
-export type ScheduleError = PatientNotFound | InvalidRepeatEvery | PermissionDenied | Error;
+export type ScheduleError =
+	| PatientNotFound
+	| PatientNotHospitalized
+	| InvalidRepeatEvery
+	| PermissionDenied
+	| Error;
 export type NewPatientError =
 	| PatientIdAlreadyExists
 	| InvalidNumber

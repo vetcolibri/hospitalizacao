@@ -4,6 +4,7 @@ import { AlertAlreadyCanceled } from "domain/hospitalization/alerts/alert_alread
 import { AlertBuider } from "domain/hospitalization/alerts/alert_buider.ts";
 import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
 import { Patient } from "domain/patient/patient.ts";
+import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { CancelError, ScheduleError } from "shared/errors.ts";
@@ -48,6 +49,11 @@ export class AlertService {
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		const patient = patientOrErr.value;
+
+		// RF-16: um paciente já com alta não pode receber alertas novos em nome
+		// de um episódio encerrado. O alerta é recusado antes de ser guardado ou
+		// agendado no notificador.
+		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
 
 		const alertBuilderOrErr = new AlertBuider()
 			.withPatientId(patient.systemId)
