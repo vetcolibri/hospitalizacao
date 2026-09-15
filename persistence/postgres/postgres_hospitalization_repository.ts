@@ -8,6 +8,28 @@ import { ID } from "shared/id.ts";
 export class PostgresHospitalizationRepository implements HospitalizationRepository {
 	constructor(private client: Client) {}
 
+	async findAllByPatientId(patientId: ID): Promise<Hospitalization[]> {
+		const result = await this.client.queryObject<HospModel>(
+			"SELECT * FROM hospitalizations WHERE system_id = $SYSTEM_ID ORDER BY entry_date DESC, hospitalization_id DESC",
+			{ system_id: patientId.value },
+		);
+
+		return result.rows.map(hospFactory);
+	}
+
+	async findByHospitalizationId(
+		id: ID,
+	): Promise<Either<HospitalizationNotFound, Hospitalization>> {
+		const result = await this.client.queryObject<HospModel>(
+			"SELECT * FROM hospitalizations WHERE hospitalization_id = $HOSPITALIZATION_ID LIMIT 1",
+			{ hospitalization_id: id.value },
+		);
+
+		if (result.rows.length === 0) return left(new HospitalizationNotFound());
+
+		return right(hospFactory(result.rows[0]));
+	}
+
 	async findByStatus(status: HospitalizationStatus): Promise<Hospitalization[]> {
 		const result = await this.client.queryObject<HospModel>(
 			"SELECT * FROM hospitalizations WHERE status = $STATUS",

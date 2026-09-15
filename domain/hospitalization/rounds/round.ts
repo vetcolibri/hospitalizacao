@@ -7,8 +7,10 @@ export class Round {
 	readonly #hospitalizationId: ID;
 	readonly parameters: Parameter[];
 
-	constructor(patientId: ID, hospitalizationId: ID) {
-		this.#roundId = ID.random();
+	constructor(patientId: ID, hospitalizationId: ID, roundId?: ID) {
+		// O identificador só é gerado em rondas novas; ao reconstituir o histórico
+		// a ronda mantém o identificador que já tinha sido gravado.
+		this.#roundId = roundId ?? ID.random();
 		this.#patientId = patientId;
 		this.#hospitalizationId = hospitalizationId;
 		this.parameters = [];

@@ -26,6 +26,41 @@ export class PostgresReportRepository implements ReportRepository {
         return reportFactory(reports.rows[0], discharges.rows);
     }
 
+    findAllByHospitalizationId(hospitalizationId: ID): Promise<Report[]> {
+        return this.#findAllByHospitalizationId(hospitalizationId);
+    }
+
+    async #findAllByHospitalizationId(hospitalizationId: ID): Promise<Report[]> {
+        const reports = await this.client.queryObject<ReportModel>(
+            `SELECT * FROM reports
+             WHERE hospitalization_id = $HOSPITALIZATION_ID
+             ORDER BY created_at DESC, report_id DESC`,
+            { hospitalization_id: hospitalizationId.value },
+        );
+
+        if (reports.rows.length === 0) return [];
+
+        // Uma única query para as descargas de TODOS os relatórios do episódio:
+        // o número de queries não cresce com o número de relatórios (sem N+1).
+        const reportIds = reports.rows.map((row) => row.report_id);
+        const discharges = await this.client.queryObject<DischargeModel>(
+            "SELECT * FROM discharges WHERE report_id = ANY($REPORT_IDS)",
+            { report_ids: reportIds },
+        );
+
+        const dischargesByReport = new Map<string, DischargeModel[]>();
+
+        for (const discharge of discharges.rows) {
+            const list = dischargesByReport.get(discharge.report_id) ?? [];
+            list.push(discharge);
+            dischargesByReport.set(discharge.report_id, list);
+        }
+
+        return reports.rows.map((row) =>
+            reportFactory(row, dischargesByReport.get(row.report_id) ?? [])
+        );
+    }
+
     async save(report: Report): Promise<void> {
         await this.client.queryObject(
             `
@@ -81,8 +116,8 @@ interface ReportModel {
     report_id: string;
     system_id: string;
     hospitalization_id: string;
-    state_of_consciousness: string;
-    food_types: string;
+    state_of_consciousness: unknown;
+    food_types: unknown;
     food_level: string;
     food_date: string;
     created_at: string;
@@ -92,17 +127,31 @@ interface ReportModel {
 interface DischargeModel {
     report_id: string;
     type: string;
-    aspects: string;
+    aspects: unknown;
 }
 
 function dischargeFactory(row: DischargeModel): Discharge {
-    return new Discharge(row.type, JSON.parse(row.aspects).split(","));
+    return new Discharge(row.type, toStringList(row.aspects));
+}
+
+function toStringList(raw: unknown): string[] {
+    if (Array.isArray(raw)) return raw.map(String);
+
+    if (typeof raw !== "string") return [];
+
+    try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.map(String);
+        return String(parsed).split(",");
+    } catch {
+        return raw.split(",");
+    }
 }
 
 function reportFactory(reportModel: ReportModel, dischargeModel: DischargeModel[]): Report {
     const discharges = dischargeModel.map(dischargeFactory);
     const food = new Food(
-        reportModel.food_types.split(","),
+        toStringList(reportModel.food_types),
         reportModel.food_level,
         reportModel.food_date,
     );
@@ -111,7 +160,7 @@ function reportFactory(reportModel: ReportModel, dischargeModel: DischargeModel[
         ID.fromString(reportModel.report_id),
         ID.fromString(reportModel.system_id),
         ID.fromString(reportModel.hospitalization_id),
-        reportModel.state_of_consciousness.split(","),
+        toStringList(reportModel.state_of_consciousness),
         food,
         discharges,
         reportModel.comments,

@@ -6,6 +6,10 @@ import { RoundRepository } from "domain/hospitalization/rounds/round_repository.
 export class InmemRoundRepository implements RoundRepository {
 	readonly #rounds: Round[] = [];
 
+	constructor(rounds: Round[] = []) {
+		this.#rounds.push(...rounds);
+	}
+
 	save(round: Round): Promise<void> {
 		this.#rounds.push(round);
 		return Promise.resolve(undefined);
@@ -13,6 +17,14 @@ export class InmemRoundRepository implements RoundRepository {
 
 	get records(): Round[] {
 		return this.#rounds;
+	}
+
+	findAllByHospitalizationId(hospitalizationId: ID): Promise<Round[]> {
+		const rounds = this.#rounds.filter((round) =>
+			round.hospitalizationId.equals(hospitalizationId)
+		);
+
+		return Promise.resolve(rounds);
 	}
 
 	last(): Promise<Round> {
