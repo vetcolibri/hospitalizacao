@@ -133,12 +133,21 @@ Deno.test({
 				const result = await psql(["-d", DB], MIGRATION.backfill);
 				assertEquals(result.code !== 0, true, "o backfill devia abortar");
 				assertEquals(result.stderr.includes("1 rondas ambíguas"), true, result.stderr);
-				assertEquals(result.stderr.includes("1 sem hospitalização"), true, result.stderr);
+				assertEquals(
+					result.stderr.includes("2 fora do intervalo temporal exacto"),
+					true,
+					result.stderr,
+				);
 				assertEquals(result.stderr.includes("AMBIGUA round=r_ambig"), true, result.stderr);
 				assertEquals(
 					result.stderr.includes("IMPOSSIVEL round=r_orphan"),
 					true,
 					result.stderr,
+				);
+				assertEquals(
+					result.stderr.includes("IMPOSSIVEL round=r_day"),
+					true,
+					"medição antes da hora de entrada não pode ser associada por ser o mesmo dia",
 				);
 
 				assertEquals(
@@ -159,9 +168,13 @@ Deno.test({
 		);
 
 		await t.step(
-			"após remover os casos problemáticos o backfill associa tudo e impõe NOT NULL",
+			"após resolver os casos problemáticos o backfill associa tudo e impõe NOT NULL",
 			async () => {
 				await psqlOk(`DELETE FROM rounds WHERE round_id IN ('r_ambig','r_orphan')`);
+				// o operador corrigiu a hora da medição para dentro do intervalo exacto
+				await psqlOk(
+					`UPDATE measurements SET issued_at='2026-02-02 10:00:00' WHERE round_id='r_day'`,
+				);
 				const result = await psql(["-q", "-d", DB], MIGRATION.backfill);
 				assertEquals(result.code, 0, result.stderr);
 
@@ -172,13 +185,14 @@ Deno.test({
 				assertEquals(
 					await psqlOk(`select hospitalization_id from rounds where round_id='r_day'`),
 					"h2",
-					"o casamento por dia tem de resolver medições fora da hora estrita",
+					"só é associada depois de a medição passar a cair no intervalo exacto",
 				);
 				assertEquals(
 					await psqlOk(
 						`select hospitalization_id from rounds where round_id='r_timeonly'`,
 					),
 					"h2",
+					"medição dentro do intervalo exacto tem de ser associada",
 				);
 				assertEquals(
 					await psqlOk(

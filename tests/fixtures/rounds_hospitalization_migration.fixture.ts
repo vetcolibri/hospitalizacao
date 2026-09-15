@@ -15,11 +15,14 @@ export const MIGRATION = {
  *
  * Cenários cobertos:
  *  r_strict   -> medições dentro do intervalo exacto de h1
- *  r_day      -> medição 90min ANTES das 22h de entrada de h2: falha no timestamp
- *                estrito, resolve pelo casamento por dia
- *  r_timeonly -> medição na madrugada do último dia de h2
- *  r_ambig    -> dia cai dentro de h3 e h4 sobrepostas -> ambígua
- *  r_orphan   -> dia fora de qualquer internamento do doente -> impossível
+ *  r_day      -> medição 90min ANTES da hora de entrada de h2: é o mesmo dia,
+ *                mas fica fora do intervalo exacto e por isso tem de ser
+ *                IMPOSSÍVEL — casar por dia colaria a ronda num episódio que
+ *                ainda nem tinha começado
+ *  r_timeonly -> medição dentro do intervalo exacto, na madrugada do último dia
+ *                de h2 (antes da hora de alta)
+ *  r_ambig    -> instante cai dentro de h3 e h4 sobrepostas -> ambígua
+ *  r_orphan   -> fora do intervalo de qualquer internamento do doente -> impossível
  */
 export const LEGACY_FIXTURE = `
 CREATE TABLE owners (
@@ -102,6 +105,8 @@ INSERT INTO discharges (type,aspects,report_id) VALUES ('Urina','"Normal"','rp1'
 
 INSERT INTO rounds (round_id,system_id) VALUES
  ('r_strict','p1'),('r_day','p2'),('r_timeonly','p2'),('r_ambig','p3'),('r_orphan','p1');
+
+-- r_day fica deliberadamente fora do intervalo exacto de h2 (entrada às 22:00).
 
 INSERT INTO measurements VALUES
  ('temperature','38.1','2026-01-11 09:00:00','r_strict'),
