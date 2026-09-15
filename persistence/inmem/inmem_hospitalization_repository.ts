@@ -17,6 +17,12 @@ export class InmemHospitalizationRepository implements HospitalizationRepository
 		return Promise.resolve(this.records.filter((h) => h.status = status));
 	}
 
+	findOpenByPatientId(patientId: ID): Promise<Hospitalization[]> {
+		return Promise.resolve(
+			this.records.filter((h) => h.patientId.equals(patientId) && h.isOpen()),
+		);
+	}
+
 	findByPatientId(patientId: ID): Promise<Either<HospitalizationNotFound, Hospitalization>> {
 		const hospitalization = this.records.find((h) =>
 			h.patientId.equals(patientId) && h.isOpen()

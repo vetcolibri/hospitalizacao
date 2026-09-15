@@ -18,6 +18,14 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 		return result.rows.map(hospFactory);
 	}
 
+	async findOpenByPatientId(patientId: ID): Promise<Hospitalization[]> {
+		const result = await this.client.queryObject<HospModel>(
+			"SELECT * FROM hospitalizations WHERE system_id = $SYSTEM_ID AND status = $STATUS ORDER BY entry_date, hospitalization_id",
+			{ system_id: patientId.value, status: HospitalizationStatus.Open },
+		);
+		return result.rows.map(hospFactory);
+	}
+
 	async save(hospitalization: Hospitalization): Promise<void> {
 		await this.client.queryObject(
 			"INSERT INTO hospitalizations (weight, entry_date, discharge_date, complaints, diagnostics, status, hospitalization_id, system_id)  VALUES ($WEIGHT, $ENTRY_DATE, $DISCHARGE_DATE, $COMPLAINTS, $DIAGNOSTICS, $STATUS, $HOSPITALIZATION_ID, $SYSTEM_ID)",

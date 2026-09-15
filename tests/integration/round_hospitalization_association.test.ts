@@ -3,6 +3,7 @@ import { assertEquals, assertInstanceOf } from "dev_deps";
 import { Role, User } from "domain/auth/user.ts";
 import { Hospitalization, HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
 import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
+import { MultipleOpenHospitalizations } from "domain/hospitalization/multiple_open_hospitalizations_error.ts";
 import { Round } from "domain/hospitalization/rounds/round.ts";
 import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
 import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.ts";
@@ -102,6 +103,53 @@ Deno.test("Round Hospitalization Association", async (t) => {
 				0,
 				"nenhuma ronda pode ser gravada às cegas",
 			);
+		},
+	);
+
+	await t.step(
+		"Deve recusar a ronda quando o paciente tem mais de uma hospitalização aberta.",
+		async () => {
+			const second = Hospitalization.restore({
+				hospitalizationId: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+				patientId: PATIENT_SYSTEM_ID,
+				weight: 12,
+				complaints: ["Queixa 1"],
+				diagnostics: ["Diagnostico 1"],
+				entryDate: "2026-01-06T08:00:00.000Z",
+				status: HospitalizationStatus.Open,
+			});
+
+			const { service, roundRepository } = makeService([openHospitalization(), second]);
+
+			const result = await service.new(PATIENT_SYSTEM_ID, parameters, "john.doe1234");
+
+			assertEquals(result.isLeft(), true);
+			assertInstanceOf(result.value, MultipleOpenHospitalizations);
+			assertEquals(
+				roundRepository.records.length,
+				0,
+				"não pode escolher um episódio ao calhas",
+			);
+		},
+	);
+
+	await t.step(
+		"O repositório Postgres não pode limitar a uma hospitalização aberta na pesquisa por doente.",
+		async () => {
+			const queries = captureQueries();
+
+			await new PostgresHospitalizationRepository(queries.client).findOpenByPatientId(
+				ID.fromString(PATIENT_SYSTEM_ID),
+			);
+
+			const select = queries.captured[0];
+			assertEquals(
+				select.sql.toUpperCase().includes("LIMIT"),
+				false,
+				"LIMIT esconde a ambiguidade",
+			);
+			assertEquals(select.sql.includes("status"), true);
+			assertEquals(select.sql.includes("system_id"), true);
 		},
 	);
 

@@ -1,5 +1,7 @@
 import { MeasurementService } from "domain/hospitalization/parameters/measurement_service.ts";
 import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
+import { MultipleOpenHospitalizations } from "domain/hospitalization/multiple_open_hospitalizations_error.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { RoundBuilder } from "domain/hospitalization/rounds/round_builder.ts";
 import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
@@ -67,12 +69,19 @@ export class RoundService {
 		}
 
 		const patient = patientOrErr.value;
-		const hospitalizationOrErr = await this.#hospitalizationRepository.findByPatientId(
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
 			patient.systemId,
 		);
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
 
-		const hospitalization = hospitalizationOrErr.value;
+		if (openHospitalizations.length !== 1) {
+			return left(
+				openHospitalizations.length === 0
+					? new HospitalizationNotFound()
+					: new MultipleOpenHospitalizations(),
+			);
+		}
+
+		const hospitalization = openHospitalizations[0];
 
 		const roundBuilderOrErr = new RoundBuilder(
 			patient.systemId,

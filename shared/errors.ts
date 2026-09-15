@@ -5,6 +5,7 @@ import { InvalidRepeatEvery } from "domain/hospitalization/alerts/repeat_every_e
 import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
 import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
+import { MultipleOpenHospitalizations } from "domain/hospitalization/multiple_open_hospitalizations_error.ts";
 import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
 import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
 import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
@@ -43,4 +44,10 @@ export type ReportError =
 	| OwnerNotFound
 	| PermissionDenied
 	| Error;
-export type RoundError = PatientNotFound | PatientAlreadyDischarged | PermissionDenied | Error;
+export type RoundError =
+	| PatientNotFound
+	| PatientAlreadyDischarged
+	| HospitalizationNotFound
+	| MultipleOpenHospitalizations
+	| PermissionDenied
+	| Error;
