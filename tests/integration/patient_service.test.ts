@@ -702,7 +702,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 				budgetRepository,
 				hospitalizationRepository,
 			});
-			const patientId = "1926BA";
+			const patientId = "1924BA";
 			const hospitalizationId = "0006";
 			const status = "NÃO PAGO";
 
@@ -731,7 +731,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 				budgetRepository,
 				hospitalizationRepository,
 			});
-			const patientId = "1927BA";
+			const patientId = "1924BA";
 			const hospitalizationId = "0006";
 			const status = "PENDENTE";
 
@@ -760,7 +760,7 @@ Deno.test("Patient Service - End Budget", async (t) => {
 				budgetRepository,
 				hospitalizationRepository,
 			});
-			const patientId = "1928BA";
+			const patientId = "1924BA";
 			const hospitalizationId = "0006";
 			const status = "PENDENTE (ORÇAMENTO ENVIADO)";
 

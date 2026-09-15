@@ -5,7 +5,8 @@ import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
 import { ContactData } from "domain/hospitalization/contact.ts";
-import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { MultipleOpenHospitalizations } from "domain/hospitalization/multiple_open_hospitalizations_error.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { HospitalizationBuilder } from "domain/hospitalization/hospitalization_builder.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
@@ -350,13 +351,27 @@ export class PatientService {
 		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
-		const hospitalizationOrErr = await this.#hospitalizationRepository.findByPatientId(
-			ID.fromString(patientId),
-		);
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
-
 		const patient = <Patient> patientOrErr.value;
-		const hospitalization = <Hospitalization> hospitalizationOrErr.value;
+
+		// Só se encerra a ÚNICA hospitalização aberta do paciente. Com zero ou
+		// duas abertas recusa-se com um erro seguro, em vez de escolher uma ao
+		// acaso (LIMIT 1). O bloqueio por paciente serializa encerramentos
+		// concorrentes do mesmo paciente.
+		await this.#patientRepository.lockBySystemId(patient.systemId);
+
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
+			patient.systemId,
+		);
+
+		if (openHospitalizations.length !== 1) {
+			return left(
+				openHospitalizations.length === 0
+					? new HospitalizationNotFound()
+					: new MultipleOpenHospitalizations(),
+			);
+		}
+
+		const hospitalization = openHospitalizations[0];
 
 		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
 			hospitalization.hospitalizationId,
@@ -409,8 +424,32 @@ export class PatientService {
 
 		const patient = patientOrErr.value;
 
+		// O orçamento a alterar tem de ser o da ÚNICA hospitalização aberta do
+		// paciente. Nunca se aceita um episódio encerrado (ou de outro paciente)
+		// nem se escolhe um episódio ao acaso. Bloqueio por paciente para
+		// serializar pedidos concorrentes.
+		await this.#patientRepository.lockBySystemId(patient.systemId);
+
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
+			patient.systemId,
+		);
+
+		if (openHospitalizations.length !== 1) {
+			return left(
+				openHospitalizations.length === 0
+					? new HospitalizationNotFound()
+					: new MultipleOpenHospitalizations(),
+			);
+		}
+
+		const openHospitalization = openHospitalizations[0];
+
+		if (!openHospitalization.hospitalizationId.equals(ID.fromString(hospitalizationId))) {
+			return left(new HospitalizationNotFound());
+		}
+
 		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
-			ID.fromString(hospitalizationId),
+			openHospitalization.hospitalizationId,
 		);
 
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);

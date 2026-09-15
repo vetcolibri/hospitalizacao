@@ -33,11 +33,18 @@ export type NewHospitalizationError =
 export type EndHospitalizationError =
 	| PatientNotFound
 	| HospitalizationNotFound
+	| MultipleOpenHospitalizations
 	| BudgetNotFound
 	| PermissionDenied
 	| Error;
 
-export type EndBudgetError = PatientNotFound | BudgetNotFound | PermissionDenied | Error;
+export type EndBudgetError =
+	| PatientNotFound
+	| HospitalizationNotFound
+	| MultipleOpenHospitalizations
+	| BudgetNotFound
+	| PermissionDenied
+	| Error;
 export type UpdateOwnerError = PatientNotFound | OwnerNotFound | PermissionDenied | Error;
 export type ReportError =
 	| PatientNotHospitalized
