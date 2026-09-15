@@ -119,6 +119,30 @@ Deno.test("RF-13 - contacto específico no hospitalizar", async (t) => {
 	});
 
 	await t.step(
+		"normaliza o nome removendo espaços antes de o entregar ao serviço",
+		async () => {
+			const { transaction } = makeTransaction();
+			const received: unknown[] = [];
+			const service = {
+				newHospitalization: (...args: unknown[]) => {
+					received.push(args);
+					return Promise.resolve(right(undefined));
+				},
+				updateOwner: () => Promise.resolve(right(undefined)),
+			};
+			const app = makeApp(service, transaction);
+
+			const response = await post(
+				app,
+				body({ ...HOSPITALIZATION_DATA, contact: { ...CONTACT, name: "  Maria José  " } }),
+			);
+
+			assertEquals(response?.status, 201);
+			assertEquals(received[0][1], { ...HOSPITALIZATION_DATA, contact: CONTACT });
+		},
+	);
+
+	await t.step(
 		"não deixa o cliente injectar identificadores dentro do contacto",
 		async () => {
 			const { transaction } = makeTransaction();
@@ -151,6 +175,16 @@ Deno.test("RF-13 - validação do contacto específico", async (t) => {
 		{
 			name: "nome vazio",
 			contact: { ...CONTACT, name: "" },
+			path: "hospitalizationData.contact.name",
+		},
+		{
+			name: "nome só com espaços",
+			contact: { ...CONTACT, name: "   " },
+			path: "hospitalizationData.contact.name",
+		},
+		{
+			name: "nome acima de 50 caracteres",
+			contact: { ...CONTACT, name: "a".repeat(51) },
 			path: "hospitalizationData.contact.name",
 		},
 		{

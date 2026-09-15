@@ -284,6 +284,34 @@ Deno.test({
 });
 
 Deno.test({
+	name: "RF-13 - um nome no limite da coluna (50) é gravado sem erro de servidor",
+	ignore: !DB_AVAILABLE,
+	ignoreReason: IGNORE_REASON,
+	fn: async () => {
+		const ids = makeTestIds();
+		const admin = await connect();
+		const client = await connect();
+		const name = "a".repeat(50);
+
+		try {
+			if (!admin || !client) throw new Error("Ligação indisponível");
+
+			await createTestPatient(admin, ids);
+
+			const response = await hospitalize(makeApp(client), ids, { ...CONTACT, name });
+			assertEquals(response?.status, 201);
+
+			const contact = await readContact(admin, ids);
+			assertEquals(contact.contact_name, name);
+		} finally {
+			if (admin) await deleteTestPatient(admin, ids);
+			await admin?.end();
+			await client?.end();
+		}
+	},
+});
+
+Deno.test({
 	name: "RF-13 - falha ao guardar o orçamento não deixa hospitalização nem contacto parciais",
 	ignore: !DB_AVAILABLE,
 	ignoreReason: IGNORE_REASON,

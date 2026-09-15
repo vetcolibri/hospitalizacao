@@ -62,6 +62,15 @@ Deno.test("RF-13 - contacto específico", async (t) => {
 		assert(result.isLeft(), "Sem nome não existe contacto.");
 	});
 
+	await t.step("recusa nome acima do limite da coluna (50) e aceita exactamente 50", () => {
+		const tooLong = Contact.create({ ...VALID_CONTACT, name: "a".repeat(51) });
+		const atLimit = Contact.create({ ...VALID_CONTACT, name: "a".repeat(50) });
+
+		assert(tooLong.isLeft(), "51 caracteres não cabem em VARCHAR(50).");
+		assert(atLimit.isRight(), "50 caracteres têm de ser aceites.");
+		assertEquals(atLimit.value.name.length, 50);
+	});
+
 	await t.step("recusa telefone que não seja angolano válido", () => {
 		for (const phoneNumber of ["123456789", "823456789", "92345678", "telefone"]) {
 			const result = Contact.create({ ...VALID_CONTACT, phoneNumber });
