@@ -33,6 +33,10 @@ export class InmemPatientRepository implements PatientRepository {
 		return Promise.resolve(this.records.filter((p) => !p.isHospitalized()));
 	}
 
+	lockBySystemId(_patientId: ID): Promise<void> {
+		return Promise.resolve(undefined);
+	}
+
 	save(patient: Patient): Promise<void> {
 		this.#data[patient.systemId.value] = patient;
 		return Promise.resolve(undefined);

@@ -131,6 +131,10 @@ export class PatientService {
 			);
 		}
 
+		// Serializa a abertura entre pedidos concorrentes do mesmo paciente, para que
+		// dois pedidos não leiam ambos zero hospitalizações abertas e criem duas.
+		await this.#patientRepository.lockBySystemId(ID.fromString(patientId));
+
 		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) {
 			return left(patientOrErr.value);

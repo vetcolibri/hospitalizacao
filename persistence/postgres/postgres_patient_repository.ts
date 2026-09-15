@@ -32,6 +32,15 @@ function patientFactory(model: PatientModel): Patient {
 export class PostgresPatientRepository implements PatientRepository {
 	constructor(private client: Client) {}
 
+	async lockBySystemId(patientId: ID): Promise<void> {
+		// Bloqueia a ficha do paciente até ao fim da transacção, serializando a
+		// abertura de hospitalizações concorrentes para o mesmo paciente.
+		await this.client.queryObject(
+			"SELECT system_id FROM patients WHERE system_id = $SYSTEM_ID FOR UPDATE",
+			{ system_id: patientId.value },
+		);
+	}
+
 	async findBySystemId(patientId: ID): Promise<Either<PatientNotFound, Patient>> {
 		const result = await this.client.queryObject<PatientModel>(
 			"SELECT * FROM patients WHERE system_id = $SYSTEM_ID limit 1",
