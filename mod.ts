@@ -29,8 +29,6 @@ if (!DATABASE_URL) {
     Deno.exit(1);
 }
 
-console.log("Connecting to database:", DATABASE_URL);
-
 const client = new Client(DATABASE_URL);
 
 // Initialize adapters
