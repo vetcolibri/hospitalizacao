@@ -2,6 +2,7 @@ import { AlertService } from "application/alert_service.ts";
 import { BudgetService } from "application/budget_service.ts";
 import { CrmService } from "application/crm_service.ts";
 import { HospitalizationService } from "application/hospitalization_service.ts";
+import { HospitalizationHistoryService } from "application/hospitalization_history_service.ts";
 import { PatientService } from "application/patient_service.ts";
 import { RoundService } from "application/round_service.ts";
 import { Client } from "deps";
@@ -10,6 +11,7 @@ import { WebWorkerAlertNotifier } from "infra/web_worker/web_worker_alert_notifi
 import { PostgresAlertRepository } from "persistence/postgres/postgres_alert_repository.ts";
 import { PostgresBudgetRepository } from "persistence/postgres/postgres_budget_repository.ts";
 import { PostgresHospitalizationRepository } from "persistence/postgres/postgres_hospitalization_repository.ts";
+import { PostgresHospitalizationLinkDiagnostic } from "persistence/postgres/postgres_hospitalization_link_diagnostic.ts";
 import { PostgresMeasurementService } from "persistence/postgres/postgres_measurement_service.ts";
 import { PostgresOwnerRepository } from "persistence/postgres/postgres_owner_repository.ts";
 import { PostgresPatientRepository } from "persistence/postgres/postgres_patient_repository.ts";
@@ -67,6 +69,15 @@ const roundService = new RoundService(roundRepo, patientRepo, hospRepo, userRepo
 const hospitalizationService = new HospitalizationService(
     hospRepo,
 );
+const hospitalizationHistoryService = new HospitalizationHistoryService(
+    hospRepo,
+    budgetRepo,
+    roundRepo,
+    reportRepo,
+    patientRepo,
+    ownerRepo,
+    new PostgresHospitalizationLinkDiagnostic(client),
+);
 const budgetService = new BudgetService(budgetRepo, userRepo);
 const crmService = new CrmService(
     ownerRepo,
@@ -85,6 +96,7 @@ startHttpServer({
     patientService,
     roundService,
     hospitalizationService,
+    hospitalizationHistoryService,
     budgetService,
     crmService,
     authService,

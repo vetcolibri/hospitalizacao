@@ -2,6 +2,7 @@ import { AlertService } from "application/alert_service.ts";
 import { BudgetService } from "application/budget_service.ts";
 import { CrmService } from "application/crm_service.ts";
 import { HospitalizationService } from "application/hospitalization_service.ts";
+import { HospitalizationHistoryService } from "application/hospitalization_history_service.ts";
 import { PatientService } from "application/patient_service.ts";
 import { RoundService } from "application/round_service.ts";
 import { startHttpServer } from "infra/http/http_server.ts";
@@ -10,6 +11,7 @@ import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.t
 import { InmemOwnerRepository } from "persistence/inmem/inmem_owner_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
 import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
+import { InmemHospitalizationLinkDiagnostic } from "persistence/inmem/inmem_hospitalization_link_diagnostic.ts";
 import { InmemBudgetRepository } from "persistence/inmem/inmem_budget_repository.ts";
 import { InmemAlertRepository } from "persistence/inmem/inmem_alert_repository.ts";
 import { InmemReportRepository } from "persistence/inmem/inmem_report_repository.ts";
@@ -55,6 +57,15 @@ const roundService = new RoundService(roundRepo, patientRepo, hospRepo, userRepo
 const hospitalizationService = new HospitalizationService(
     hospRepo,
 );
+const hospitalizationHistoryService = new HospitalizationHistoryService(
+    hospRepo,
+    budgetRepo,
+    roundRepo,
+    reportRepo,
+    patientRepo,
+    ownerRepo,
+    new InmemHospitalizationLinkDiagnostic(),
+);
 const budgetService = new BudgetService(budgetRepo, userRepo);
 const crmService = new CrmService(
     ownerRepo,
@@ -72,6 +83,7 @@ startHttpServer({
     patientService,
     roundService,
     hospitalizationService,
+    hospitalizationHistoryService,
     budgetService,
     crmService,
     authService,

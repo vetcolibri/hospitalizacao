@@ -2,6 +2,7 @@ import { AlertNotifier } from "application/alert_notifier.ts";
 import { AlertService } from "application/alert_service.ts";
 import { BudgetService } from "application/budget_service.ts";
 import { CrmService } from "application/crm_service.ts";
+import { HospitalizationHistoryService } from "application/hospitalization_history_service.ts";
 import { HospitalizationService } from "application/hospitalization_service.ts";
 import { PatientService } from "application/patient_service.ts";
 import { RoundService } from "application/round_service.ts";
@@ -13,6 +14,7 @@ import alerts_router from "infra/http/alerts_router.ts";
 import budgets_router from "infra/http/budgets_router.ts";
 import crm_router from "infra/http/crm_router.ts";
 import hospitalizations_router from "infra/http/hospitalizations_router.ts";
+import hospitalization_history_router from "infra/http/hospitalization_history_router.ts";
 import patients_router from "infra/http/patients_router.ts";
 import rounds_router from "infra/http/rounds_router.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
@@ -26,6 +28,7 @@ export function startHttpServer(opts: {
     patientService: PatientService;
     roundService: RoundService;
     hospitalizationService: HospitalizationService;
+    hospitalizationHistoryService: HospitalizationHistoryService;
     budgetService: BudgetService;
     crmService: CrmService;
     notifier: AlertNotifier;
@@ -39,6 +42,9 @@ export function startHttpServer(opts: {
     const alertRouter = alerts_router(opts.alertService, opts.notifier, opts.transationController);
     const roundRouter = rounds_router(opts.roundService, opts.transationController);
     const hospitalizationRouter = hospitalizations_router(opts.hospitalizationService);
+    const hospitalizationHistoryRouter = hospitalization_history_router(
+        opts.hospitalizationHistoryService,
+    );
     const budgetRouter = budgets_router(opts.budgetService, opts.transationController);
     const crmRouter = crm_router(opts.crmService, opts.transationController);
     const authRouter = auth_router(opts.authService);
@@ -47,6 +53,9 @@ export function startHttpServer(opts: {
     app.use(logger);
     app.use(authMiddleware(opts.authService));
     app.use(patientRouter.routes());
+    // Antes do router de pacientes: os caminhos de histórico são mais
+    // específicos e exigem a mesma autenticação global.
+    app.use(hospitalizationHistoryRouter.routes());
     app.use(alertRouter.routes());
     app.use(roundRouter.routes());
     app.use(hospitalizationRouter.routes());
