@@ -73,8 +73,10 @@ CREATE TABLE IF NOT EXISTS reports (
     comments TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     system_id VARCHAR(50) NOT NULL,
+    hospitalization_id VARCHAR(50) NOT NULL,
     PRIMARY KEY(report_id),
-    CONSTRAINT fk_reports_patients FOREIGN KEY (system_id) REFERENCES patients(system_id) ON DELETE CASCADE
+    CONSTRAINT fk_reports_patients FOREIGN KEY (system_id) REFERENCES patients(system_id) ON DELETE CASCADE,
+    CONSTRAINT fk_reports_hospitalizations FOREIGN KEY (hospitalization_id) REFERENCES hospitalizations(hospitalization_id) ON DELETE CASCADE
 );
 
 --

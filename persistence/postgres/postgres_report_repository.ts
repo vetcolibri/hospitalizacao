@@ -32,6 +32,7 @@ export class PostgresReportRepository implements ReportRepository {
             INSERT INTO reports (
                 report_id,
                 system_id,
+                hospitalization_id,
                 state_of_consciousness,
                 food_types,
                 food_level,
@@ -47,12 +48,14 @@ export class PostgresReportRepository implements ReportRepository {
                 $5,
                 $6,
                 $7,
-                $8
+                $8,
+                $9
             )
         `,
             [
                 report.reportId.value,
                 report.patientId.value,
+                report.hospitalizationId.value,
                 JSON.stringify(report.stateOfConsciousness.join(",")),
                 JSON.stringify(report.food.types.join(",")),
                 report.food.level,
@@ -76,7 +79,8 @@ export class PostgresReportRepository implements ReportRepository {
 
 interface ReportModel {
     report_id: string;
-    patient_id: string;
+    system_id: string;
+    hospitalization_id: string;
     state_of_consciousness: string;
     food_types: string;
     food_level: string;
@@ -105,7 +109,8 @@ function reportFactory(reportModel: ReportModel, dischargeModel: DischargeModel[
 
     const report = new Report(
         ID.fromString(reportModel.report_id),
-        ID.fromString(reportModel.patient_id),
+        ID.fromString(reportModel.system_id),
+        ID.fromString(reportModel.hospitalization_id),
         reportModel.state_of_consciousness.split(","),
         food,
         discharges,

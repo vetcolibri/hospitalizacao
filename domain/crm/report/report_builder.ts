@@ -6,6 +6,7 @@ import { ID } from "shared/id.ts";
 
 export class ReportBuilder {
     #patientId?: ID;
+    #hospitalizationId?: ID;
     #food?: Food;
     #discharges?: Discharge[];
     #stateOfConsciousness?: string[];
@@ -13,6 +14,11 @@ export class ReportBuilder {
 
     withPatientId(patientId: ID): ReportBuilder {
         this.#patientId = patientId;
+        return this;
+    }
+
+    withHospitalizationId(hospitalizationId: ID): ReportBuilder {
+        this.#hospitalizationId = hospitalizationId;
         return this;
     }
 
@@ -41,6 +47,10 @@ export class ReportBuilder {
             throw new Error("Patient ID is required");
         }
 
+        if (!this.#hospitalizationId) {
+            throw new Error("Hospitalization ID is required");
+        }
+
         if (!this.#food) {
             throw new Error("Food is required");
         }
@@ -60,6 +70,7 @@ export class ReportBuilder {
         const report = new Report(
             ID.random(),
             this.#patientId,
+            this.#hospitalizationId,
             this.#stateOfConsciousness,
             this.#food,
             this.#discharges,

@@ -161,6 +161,7 @@ Deno.test("Crm Service - Register patient report", async (t) => {
 			const report = await reportRepo.findByPatientId(ID.fromString(data.patientId));
 
 			assertEquals(report.patientId.value, data.patientId);
+			assertEquals(report.hospitalizationId.value, "111");
 			assertEquals(report.stateOfConsciousness, ["Consciente"]);
 		},
 	);
@@ -519,6 +520,7 @@ const discharge = new Discharge("Urina", ["Normal"]);
 const report = new Report(
 	ID.random(),
 	ID.fromString("1900BA"),
+	ID.fromString("111"),
 	["Consciente"],
 	food,
 	[discharge],

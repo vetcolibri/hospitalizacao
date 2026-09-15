@@ -6,7 +6,7 @@ export class PostgresReportService implements ReportService {
 
     async findAll(patientId: string, hospitalizationId: string): Promise<ReportDTO[]> {
         const result = await this.client.queryObject(
-            `SELECT b.status as b_status, patients.name, patients.patient_id, owners.name as owner_name, hospitalizations.system_id, reports.report_id, reports.state_of_consciousness, reports.food_types, reports.food_level, reports.food_date, reports.created_at, reports.comments FROM budgets b INNER JOIN hospitalizations ON b.hospitalization_id = $HOSPITALIZATION_ID INNER JOIN reports ON hospitalizations.system_id = reports.system_id INNER JOIN patients ON reports.system_id = patients.system_id INNER JOIN owners ON patients.owner_id = owners.owner_id WHERE reports.system_id = $PATIENT_ID`,
+            `SELECT (SELECT status FROM budgets WHERE hospitalization_id = hospitalizations.hospitalization_id ORDER BY start_on DESC, budget_id DESC LIMIT 1) as b_status, patients.name, patients.patient_id, owners.name as owner_name, hospitalizations.system_id, reports.report_id, reports.state_of_consciousness, reports.food_types, reports.food_level, reports.food_date, reports.created_at, reports.comments FROM reports INNER JOIN hospitalizations ON reports.hospitalization_id = hospitalizations.hospitalization_id INNER JOIN patients ON reports.system_id = patients.system_id INNER JOIN owners ON patients.owner_id = owners.owner_id WHERE reports.system_id = $PATIENT_ID AND reports.hospitalization_id = $HOSPITALIZATION_ID ORDER BY reports.created_at DESC, reports.report_id DESC`,
             { patient_id: patientId, hospitalization_id: hospitalizationId },
         );
 
@@ -21,7 +21,7 @@ export class PostgresReportService implements ReportService {
             report.discharges = [...r.rows.map(toDischarge)];
         }
 
-        return reports.reverse();
+        return reports;
     }
 }
 

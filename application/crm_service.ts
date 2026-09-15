@@ -83,8 +83,14 @@ export class CrmService {
 
 		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
 
+		const hospitalizationOrErr = await this.#hospitalizationRepository.findByPatientId(
+			patient.systemId,
+		);
+		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+
 		const reportOrErr = new ReportBuilder()
 			.withPatientId(patient.systemId)
+			.withHospitalizationId(hospitalizationOrErr.value.hospitalizationId)
 			.withStateOfConsciousness(data.stateOfConsciousness)
 			.withFood(this.#buildFood(data))
 			.withDischarge(this.#buildDischarge(data))

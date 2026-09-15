@@ -5,6 +5,7 @@ import { ID } from "shared/id.ts";
 export class Report {
 	readonly reportId: ID;
 	readonly patientId: ID;
+	readonly hospitalizationId: ID;
 	readonly food: Food;
 	readonly discharges: Discharge[];
 	readonly stateOfConsciousness: string[];
@@ -14,6 +15,7 @@ export class Report {
 	constructor(
 		reportId: ID,
 		patientId: ID,
+		hospitalizationId: ID,
 		statusOfConsciousness: string[],
 		food: Food,
 		discharges: Discharge[],
@@ -22,6 +24,7 @@ export class Report {
 	) {
 		this.reportId = reportId;
 		this.patientId = patientId;
+		this.hospitalizationId = hospitalizationId;
 		this.stateOfConsciousness = [...statusOfConsciousness];
 		this.food = food;
 		this.discharges = discharges;
