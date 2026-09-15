@@ -1,8 +1,9 @@
 import { BudgetService } from "application/budget_service.ts";
 import { Context, Router } from "deps";
 import { Budget } from "domain/budget/budget.ts";
+import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { ContextWithParams } from "infra/http/context_with_params.ts";
-import { sendNotFound, sendOk, sendServerError } from "infra/http/responses.ts";
+import { sendBadRequest, sendNotFound, sendOk, sendServerError } from "infra/http/responses.ts";
 import { budgetUpdateSchema } from "infra/http/schemas/patient_schema.ts";
 import { validate } from "shared/tools.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
@@ -42,7 +43,13 @@ export default function (service: BudgetService, transaction: TransactionControl
             const voidOrErr = await service.update(budgetId, data, username);
             if (voidOrErr.isLeft()) {
                 await transaction.rollback();
-                sendNotFound(ctx, voidOrErr.value.message);
+                // Um episódio encerrado é uma escrita recusada (400), não um
+                // recurso inexistente.
+                if (voidOrErr.value instanceof BudgetNotFound) {
+                    sendNotFound(ctx, voidOrErr.value.message);
+                } else {
+                    sendBadRequest(ctx, voidOrErr.value.message);
+                }
                 return;
             }
 

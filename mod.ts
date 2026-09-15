@@ -78,7 +78,7 @@ const hospitalizationHistoryService = new HospitalizationHistoryService(
     ownerRepo,
     new PostgresHospitalizationLinkDiagnostic(client),
 );
-const budgetService = new BudgetService(budgetRepo, userRepo);
+const budgetService = new BudgetService(budgetRepo, userRepo, hospRepo);
 const crmService = new CrmService(
     ownerRepo,
     patientRepo,
