@@ -1,5 +1,6 @@
 import { MeasurementService } from "domain/hospitalization/parameters/measurement_service.ts";
 import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
+import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { RoundBuilder } from "domain/hospitalization/rounds/round_builder.ts";
 import { RoundRepository } from "domain/hospitalization/rounds/round_repository.ts";
 import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
@@ -16,17 +17,20 @@ import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 export class RoundService {
 	#roundRepository: RoundRepository;
 	#patientRepository: PatientRepository;
+	#hospitalizationRepository: HospitalizationRepository;
 	#userRepository: UserRepository;
 	#measurementService: MeasurementService;
 
 	constructor(
 		roundRepository: RoundRepository,
 		patientRepository: PatientRepository,
+		hospitalizationRepository: HospitalizationRepository,
 		userRepository: UserRepository,
 		measurementService: MeasurementService,
 	) {
 		this.#roundRepository = roundRepository;
 		this.#patientRepository = patientRepository;
+		this.#hospitalizationRepository = hospitalizationRepository;
 		this.#userRepository = userRepository;
 		this.#measurementService = measurementService;
 	}
@@ -63,7 +67,17 @@ export class RoundService {
 		}
 
 		const patient = patientOrErr.value;
-		const roundBuilderOrErr = new RoundBuilder(patient.systemId)
+		const hospitalizationOrErr = await this.#hospitalizationRepository.findByPatientId(
+			patient.systemId,
+		);
+		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+
+		const hospitalization = hospitalizationOrErr.value;
+
+		const roundBuilderOrErr = new RoundBuilder(
+			patient.systemId,
+			hospitalization.hospitalizationId,
+		)
 			.withHeartRate(data.heartRate)
 			.withRespiratoryRate(data.respiratoryRate)
 			.withTrc(data.trc)

@@ -63,7 +63,7 @@ const alertService = new AlertService(
     userRepo,
     notifier,
 );
-const roundService = new RoundService(roundRepo, patientRepo, userRepo, measurementService);
+const roundService = new RoundService(roundRepo, patientRepo, hospRepo, userRepo, measurementService);
 const hospitalizationService = new HospitalizationService(
     hospRepo,
 );

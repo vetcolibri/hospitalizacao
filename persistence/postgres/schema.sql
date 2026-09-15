@@ -98,8 +98,10 @@ CREATE TABLE IF NOT EXISTS discharges (
 CREATE TABLE IF NOT EXISTS rounds (
     round_id VARCHAR(50) NOT NULL UNIQUE,
     system_id VARCHAR(50) NOT NULL,
+    hospitalization_id VARCHAR(50) NOT NULL,
     PRIMARY KEY(round_id),
-    CONSTRAINT fk_rounds_patients FOREIGN KEY (system_id) REFERENCES patients(system_id) ON DELETE CASCADE
+    CONSTRAINT fk_rounds_patients FOREIGN KEY (system_id) REFERENCES patients(system_id) ON DELETE CASCADE,
+    CONSTRAINT fk_rounds_hospitalizations FOREIGN KEY (hospitalization_id) REFERENCES hospitalizations(hospitalization_id) ON DELETE RESTRICT
 );
 
 
@@ -131,3 +133,19 @@ CREATE TABLE IF NOT EXISTS alerts (
     PRIMARY KEY(alert_id),
     CONSTRAINT fk_alerts_patients FOREIGN KEY (system_id) REFERENCES patients(system_id) ON DELETE CASCADE
 );
+
+--
+-- Indices de apoio ao historico por hospitalizacao (RF-15 / RF-16)
+--
+
+CREATE INDEX IF NOT EXISTS idx_hospitalizations_patient_entry_date
+    ON hospitalizations (system_id, entry_date);
+
+CREATE INDEX IF NOT EXISTS idx_rounds_hospitalization
+    ON rounds (hospitalization_id);
+
+CREATE INDEX IF NOT EXISTS idx_reports_hospitalization_created_at
+    ON reports (hospitalization_id, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_budgets_hospitalization
+    ON budgets (hospitalization_id);

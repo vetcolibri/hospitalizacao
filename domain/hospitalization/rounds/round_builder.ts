@@ -17,8 +17,8 @@ import { ID } from "shared/id.ts";
 export class RoundBuilder {
 	#round: Round;
 
-	constructor(patientId: ID) {
-		this.#round = new Round(patientId);
+	constructor(patientId: ID, hospitalizationId: ID) {
+		this.#round = new Round(patientId, hospitalizationId);
 	}
 
 	withHeartRate(data: MeasurementData): RoundBuilder {

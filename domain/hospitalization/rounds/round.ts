@@ -4,11 +4,13 @@ import { ID } from "shared/id.ts";
 export class Round {
 	readonly #roundId: ID;
 	readonly #patientId: ID;
+	readonly #hospitalizationId: ID;
 	readonly parameters: Parameter[];
 
-	constructor(patientId: ID) {
+	constructor(patientId: ID, hospitalizationId: ID) {
 		this.#roundId = ID.random();
 		this.#patientId = patientId;
+		this.#hospitalizationId = hospitalizationId;
 		this.parameters = [];
 	}
 
@@ -30,5 +32,9 @@ export class Round {
 
 	get patientId(): ID {
 		return this.#patientId;
+	}
+
+	get hospitalizationId(): ID {
+		return this.#hospitalizationId;
 	}
 }

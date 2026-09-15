@@ -11,6 +11,10 @@ export class InmemRoundRepository implements RoundRepository {
 		return Promise.resolve(undefined);
 	}
 
+	get records(): Round[] {
+		return this.#rounds;
+	}
+
 	last(): Promise<Round> {
 		return Promise.resolve(this.#rounds[this.#rounds.length - 1]);
 	}

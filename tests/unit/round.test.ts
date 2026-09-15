@@ -14,14 +14,14 @@ import { ID } from "shared/id.ts";
 
 Deno.test("Rounds", async (t) => {
 	await t.step("Deve criar uma ronda.", () => {
-		const round = new Round(patient.patientId);
+		const round = new Round(patient.patientId, hospitalizationId);
 		assertEquals(round.patientId, patient.patientId);
 	});
 	await t.step(
 		"Deve criar a ronda com a medição da Frequência cardiaca.",
 		() => {
 			const parameter = new HeartRate(78);
-			const round = new Round(patient.patientId);
+			const round = new Round(patient.patientId, hospitalizationId);
 
 			round.add(parameter);
 
@@ -36,7 +36,7 @@ Deno.test("Rounds", async (t) => {
 		() => {
 			const heartRate = new HeartRate(78);
 			const parameter = new RespiratoryRate(12);
-			const round = new Round(patient.patientId);
+			const round = new Round(patient.patientId, hospitalizationId);
 
 			round.add(heartRate);
 			round.add(parameter);
@@ -50,7 +50,7 @@ Deno.test("Rounds", async (t) => {
 		const heartRate = new HeartRate(78);
 		const respiratoryRate = new RespiratoryRate(12);
 		const parameter = new Trc("Maior que 2'");
-		const round = new Round(patient.patientId);
+		const round = new Round(patient.patientId, hospitalizationId);
 
 		round.add(heartRate);
 		round.add(respiratoryRate);
@@ -66,7 +66,7 @@ Deno.test("Rounds", async (t) => {
 		const trc = new Trc("Maior que 2'");
 		const parameter = new Avdn("Alerta");
 
-		const round = new Round(patient.patientId);
+		const round = new Round(patient.patientId, hospitalizationId);
 
 		round.add(heartRate);
 		round.add(respiratoryRate);
@@ -84,7 +84,7 @@ Deno.test("Rounds", async (t) => {
 		const avdn = new Avdn("Alerta");
 		const parameter = new Mucosas("Rosadas");
 
-		const round = new Round(patient.patientId);
+		const round = new Round(patient.patientId, hospitalizationId);
 
 		round.add(heartRate);
 		round.add(respiratoryRate);
@@ -104,7 +104,7 @@ Deno.test("Rounds", async (t) => {
 		const mucosas = new Mucosas("Rosadas");
 		const parameter = new Temperature(38);
 
-		const round = new Round(patient.patientId);
+		const round = new Round(patient.patientId, hospitalizationId);
 
 		round.add(heartRate);
 		round.add(respiratoryRate);
@@ -125,7 +125,7 @@ Deno.test("Rounds", async (t) => {
 		const temperature = new Temperature(38);
 		const parameter = new BloodGlucose(67);
 
-		const round = new Round(patient.patientId);
+		const round = new Round(patient.patientId, hospitalizationId);
 
 		round.add(heartRate);
 		round.add(respiratoryRate);
@@ -149,7 +149,7 @@ Deno.test("Rounds", async (t) => {
 		const glicemia = new BloodGlucose(67);
 		const parameter = new Hct(40);
 
-		const round = new Round(patient.patientId);
+		const round = new Round(patient.patientId, hospitalizationId);
 
 		round.add(heartRate);
 		round.add(respiratoryRate);
@@ -177,7 +177,7 @@ Deno.test("Rounds", async (t) => {
 			const hct = new Hct(40);
 			const parameter = new BloodPressure("123/80(60)");
 
-			const round = new Round(patient.patientId);
+			const round = new Round(patient.patientId, hospitalizationId);
 
 			round.add(heartRate);
 			round.add(respiratoryRate);
@@ -203,6 +203,7 @@ const patientIdData = {
 	breed: "SRD",
 	birthDate: "2019-01-01",
 };
+const hospitalizationId = ID.random();
 const patient = new Patient(
 	ID.random(),
 	patientIdData.patientIdId,

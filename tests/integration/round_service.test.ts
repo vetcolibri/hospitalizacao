@@ -8,13 +8,16 @@ import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
 import { InmemRoundRepository } from "persistence/inmem/inmem_round_repository.ts";
-import { PATIENTS } from "../fake_data.ts";
+import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
+import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { hospitalizationData, PATIENTS } from "../fake_data.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { RoundRepositoryStub } from "../stubs/round_repository_stub.ts";
 import { MeasurementServiceStub } from "../stubs/measurement_service_stub.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 import { Role, User } from "domain/auth/user.ts";
 import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
+import { ID } from "shared/id.ts";
 
 Deno.test("Round Service - New Round", async (t) => {
 	await t.step(
@@ -530,9 +533,24 @@ interface options {
 	patientRepository?: PatientRepository;
 }
 
+function openHospitalizations(): Hospitalization[] {
+	return ["1904BA", "1918BA"].map(
+		(systemId) =>
+			new Hospitalization(
+				ID.random(),
+				systemId,
+				hospitalizationData.weight,
+				hospitalizationData.complaints,
+				hospitalizationData.diagnostics,
+				hospitalizationData.entryDate,
+			),
+	);
+}
+
 function makeService(options?: options) {
 	const roundRepository = options?.roundRepository ?? new InmemRoundRepository();
 	const patientRepository = options?.patientRepository ?? new PatientRepositoryStub();
+	const hospitalizationRepository = new InmemHospitalizationRepository(openHospitalizations());
 	const measuremntService = new MeasurementServiceStub();
 	const user1 = new User("john.doe123", "john.doe123", Role.VetAssistent);
 	const user2 = new User("john.doe1234", "john.doe1234", Role.MedVet);
@@ -541,6 +559,7 @@ function makeService(options?: options) {
 	const service = new RoundService(
 		roundRepository,
 		patientRepository,
+		hospitalizationRepository,
 		userRepository,
 		measuremntService,
 	);
