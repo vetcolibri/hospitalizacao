@@ -95,9 +95,10 @@ export class PostgresAlertRepository implements AlertRepository {
 		);
 	}
 
-	updateAll(alerts: Alert[]): Promise<void> {
-		alerts.forEach(async (alert) => await this.update(alert));
-		return Promise.resolve(undefined);
+	async updateAll(alerts: Alert[]): Promise<void> {
+		// RF-16: o encerramento tem de cancelar os alertas DENTRO da transacção,
+		// antes do COMMIT. Sem await, os UPDATE podiam correr fora de ordem.
+		await Promise.all(alerts.map((alert) => this.update(alert)));
 	}
 }
 

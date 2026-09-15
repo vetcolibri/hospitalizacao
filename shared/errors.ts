@@ -17,6 +17,8 @@ import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 export type ScheduleError =
 	| PatientNotFound
 	| PatientNotHospitalized
+	| HospitalizationNotFound
+	| MultipleOpenHospitalizations
 	| InvalidRepeatEvery
 	| PermissionDenied
 	| Error;

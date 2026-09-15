@@ -4,6 +4,7 @@ import { BudgetRepository } from "domain/budget/budget_repository.ts";
 import { HospitalizationNotOpen } from "domain/hospitalization/hospitalization_not_open_error.ts";
 import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
+import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { ID } from "shared/id.ts";
 import { UserRepository } from "domain/auth/user_repository.ts";
@@ -15,15 +16,18 @@ export class BudgetService {
 	#budgetRepository: BudgetRepository;
 	#userRepository: UserRepository;
 	#hospitalizationRepository: HospitalizationRepository;
+	#patientRepository: PatientRepository;
 
 	constructor(
 		budgetRepository: BudgetRepository,
 		userRepository: UserRepository,
 		hospitalizationRepository: HospitalizationRepository,
+		patientRepository: PatientRepository,
 	) {
 		this.#budgetRepository = budgetRepository;
 		this.#userRepository = userRepository;
 		this.#hospitalizationRepository = hospitalizationRepository;
+		this.#patientRepository = patientRepository;
 	}
 
 	async findAll(): Promise<Budget[]> {
@@ -36,6 +40,10 @@ export class BudgetService {
 		username: string,
 	): Promise<Either<BudgetNotFound | HospitalizationNotFound | HospitalizationNotOpen, void>> {
 		const userOrErr = await this.#userRepository.getByUsername(Username.fromString(username));
+		if (userOrErr.isLeft()) {
+			return left(new PermissionDenied("Utilizador inválido."));
+		}
+
 		const user = <User> userOrErr.value;
 		if (!user.hasBudgetWritePermission()) {
 			return left(
@@ -49,11 +57,23 @@ export class BudgetService {
 
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
-		// RF-16: um episódio encerrado é apenas de leitura. A verificação é
-		// obrigatória: sem o repositório não há como provar que o episódio está
-		// aberto.
+		const budget = budgetOrErr.value;
+
+		// Lê a hospitalização uma primeira vez só para descobrir o paciente a
+		// bloquear. A validação que decide é feita DEPOIS do lock, para que um
+		// encerramento concorrente não fique pelo caminho (TOCTOU).
+		const initialOrErr = await this.#hospitalizationRepository.findByHospitalizationId(
+			budget.hospitalizationId,
+		);
+
+		if (initialOrErr.isLeft()) return left(initialOrErr.value);
+
+		// Mesmo bloqueio por paciente usado no encerramento: garante que a
+		// validação e a escrita ficam serializadas com o end-hospitalization.
+		await this.#patientRepository.lockBySystemId(initialOrErr.value.patientId);
+
 		const hospitalizationOrErr = await this.#hospitalizationRepository
-			.findByHospitalizationId(budgetOrErr.value.hospitalizationId);
+			.findByHospitalizationId(budget.hospitalizationId);
 
 		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
 
@@ -61,9 +81,9 @@ export class BudgetService {
 			return left(new HospitalizationNotOpen());
 		}
 
-		budgetOrErr.value.update(data.startOn, data.endOn);
+		budget.update(data.startOn, data.endOn);
 
-		await this.#budgetRepository.update(budgetOrErr.value);
+		await this.#budgetRepository.update(budget);
 
 		return right(undefined);
 	}

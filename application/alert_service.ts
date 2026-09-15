@@ -3,8 +3,10 @@ import { Alert } from "domain/hospitalization/alerts/alert.ts";
 import { AlertAlreadyCanceled } from "domain/hospitalization/alerts/alert_already_canceled_error.ts";
 import { AlertBuider } from "domain/hospitalization/alerts/alert_buider.ts";
 import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
+import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
+import { MultipleOpenHospitalizations } from "domain/hospitalization/multiple_open_hospitalizations_error.ts";
 import { Patient } from "domain/patient/patient.ts";
-import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
 import { CancelError, ScheduleError } from "shared/errors.ts";
@@ -19,17 +21,20 @@ export class AlertService {
 	#patientRepository: PatientRepository;
 	#userRepository: UserRepository;
 	#notifier: AlertNotifier;
+	#hospitalizationRepository: HospitalizationRepository;
 
 	constructor(
 		alertRepository: AlertRepository,
 		patientRepository: PatientRepository,
 		userRepository: UserRepository,
 		notifier: AlertNotifier,
+		hospitalizationRepository: HospitalizationRepository,
 	) {
 		this.#alertRepository = alertRepository;
 		this.#patientRepository = patientRepository;
 		this.#userRepository = userRepository;
 		this.#notifier = notifier;
+		this.#hospitalizationRepository = hospitalizationRepository;
 	}
 
 	/**
@@ -50,10 +55,23 @@ export class AlertService {
 
 		const patient = patientOrErr.value;
 
-		// RF-16: um paciente já com alta não pode receber alertas novos em nome
-		// de um episódio encerrado. O alerta é recusado antes de ser guardado ou
-		// agendado no notificador.
-		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
+		// RF-16: um alerta só pode ser agendado sobre a ÚNICA hospitalização
+		// aberta do paciente. O bloqueio por paciente serializa o agendamento
+		// contra um encerramento concorrente; as hospitalizações são lidas já sob
+		// o lock, para não aceitar um episódio que entretanto fechou.
+		await this.#patientRepository.lockBySystemId(patient.systemId);
+
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
+			patient.systemId,
+		);
+
+		if (openHospitalizations.length !== 1) {
+			return left(
+				openHospitalizations.length === 0
+					? new HospitalizationNotFound()
+					: new MultipleOpenHospitalizations(),
+			);
+		}
 
 		const alertBuilderOrErr = new AlertBuider()
 			.withPatientId(patient.systemId)

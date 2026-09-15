@@ -10,6 +10,7 @@ import { ID } from "shared/id.ts";
 import { AlertNotifierDummy } from "../dummies/alert_notifier_dummy.ts";
 import { PatientRepositoryStub } from "../stubs/patient_repository_stub.ts";
 import { InmemUserRepository } from "persistence/inmem/inmem_user_repository.ts";
+import { HospitalizationRepositoryStub } from "../stubs/hospitalization_repository_stub.ts";
 import { Role, User } from "domain/auth/user.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
@@ -262,6 +263,7 @@ async function makeService() {
 		patientRepository,
 		userRepo,
 		notifier,
+		new HospitalizationRepositoryStub(),
 	);
 	return { alertRepository, patientRepository, notifier, service };
 }

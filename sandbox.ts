@@ -52,6 +52,7 @@ const alertService = new AlertService(
     patientRepo,
     userRepo,
     notifier,
+    hospRepo,
 );
 const roundService = new RoundService(roundRepo, patientRepo, hospRepo, userRepo, measurementService);
 const hospitalizationService = new HospitalizationService(

@@ -4,6 +4,7 @@ import { Budget } from "domain/budget/budget.ts";
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { InmemBudgetRepository } from "persistence/inmem/inmem_budget_repository.ts";
 import { InmemHospitalizationRepository } from "persistence/inmem/inmem_hospitalization_repository.ts";
+import { InmemPatientRepository } from "persistence/inmem/inmem_patient_repository.ts";
 import { Hospitalization, HospitalizationStatus } from "domain/hospitalization/hospitalization.ts";
 import { ID } from "shared/id.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
@@ -14,7 +15,7 @@ Deno.test("Budget Service - Get All", async (t) => {
 	await t.step("Deve recuperar o orçamento pelo ID da hospitalização", async () => {
 		const budgetRepository = new InmemBudgetRepository();
 		await budgetRepository.save(budget);
-		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations(), patients());
 
 		const budgets = await service.findAll();
 
@@ -23,7 +24,7 @@ Deno.test("Budget Service - Get All", async (t) => {
 
 	await t.step("Deve retornar uma lista vazia se não existir orçamentos", async () => {
 		const budgetRepository = new InmemBudgetRepository();
-		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations(), patients());
 
 		const budgets = await service.findAll();
 
@@ -35,7 +36,7 @@ Deno.test("Budget Service - Update", async (t) => {
 	await t.step("Deve atualizar as datas de inicio e fim do orçamento", async () => {
 		const budgetRepository = new InmemBudgetRepository();
 		await budgetRepository.save(budget);
-		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations(), patients());
 		const data = {
 			startOn: "2024-04-20",
 			endOn: "2024-04-29",
@@ -53,7 +54,7 @@ Deno.test("Budget Service - Update", async (t) => {
 
 	await t.step("Deve retornar um @BudgetNotFound se o orçamento não existir", async () => {
 		const budgetRepository = new InmemBudgetRepository();
-		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
+		const service = new BudgetService(budgetRepository, userRepository, openHospitalizations(), patients());
 		const data = {
 			startOn: "2024-04-20",
 			endOn: "2024-04-29",
@@ -69,7 +70,7 @@ Deno.test("Budget Service - Update", async (t) => {
 		"Deve retornar @PermissionDenied se o utilizador não tiver permissão para efectuar um ronda",
 		async () => {
 			const budgetRepository = new InmemBudgetRepository();
-			const service = new BudgetService(budgetRepository, userRepository, openHospitalizations());
+			const service = new BudgetService(budgetRepository, userRepository, openHospitalizations(), patients());
 			const data = {
 				startOn: "2024-04-20",
 				endOn: "2024-04-29",
@@ -104,6 +105,14 @@ function openHospitalizations(): InmemHospitalizationRepository {
 			status: HospitalizationStatus.Open,
 		}),
 	]);
+}
+
+/**
+ * RF-16: o update bloqueia o paciente da hospitalização. O lock em memória é
+ * um no-op, por isso o repositório pode estar vazio neste teste de serviço.
+ */
+function patients(): InmemPatientRepository {
+	return new InmemPatientRepository();
 }
 
 const budget = new Budget(
