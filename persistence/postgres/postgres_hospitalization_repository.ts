@@ -28,7 +28,7 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 
 	async save(hospitalization: Hospitalization): Promise<void> {
 		await this.client.queryObject(
-			"INSERT INTO hospitalizations (weight, entry_date, discharge_date, complaints, diagnostics, status, hospitalization_id, system_id)  VALUES ($WEIGHT, $ENTRY_DATE, $DISCHARGE_DATE, $COMPLAINTS, $DIAGNOSTICS, $STATUS, $HOSPITALIZATION_ID, $SYSTEM_ID)",
+			"INSERT INTO hospitalizations (weight, entry_date, discharge_date, complaints, diagnostics, status, hospitalization_id, system_id, contact_name, contact_phone_number, contact_whatsapp)  VALUES ($WEIGHT, $ENTRY_DATE, $DISCHARGE_DATE, $COMPLAINTS, $DIAGNOSTICS, $STATUS, $HOSPITALIZATION_ID, $SYSTEM_ID, $CONTACT_NAME, $CONTACT_PHONE_NUMBER, $CONTACT_WHATSAPP)",
 			{
 				weight: hospitalization.weight,
 				entry_date: hospitalization.entryDate.toISOString(),
@@ -38,6 +38,9 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 				status: hospitalization.status,
 				hospitalization_id: hospitalization.hospitalizationId.value,
 				system_id: hospitalization.patientId.value,
+				contact_name: hospitalization.contact?.name ?? null,
+				contact_phone_number: hospitalization.contact?.phoneNumber ?? null,
+				contact_whatsapp: hospitalization.contact?.whatsapp ?? null,
 			},
 		);
 	}
@@ -81,9 +84,16 @@ interface HospModel {
 	entry_date: string;
 	status: string;
 	discharge_date?: string;
+	contact_name?: string | null;
+	contact_phone_number?: string | null;
+	contact_whatsapp?: boolean | null;
 }
 
 function hospFactory(model: HospModel): Hospitalization {
+	const hasContact = model.contact_name != null &&
+		model.contact_phone_number != null &&
+		model.contact_whatsapp != null;
+
 	return Hospitalization.restore({
 		patientId: model.system_id,
 		hospitalizationId: model.hospitalization_id,
@@ -93,5 +103,12 @@ function hospFactory(model: HospModel): Hospitalization {
 		complaints: model.complaints.split(","),
 		diagnostics: model.diagnostics.split(","),
 		status: model.status,
+		contact: hasContact
+			? {
+				name: model.contact_name as string,
+				phoneNumber: model.contact_phone_number as string,
+				whatsapp: model.contact_whatsapp as boolean,
+			}
+			: undefined,
 	});
 }

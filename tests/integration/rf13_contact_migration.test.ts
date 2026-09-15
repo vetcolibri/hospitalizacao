@@ -111,7 +111,9 @@ Deno.test({
 		});
 
 		await t.step("grava uma excepção completa sem alterar o tutor", async () => {
-			const before = await psqlOk(`select name||'|'||phone_number||'|'||whatsapp from owners`);
+			const before = await psqlOk(
+				`select name||'|'||phone_number||'|'||whatsapp from owners`,
+			);
 			await psqlOk(
 				`update hospitalizations set contact_name='Maria José', contact_phone_number='923456789', contact_whatsapp=true where hospitalization_id='h2'`,
 			);

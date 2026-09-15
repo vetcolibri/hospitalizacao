@@ -40,8 +40,18 @@ CREATE TABLE IF NOT EXISTS hospitalizations (
     discharge_date TIMESTAMP,
     status VARCHAR(50) NOT NULL,
     system_id VARCHAR(50) NOT NULL,
+    -- RF-13: excepção opcional ao tutor principal, só para este episódio.
+    -- Nulo nos três campos significa "usar o tutor principal".
+    contact_name VARCHAR(50),
+    contact_phone_number VARCHAR(9),
+    contact_whatsapp BOOLEAN,
     PRIMARY KEY(hospitalization_id),
-    CONSTRAINT fk_hospitalizations_patients FOREIGN KEY (system_id) REFERENCES patients(system_id) ON DELETE CASCADE
+    CONSTRAINT fk_hospitalizations_patients FOREIGN KEY (system_id) REFERENCES patients(system_id) ON DELETE CASCADE,
+    CONSTRAINT chk_hospitalizations_contact_complete CHECK (
+        (contact_name IS NULL AND contact_phone_number IS NULL AND contact_whatsapp IS NULL)
+        OR
+        (contact_name IS NOT NULL AND contact_phone_number IS NOT NULL AND contact_whatsapp IS NOT NULL)
+    )
 );
 
 --

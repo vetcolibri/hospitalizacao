@@ -1,3 +1,4 @@
+import { Contact, ContactData } from "domain/hospitalization/contact.ts";
 import { ID } from "shared/id.ts";
 
 export enum HospitalizationStatus {
@@ -14,6 +15,7 @@ type Options = {
 	entryDate: string;
 	status: string;
 	dischargeDate?: string;
+	contact?: ContactData;
 };
 
 export class Hospitalization {
@@ -25,6 +27,8 @@ export class Hospitalization {
 	readonly weight: number;
 	dischargeDate?: Date;
 	status: HospitalizationStatus;
+	/** Excepção opcional ao tutor principal, válida só para este episódio (RF-13). */
+	readonly contact?: Contact;
 
 	constructor(
 		hospitalizationId: ID,
@@ -34,6 +38,7 @@ export class Hospitalization {
 		diagnostics: string[],
 		entryDate: string,
 		dischargeDate?: string,
+		contact?: Contact,
 	) {
 		this.hospitalizationId = hospitalizationId;
 		this.patientId = ID.fromString(patientId);
@@ -42,6 +47,7 @@ export class Hospitalization {
 		this.entryDate = new Date(entryDate);
 		this.weight = weight;
 		this.status = HospitalizationStatus.Open;
+		this.contact = contact;
 
 		if (dischargeDate) this.dischargeDate = new Date(dischargeDate);
 	}
@@ -54,6 +60,8 @@ export class Hospitalization {
 			data.complaints,
 			data.diagnostics,
 			data.entryDate,
+			data.dischargeDate,
+			data.contact ? Contact.restore(data.contact) : undefined,
 		);
 
 		if (data.status === HospitalizationStatus.Open) {

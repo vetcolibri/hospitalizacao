@@ -4,6 +4,7 @@ import { BudgetRepository } from "domain/budget/budget_repository.ts";
 import { Owner } from "domain/crm/owner/owner.ts";
 import { OwnerRepository } from "domain/crm/owner/owner_repository.ts";
 import { AlertRepository } from "domain/hospitalization/alerts/alert_repository.ts";
+import { ContactData } from "domain/hospitalization/contact.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { HospitalizationBuilder } from "domain/hospitalization/hospitalization_builder.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
@@ -211,6 +212,7 @@ export class PatientService {
 			.withWeight(data.weight)
 			.withComplaints(data.complaints)
 			.withDiagnostics(data.diagnostics)
+			.withContact(data.contact)
 			.build();
 
 		if (hospitalizationOrErr.isLeft()) {
@@ -303,6 +305,7 @@ export class PatientService {
 			.withWeight(hospitalizationData.weight)
 			.withComplaints(hospitalizationData.complaints)
 			.withDiagnostics(hospitalizationData.diagnostics)
+			.withContact(hospitalizationData.contact)
 			.build();
 
 		if (hospitalizationOrErr.isLeft()) {
@@ -531,6 +534,8 @@ type HospitalizationData = {
 	diagnostics: string[];
 	entryDate: string;
 	dischargeDate?: string;
+	/** Excepção opcional ao tutor principal, só para esta hospitalização (RF-13). */
+	contact?: ContactData;
 };
 
 type BudgetData = {

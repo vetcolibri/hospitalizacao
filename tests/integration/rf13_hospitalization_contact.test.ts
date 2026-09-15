@@ -150,23 +150,33 @@ Deno.test("RF-13 - contacto específico por hospitalização", async (t) => {
 				a.entryDate.getTime() - b.entryDate.getTime()
 			);
 			assertEquals(episodes.length, 2);
-			assertEquals(episodes[0].contact?.name, CONTACT.name, "O 1.º episódio mantém a excepção.");
+			assertEquals(
+				episodes[0].contact?.name,
+				CONTACT.name,
+				"O 1.º episódio mantém a excepção.",
+			);
 			assertEquals(episodes[1].contact, undefined, "O 2.º episódio não herda a excepção.");
 		},
 	);
 
-	await t.step("o contacto não entra no tutor nem muda o identificador do proprietário", async () => {
-		const { service, ownerRepository } = await makeService();
+	await t.step(
+		"o contacto não entra no tutor nem muda o identificador do proprietário",
+		async () => {
+			const { service, ownerRepository } = await makeService();
 
-		await service.newHospitalization(
-			"sys-1",
-			{ ...HOSPITALIZATION_DATA, contact: { name: "Outro", phoneNumber: "924444444", whatsapp: false } },
-			BUDGET_DATA,
-			RECEPTION,
-		);
+			await service.newHospitalization(
+				"sys-1",
+				{
+					...HOSPITALIZATION_DATA,
+					contact: { name: "Outro", phoneNumber: "924444444", whatsapp: false },
+				},
+				BUDGET_DATA,
+				RECEPTION,
+			);
 
-		assertEquals(ownerRepository.records.length, 1, "Não pode duplicar o tutor.");
-		assertEquals(ownerRepository.records[0].ownerId.equals(ID.fromString(OWNER_ID)), true);
-		assertEquals(ownerRepository.records[0].hasWhatsApp(), true);
-	});
+			assertEquals(ownerRepository.records.length, 1, "Não pode duplicar o tutor.");
+			assertEquals(ownerRepository.records[0].ownerId.equals(ID.fromString(OWNER_ID)), true);
+			assertEquals(ownerRepository.records[0].hasWhatsApp(), true);
+		},
+	);
 });

@@ -1,5 +1,6 @@
 import { HospitalizationService } from "application/hospitalization_service.ts";
 import { Context, Router } from "deps";
+import { ContactData } from "domain/hospitalization/contact.ts";
 import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
 import { sendOk } from "infra/http/responses.ts";
 
@@ -12,6 +13,8 @@ interface HospitalizationDTO {
 	status: string;
 	entryDate: string;
 	dischargeDate?: string;
+	/** Excepção guardada no episódio, se existir (RF-13). */
+	contact?: ContactData;
 }
 
 function toHospitalizationDTO(hospitalization: Hospitalization): HospitalizationDTO {
@@ -24,6 +27,13 @@ function toHospitalizationDTO(hospitalization: Hospitalization): Hospitalization
 		entryDate: hospitalization.entryDate.toISOString(),
 		dischargeDate: hospitalization.dischargeDate?.toISOString() ?? undefined,
 		status: hospitalization.status,
+		contact: hospitalization.contact
+			? {
+				name: hospitalization.contact.name,
+				phoneNumber: hospitalization.contact.phoneNumber,
+				whatsapp: hospitalization.contact.whatsapp,
+			}
+			: undefined,
 	};
 }
 

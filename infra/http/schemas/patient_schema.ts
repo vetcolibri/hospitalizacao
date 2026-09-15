@@ -15,12 +15,30 @@ const ownerSchema = z.object({
 	whatsapp: z.boolean().optional(),
 });
 
+const ANGOLAN_PHONE = /^9[1-9]\d{7}$/;
+
+// RF-13: contacto específico opcional por hospitalização. Não transporta
+// identificadores: o servidor nunca confia num owner/contact ID do cliente.
+const contactSchema = z.object({
+	name: z
+		.string({ required_error: "O nome do contacto é obrigatório." })
+		.min(1, "O nome do contacto é obrigatório."),
+	phoneNumber: z
+		.string({ required_error: "O telefone do contacto é obrigatório." })
+		.regex(ANGOLAN_PHONE, "Insira um número de telefone angolano válido."),
+	whatsapp: z.boolean({
+		required_error: "Indique se o contacto tem WhatsApp.",
+		invalid_type_error: "Indique se o contacto tem WhatsApp.",
+	}),
+});
+
 const hospitalizationSchema = z.object({
 	weight: z.number().gte(1).lte(100),
 	entryDate: z.string().min(1),
 	dischargeDate: z.string().optional(),
 	complaints: z.string().array().min(1),
 	diagnostics: z.string().array().min(1),
+	contact: contactSchema.optional(),
 });
 
 const budgetSchema = z.object({
@@ -33,8 +51,6 @@ const budgetSchema = z.object({
 		"PAGO",
 	]),
 });
-
-const ANGOLAN_PHONE = /^9[1-9]\d{7}$/;
 
 // Edição dos dados globais do tutor durante a hospitalização: apenas nome,
 // telefone e indicação explícita de WhatsApp. O identificador do tutor é
