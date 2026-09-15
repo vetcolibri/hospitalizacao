@@ -208,11 +208,15 @@ function makeService(client: Client): HospitalizationHistoryService {
 	);
 }
 
-async function legacyCounts(client: Client): Promise<{ reports: number; rounds: number }> {
+async function legacyCounts(
+	client: Client,
+	systemId: string,
+): Promise<{ reports: number; rounds: number }> {
 	const result = await client.queryObject<{ reports: number; rounds: number }>(
 		`SELECT
-			(SELECT count(*)::int FROM reports WHERE hospitalization_id IS NULL) AS reports,
-			(SELECT count(*)::int FROM rounds WHERE hospitalization_id IS NULL) AS rounds`,
+			(SELECT count(*)::int FROM reports WHERE system_id = $SYSTEM_ID AND hospitalization_id IS NULL) AS reports,
+			(SELECT count(*)::int FROM rounds WHERE system_id = $SYSTEM_ID AND hospitalization_id IS NULL) AS rounds`,
+		{ system_id: systemId },
 	);
 	return result.rows[0];
 }
@@ -241,7 +245,7 @@ Deno.test({
 		try {
 			if (!admin || !client) throw new Error("Ligação indisponível");
 
-			const before = await legacyCounts(admin);
+			const before = await legacyCounts(admin, ids.systemId);
 
 			await createOwnerAndPatient(admin, ids.ownerId, ids.systemId, ids.patientId);
 			await createOwnerAndPatient(
@@ -336,9 +340,14 @@ Deno.test({
 			assertEquals(crossOrErr.isLeft(), true);
 			assertInstanceOf(crossOrErr.value, HospitalizationNotFound);
 
-			const status = await service.linkStatus();
+			const status = await service.linkStatus(ids.systemId);
 			assertEquals(status.reportsWithoutHospitalization, before.reports + 1);
 			assertEquals(status.roundsWithoutHospitalization, before.rounds + 1);
+
+			// Pendências de A não podem gerar aviso no paciente B.
+			const otherStatus = await service.linkStatus(ids.otherSystemId);
+			assertEquals(otherStatus.reportsWithoutHospitalization, 0);
+			assertEquals(otherStatus.roundsWithoutHospitalization, 0);
 		} finally {
 			if (admin) await deleteTestData(admin, ids);
 			await admin?.end();

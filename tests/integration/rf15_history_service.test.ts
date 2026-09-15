@@ -178,8 +178,10 @@ function makeFixture(): Fixture {
 	owners.save(new Owner(OWNER_ID, "Tutor Principal", "933000111", true));
 
 	const diagnostic = new InmemHospitalizationLinkDiagnostic({
-		reportsWithoutHospitalization: 1154,
-		roundsWithoutHospitalization: 503,
+		[PATIENT_A]: {
+			reportsWithoutHospitalization: 1154,
+			roundsWithoutHospitalization: 503,
+		},
 	});
 
 	const service = new HospitalizationHistoryService(
@@ -308,12 +310,21 @@ Deno.test("RF-15 - histórico: ownership", async (t) => {
 });
 
 Deno.test("RF-15 - histórico: diagnóstico do legado pendente", async (t) => {
-	await t.step("expõe os totais por classificar, sem os atribuir", async () => {
+	await t.step("expõe os totais do paciente por classificar, sem os atribuir", async () => {
 		const { service } = makeFixture();
 
-		const status = await service.linkStatus();
+		const status = await service.linkStatus(PATIENT_A);
 
 		assertEquals(status.reportsWithoutHospitalization, 1154);
 		assertEquals(status.roundsWithoutHospitalization, 503);
+	});
+
+	await t.step("pendências de um paciente não aparecem no outro paciente", async () => {
+		const { service } = makeFixture();
+
+		const status = await service.linkStatus(PATIENT_B);
+
+		assertEquals(status.reportsWithoutHospitalization, 0);
+		assertEquals(status.roundsWithoutHospitalization, 0);
 	});
 });

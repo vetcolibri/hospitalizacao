@@ -86,7 +86,7 @@ function makeService(overrides: Partial<HospitalizationHistoryService> = {}) {
 					contactIsSpecific: false,
 				}),
 			),
-		linkStatus: () =>
+		linkStatus: (_patientId: string) =>
 			Promise.resolve({
 				reportsWithoutHospitalization: 1154,
 				roundsWithoutHospitalization: 503,
@@ -168,16 +168,37 @@ Deno.test("RF-15 - histórico: detalhe HTTP", async (t) => {
 });
 
 Deno.test("RF-15 - histórico: diagnóstico do legado", async (t) => {
-	await t.step("expõe os totais por classificar", async () => {
+	await t.step("expõe os totais do paciente por classificar", async () => {
 		const app = makeApp(makeService());
 
 		const response = await app.handle(
-			new Request("http://localhost/hospitalizations/legacy-link-status"),
+			new Request(`http://localhost/patients/${PATIENT_ID}/legacy-link-status`),
 		);
 		const body = await response?.json();
 
 		assertEquals(response?.status, 200);
 		assertEquals(body.reportsWithoutHospitalization, 1154);
 		assertEquals(body.roundsWithoutHospitalization, 503);
+	});
+
+	await t.step("liga o diagnóstico ao paciente do path", async () => {
+		const received: string[] = [];
+		const app = makeApp(
+			makeService({
+				linkStatus: (patientId: string) => {
+					received.push(patientId);
+					return Promise.resolve({
+						reportsWithoutHospitalization: 0,
+						roundsWithoutHospitalization: 0,
+					});
+				},
+			}),
+		);
+
+		await app.handle(
+			new Request("http://localhost/patients/outro-paciente/legacy-link-status"),
+		);
+
+		assertEquals(received, ["outro-paciente"]);
 	});
 });

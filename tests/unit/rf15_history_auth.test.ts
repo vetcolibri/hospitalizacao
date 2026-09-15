@@ -13,7 +13,7 @@ import { right } from "shared/either.ts";
 const HISTORY_URLS = [
 	"http://localhost/patients/sys-1/hospitalizations",
 	"http://localhost/patients/sys-1/hospitalizations/hosp-1",
-	"http://localhost/hospitalizations/legacy-link-status",
+	"http://localhost/patients/sys-1/legacy-link-status",
 ];
 
 function makeContext(url: string, token?: string): Context {
