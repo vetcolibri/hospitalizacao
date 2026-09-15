@@ -34,6 +34,24 @@ const budgetSchema = z.object({
 	]),
 });
 
+const ANGOLAN_PHONE = /^9[1-9]\d{7}$/;
+
+// Edição dos dados globais do tutor durante a hospitalização: apenas nome,
+// telefone e indicação explícita de WhatsApp. O identificador do tutor é
+// resolvido no servidor a partir do paciente, nunca a partir do pedido.
+const ownerUpdateSchema = z.object({
+	name: z
+		.string({ required_error: "O nome do tutor é obrigatório." })
+		.min(1, "O nome do tutor é obrigatório."),
+	phoneNumber: z
+		.string({ required_error: "O telefone do tutor é obrigatório." })
+		.regex(ANGOLAN_PHONE, "Insira um número de telefone angolano válido."),
+	whatsapp: z.boolean({
+		required_error: "Indique se o tutor tem WhatsApp.",
+		invalid_type_error: "Indique se o tutor tem WhatsApp.",
+	}),
+});
+
 export const newPatientSchema = z.object({
 	patientData: patientSchema,
 	hospitalizationData: hospitalizationSchema,
@@ -45,6 +63,7 @@ export const newHospitalizationSchema = z.object({
 	patientId: z.string(),
 	hospitalizationData: hospitalizationSchema,
 	budgetData: budgetSchema,
+	ownerData: ownerUpdateSchema.optional(),
 });
 
 export const endhospitalizationSchema = z.object({

@@ -21,6 +21,7 @@ import {
 	EndHospitalizationError,
 	NewHospitalizationError,
 	NewPatientError,
+	UpdateOwnerError,
 } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
 import { UserRepository } from "domain/auth/user_repository.ts";
@@ -98,6 +99,54 @@ export class PatientService {
 		}
 
 		return await this.#patientRepository.findByPatientId(ID.fromString(patientId));
+	}
+
+	/**
+	 * Actualiza apenas os dados globais do tutor do paciente (nome, telefone e
+	 * indicação de WhatsApp), sem tocar nos restantes campos nem duplicar a ficha.
+	 * @param patientId
+	 * @param ownerData
+	 * @param username
+	 * @returns {Promise<Either<UpdateOwnerError, void>>}
+	 */
+	async updateOwner(
+		patientId: string,
+		ownerData: OwnerUpdateData,
+		username: string,
+	): Promise<Either<UpdateOwnerError, void>> {
+		const userOrErr = await this.#userRepository.getByUsername(
+			Username.fromString(username),
+		);
+		if (userOrErr.isLeft()) {
+			return left(new PermissionDenied("Utilizador inválido."));
+		}
+
+		const user = <User> userOrErr.value;
+		if (!user.hasHospitalizationWritePermission()) {
+			return left(
+				new PermissionDenied(
+					"O nível de Utilizador não lhe permite editar o tutor.",
+				),
+			);
+		}
+
+		const patientOrErr = await this.#patientRepository.findBySystemId(
+			ID.fromString(patientId),
+		);
+		if (patientOrErr.isLeft()) return left(patientOrErr.value);
+
+		// Bloqueia a ficha do tutor até ao fim da transacção para não perder
+		// edições concorrentes nem escrever a partir de uma leitura antiga.
+		const ownerId = patientOrErr.value.ownerId;
+		await this.#ownerRepository.lockById(ownerId);
+
+		const ownerOrErr = await this.#ownerRepository.getById(ownerId);
+		if (ownerOrErr.isLeft()) return left(ownerOrErr.value);
+
+		ownerOrErr.value.update(ownerData.name, ownerData.phoneNumber, ownerData.whatsapp);
+		await this.#ownerRepository.update(ownerOrErr.value);
+
+		return right(undefined);
 	}
 
 	/**
@@ -465,6 +514,12 @@ type PatientData = {
 
 type OwnerData = {
 	ownerId: string;
+	name: string;
+	phoneNumber: string;
+	whatsapp: boolean;
+};
+
+type OwnerUpdateData = {
 	name: string;
 	phoneNumber: string;
 	whatsapp: boolean;

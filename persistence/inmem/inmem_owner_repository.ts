@@ -16,6 +16,15 @@ export class InmemOwnerRepository implements OwnerRepository {
 		return Promise.resolve();
 	}
 
+	lockById(_ownerId: ID): Promise<void> {
+		return Promise.resolve();
+	}
+
+	update(owner: Owner): Promise<void> {
+		this.#data[owner.ownerId.value] = owner;
+		return Promise.resolve();
+	}
+
 	getById(ownerId: ID): Promise<Either<OwnerNotFound, Owner>> {
 		const owner = this.records.find((owner) => owner.ownerId.equals(ownerId));
 		if (!owner) return Promise.resolve(left(new OwnerNotFound()));

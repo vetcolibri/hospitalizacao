@@ -6,6 +6,8 @@ import { ID } from "shared/id.ts";
 export interface OwnerRepository {
 	getById(id: ID): Promise<Either<OwnerNotFound, Owner>>;
 	getAll(): Promise<Owner[]>;
+	lockById(id: ID): Promise<void>;
 	save(owner: Owner): Promise<void>;
+	update(owner: Owner): Promise<void>;
 	last(): Promise<Owner>;
 }

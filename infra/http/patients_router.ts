@@ -21,6 +21,7 @@ import {
 import { TransactionController } from "shared/transaction_controller.ts";
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
+import { OwnerNotFound } from "domain/crm/owner/owner_not_found_error.ts";
 
 interface PatientDTO {
 	systemId: string;
@@ -62,11 +63,38 @@ export default function (service: PatientService, transaction: TransactionContro
 	};
 
 	const hospitalizeHandler = async (ctx: Context) => {
-		const { patientId, hospitalizationData, budgetData } = ctx.state.validatedData;
+		const { patientId, hospitalizationData, budgetData, ownerData } = ctx.state.validatedData;
 		const username = ctx.state.username;
 
 		try {
 			await transaction.begin();
+
+			// A edição dos dados globais do tutor é aplicada primeiro na mesma
+			// transacção: se a hospitalização ou o orçamento falharem, o rollback
+			// repõe também o tutor.
+			if (ownerData) {
+				const ownerOrErr = await service.updateOwner(patientId, ownerData, username);
+
+				if (ownerOrErr.isLeft()) {
+					await transaction.rollback();
+
+					if (ownerOrErr.value instanceof PermissionDenied) {
+						sendForbidden(ctx, ownerOrErr.value.message);
+						return;
+					}
+
+					if (
+						ownerOrErr.value instanceof PatientNotFound ||
+						ownerOrErr.value instanceof OwnerNotFound
+					) {
+						sendNotFound(ctx, ownerOrErr.value.message);
+						return;
+					}
+
+					sendBadRequest(ctx, ownerOrErr.value.message);
+					return;
+				}
+			}
 
 			const resultOrErr = await service.newHospitalization(
 				patientId,

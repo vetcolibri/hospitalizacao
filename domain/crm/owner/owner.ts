@@ -23,6 +23,15 @@ export class Owner {
 		return this.#whatsapp === true;
 	}
 
+	/**
+	 * Actualiza apenas os dados globais do tutor, preservando o identificador.
+	 */
+	update(name: string, phoneNumber: string, whatsapp: boolean): void {
+		this.#name = name;
+		this.#phoneNumber = phoneNumber;
+		this.#whatsapp = whatsapp === true;
+	}
+
 	get name(): string {
 		return this.#name;
 	}

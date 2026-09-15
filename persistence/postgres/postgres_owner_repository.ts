@@ -39,6 +39,29 @@ export class PostgresOwnerRepository implements OwnerRepository {
         ]);
     }
 
+    async lockById(ownerId: ID): Promise<void> {
+        // Bloqueia a ficha do tutor até ao fim da transacção, para que edições
+        // concorrentes não se sobreponham a partir de leituras desactualizadas.
+        await this.client.queryObject(
+            "SELECT owner_id FROM owners WHERE owner_id = $OWNER_ID FOR UPDATE",
+            { owner_id: ownerId.value },
+        );
+    }
+
+    async update(owner: Owner): Promise<void> {
+        // Actualiza apenas os dados globais editáveis, preservando o identificador
+        // e todos os restantes campos/relações do tutor.
+        await this.client.queryObject(
+            "UPDATE owners SET name = $NAME, phone_number = $PHONE_NUMBER, whatsapp = $WHATSAPP WHERE owner_id = $OWNER_ID",
+            {
+                name: owner.name,
+                phone_number: owner.phoneNumber,
+                whatsapp: owner.whatsapp,
+                owner_id: owner.ownerId.value,
+            },
+        );
+    }
+
     last(): Promise<Owner> {
         throw new Error("Method not implemented.");
     }
