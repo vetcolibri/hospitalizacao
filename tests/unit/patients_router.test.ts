@@ -157,6 +157,8 @@ Deno.test("searching an existing patient returns the clinic ID and internal id",
 	assertEquals(body.systemId, "sys-1");
 	assertEquals(body.patientId, "CVL-001");
 	assertEquals(body.ownerId, "owner-1");
+	// O formulário preenche um input de data: a data sai sem horas.
+	assertEquals(body.birthDate, "2013-07-01");
 });
 
 Deno.test("searching a missing patient returns 404", async () => {
