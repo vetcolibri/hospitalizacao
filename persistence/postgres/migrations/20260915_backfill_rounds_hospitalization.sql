@@ -23,8 +23,7 @@ SELECT
     r.round_id,
     r.system_id,
     min(m.issued_at)::date AS first_measurement_day,
-    max(m.issued_at)::date AS last_measurement_day,
-    count(m.name) AS measurement_count
+    max(m.issued_at)::date AS last_measurement_day
 FROM rounds r
 LEFT JOIN measurements m ON m.round_id = r.round_id
 WHERE r.hospitalization_id IS NULL
@@ -35,7 +34,6 @@ SELECT
     w.round_id,
     w.first_measurement_day,
     w.last_measurement_day,
-    w.measurement_count,
     w.system_id,
     h.hospitalization_id
 FROM round_windows w
@@ -96,7 +94,7 @@ BEGIN
 END
 $$;
 
--- Só chegamos aqui com exactly one candidate per round.
+-- Aqui so chegamos quando cada ronda tem exactamente uma candidata.
 UPDATE rounds r
 SET hospitalization_id = c.hospitalization_id
 FROM (
