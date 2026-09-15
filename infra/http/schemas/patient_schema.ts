@@ -16,13 +16,20 @@ const ownerSchema = z.object({
 });
 
 const ANGOLAN_PHONE = /^9[1-9]\d{7}$/;
+const CONTACT_NAME_MAX = 50;
 
 // RF-13: contacto específico opcional por hospitalização. Não transporta
 // identificadores: o servidor nunca confia num owner/contact ID do cliente.
+// O nome é normalizado e limitado ao tamanho da coluna (VARCHAR(50)).
 const contactSchema = z.object({
 	name: z
 		.string({ required_error: "O nome do contacto é obrigatório." })
-		.min(1, "O nome do contacto é obrigatório."),
+		.trim()
+		.min(1, "O nome do contacto é obrigatório.")
+		.max(
+			CONTACT_NAME_MAX,
+			`O nome do contacto não pode ter mais de ${CONTACT_NAME_MAX} caracteres.`,
+		),
 	phoneNumber: z
 		.string({ required_error: "O telefone do contacto é obrigatório." })
 		.regex(ANGOLAN_PHONE, "Insira um número de telefone angolano válido."),

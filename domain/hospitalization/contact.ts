@@ -1,6 +1,7 @@
 import { Either, left, right } from "shared/either.ts";
 
 const ANGOLAN_PHONE = /^9[1-9]\d{7}$/;
+const CONTACT_NAME_MAX = 50;
 
 export interface ContactData {
 	name: string;
@@ -29,6 +30,14 @@ export class Contact {
 	static create(data: ContactData): Either<Error, Contact> {
 		const name = data?.name?.trim() ?? "";
 		if (!name) return left(new Error("O nome do contacto é obrigatório."));
+
+		if (name.length > CONTACT_NAME_MAX) {
+			return left(
+				new Error(
+					`O nome do contacto não pode ter mais de ${CONTACT_NAME_MAX} caracteres.`,
+				),
+			);
+		}
 
 		if (!ANGOLAN_PHONE.test(data?.phoneNumber ?? "")) {
 			return left(new Error("Insira um número de telefone angolano válido."));
