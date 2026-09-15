@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS budgets (
     status VARCHAR(50) NOT NULL,
     hospitalization_id VARCHAR(50) NOT NULL,
     PRIMARY KEY(budget_id),
-    CONSTRAINT fk_budgets_hospitalizations FOREIGN KEY (hospitalization_id) REFERENCES hospitalizations(hospitalization_id) ON DELETE CASCADE
+    CONSTRAINT fk_budgets_hospitalizations FOREIGN KEY (hospitalization_id) REFERENCES hospitalizations(hospitalization_id) ON DELETE RESTRICT
 );
 
 
