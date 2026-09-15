@@ -78,6 +78,15 @@ export class PostgresPatientRepository implements PatientRepository {
 		return result.rows.map(patientFactory);
 	}
 
+	async findNonHospitalized(): Promise<Patient[]> {
+		const result = await this.client.queryObject<PatientModel>(
+			"SELECT * FROM patients WHERE status <> $HOSPITALIZED",
+			{ hospitalized: PatientStatus.Hospitalized },
+		);
+
+		return result.rows.map(patientFactory);
+	}
+
 	last(): Promise<Patient> {
 		throw new Error("Method not implemented.");
 	}

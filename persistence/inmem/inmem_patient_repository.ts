@@ -29,6 +29,10 @@ export class InmemPatientRepository implements PatientRepository {
 	   return Promise.resolve(this.records.filter((p) => p.status === status))
 	}
 
+	findNonHospitalized(): Promise<Patient[]> {
+		return Promise.resolve(this.records.filter((p) => !p.isHospitalized()));
+	}
+
 	save(patient: Patient): Promise<void> {
 		this.#data[patient.systemId.value] = patient;
 		return Promise.resolve(undefined);

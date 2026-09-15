@@ -7,6 +7,7 @@ export interface PatientRepository {
 	findBySystemId(id: ID): Promise<Either<PatientNotFound, Patient>>;
 	findByPatientId(id: ID): Promise<Either<PatientNotFound, Patient>>;
 	findByStatus(status: PatientStatus): Promise<Patient[]>;
+	findNonHospitalized(): Promise<Patient[]>;
 	save(patient: Patient): Promise<void>;
 	update(patient: Patient): Promise<void>;
 	last(): Promise<Patient>;

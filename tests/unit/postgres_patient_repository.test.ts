@@ -1,7 +1,7 @@
 import { assertEquals } from "dev_deps";
 import { Client } from "deps";
 import { PostgresPatientRepository } from "persistence/postgres/postgres_patient_repository.ts";
-import { PatientStatus } from "domain/patient/patient.ts";
+import { Patient, PatientStatus } from "domain/patient/patient.ts";
 import { ID } from "shared/id.ts";
 
 function makeClient(rows: Record<string, string>[]) {
@@ -36,8 +36,9 @@ Deno.test("patients are searched directly by the clinic ID", async () => {
 	assertEquals(calls[0].sql.includes("WHERE patient_id = $PATIENT_ID"), true);
 	assertEquals(calls[0].values, { patient_id: "CVL-001" });
 	assertEquals(result.isRight(), true);
-	assertEquals(result.value.systemId.value, "sys-1");
-	assertEquals(result.value.patientId.value, "CVL-001");
+	const patient = result.value as Patient;
+	assertEquals(patient.systemId.value, "sys-1");
+	assertEquals(patient.patientId.value, "CVL-001");
 });
 
 Deno.test("non hospitalized patients include every discharge state", async () => {
