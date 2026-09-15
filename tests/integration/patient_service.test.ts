@@ -67,7 +67,12 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 	await t.step("Deve abrir uma nova hospitalização", async () => {
 		const { service, patientRepository, hospitalizationRepository } = makeService();
 
-		await service.newHospitalization(patientId, hospitalizationData);
+		await service.newHospitalization(
+			patientId,
+			hospitalizationData,
+			newPatientData.budgetData,
+			newPatientData.username,
+		);
 
 		const patientOrErr = await patientRepository.findBySystemId(ID.fromString(patientId));
 		const patient = <Patient> patientOrErr.value;
@@ -91,6 +96,8 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const error = await service.newHospitalization(
 				"1781GD",
 				hospitalizationData,
+				newPatientData.budgetData,
+				newPatientData.username,
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -106,6 +113,8 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const error = await service.newHospitalization(
 				patientId,
 				hospitalizationData,
+				newPatientData.budgetData,
+				newPatientData.username,
 			);
 			assertInstanceOf(error.value, PatientAlreadyHospitalized);
 		},
@@ -119,6 +128,8 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const error = await service.newHospitalization(
 				"1918BA",
 				{ ...hospitalizationData, complaints: invalidComplaints },
+				newPatientData.budgetData,
+				newPatientData.username,
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -134,6 +145,8 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const error = await service.newHospitalization(
 				"1918BA",
 				{ ...hospitalizationData, diagnostics: invalidDiagnostics },
+				newPatientData.budgetData,
+				newPatientData.username,
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -151,6 +164,8 @@ Deno.test("Patient Service - New Hospitalization", async (t) => {
 			const error = await service.newHospitalization(
 				"1918BA",
 				{ ...hospitalizationData, entryDate: new Date(entryDate).toISOString() },
+				newPatientData.budgetData,
+				newPatientData.username,
 			);
 
 			assertEquals(error.isLeft(), true);
@@ -169,12 +184,16 @@ Deno.test("Patient Service - Non Hospitalized Patients", async (t) => {
 		assertEquals(patients, []);
 	});
 
-	await t.step("Deve recuperar os pacientes não hospitalizados", async () => {
+	await t.step("Deve recuperar os pacientes não hospitalizados em qualquer estado de alta", async () => {
 		const { service } = makeService();
 
 		const patients = await service.listNonHospitalized();
 
-		assert(patients.every((p) => p.status === PatientStatus.Discharged));
+		assert(patients.length > 0);
+		assert(patients.every((p) => !p.isHospitalized()));
+		assert(patients.some((p) => p.status === PatientStatus.DischargedWithUnpaidBudget));
+		assert(patients.some((p) => p.status === PatientStatus.DischargedWithPendingBudget));
+		assert(patients.some((p) => p.status === PatientStatus.DischargedWithBudgetSent));
 	});
 });
 

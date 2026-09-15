@@ -7,6 +7,7 @@ import { ContextWithParams } from "infra/http/context_with_params.ts";
 import {
 	sendBadRequest,
 	sendCreated,
+	sendForbidden,
 	sendNotFound,
 	sendOk,
 	sendServerError,
@@ -19,6 +20,7 @@ import {
 } from "infra/http/schemas/patient_schema.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
+import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 interface PatientDTO {
 	systemId: string;
@@ -60,22 +62,66 @@ export default function (service: PatientService, transaction: TransactionContro
 	};
 
 	const hospitalizeHandler = async (ctx: Context) => {
-		const { patientId, hospitalizationData } = ctx.state.validatedData;
-		const resultOrErr = await service.newHospitalization(
-			patientId,
-			hospitalizationData,
-		);
+		const { patientId, hospitalizationData, budgetData } = ctx.state.validatedData;
+		const username = ctx.state.username;
 
-		if (resultOrErr.value instanceof PatientNotFound) {
-			sendNotFound(ctx, resultOrErr.value.message);
+		try {
+			await transaction.begin();
+
+			const resultOrErr = await service.newHospitalization(
+				patientId,
+				hospitalizationData,
+				budgetData,
+				username,
+			);
+
+			if (resultOrErr.isLeft()) {
+				await transaction.rollback();
+
+				if (resultOrErr.value instanceof PatientNotFound) {
+					sendNotFound(ctx, resultOrErr.value.message);
+					return;
+				}
+
+				if (resultOrErr.value instanceof PermissionDenied) {
+					sendForbidden(ctx, resultOrErr.value.message);
+					return;
+				}
+
+				sendBadRequest(ctx, resultOrErr.value.message);
+				return;
+			}
+
+			await transaction.commit();
+			sendCreated(ctx);
+		} catch (error) {
+			await transaction.rollback();
+			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
+		}
+	};
+
+	const searchPatientHandler = async (ctx: ContextWithParams) => {
+		const patientId = ctx.params.patientId;
+		const username = ctx.state.username;
+
+		const patientOrErr = await service.searchPatient(patientId, username);
+
+		if (patientOrErr.isRight()) {
+			sendOk(ctx, toPatientDTO(patientOrErr.value));
 			return;
 		}
 
-		if (resultOrErr.isLeft()) {
-			sendBadRequest(ctx, resultOrErr.value.message);
+		if (patientOrErr.value instanceof PatientNotFound) {
+			sendNotFound(ctx, patientOrErr.value.message);
 			return;
 		}
-		sendCreated(ctx);
+
+		if (patientOrErr.value instanceof PermissionDenied) {
+			sendForbidden(ctx, patientOrErr.value.message);
+			return;
+		}
+
+		sendServerError(ctx, patientOrErr.value);
 	};
 
 	const getPatientHandler = async (ctx: Context) => {
@@ -189,6 +235,7 @@ export default function (service: PatientService, transaction: TransactionContro
 		validate(newHospitalizationSchema),
 		hospitalizeHandler,
 	);
+	router.get("/search/:patientId", searchPatientHandler);
 	router.post(
 		"/end-hospitalization",
 		validate(endhospitalizationSchema),

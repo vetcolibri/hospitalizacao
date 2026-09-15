@@ -44,6 +44,7 @@ export const newPatientSchema = z.object({
 export const newHospitalizationSchema = z.object({
 	patientId: z.string(),
 	hospitalizationData: hospitalizationSchema,
+	budgetData: budgetSchema,
 });
 
 export const endhospitalizationSchema = z.object({

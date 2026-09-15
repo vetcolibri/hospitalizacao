@@ -24,6 +24,10 @@ export function sendNotFound(ctx: Context, body?: ResponseBody) {
 	sendResponse(ctx, Status.NotFound, { message: body });
 }
 
+export function sendForbidden(ctx: Context, body?: ResponseBody) {
+	sendResponse(ctx, Status.Forbidden, typeof body === "object" ? body : { message: body });
+}
+
 export function sendServerError(ctx: Context, error: Error) {
 	console.error(error);
 	sendResponse(ctx, Status.InternalServerError, { message: "Erro desconhecido, contacte o Administrador" });

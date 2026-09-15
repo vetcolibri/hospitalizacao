@@ -11,6 +11,7 @@ import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
 import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
 import { Patient, PatientStatus } from "domain/patient/patient.ts";
 import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
+import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
 import { PatientBuilder } from "domain/patient/patient_builder.ts";
 import { PatientRepository } from "domain/patient/patient_repository.ts";
 import { Either, left, right } from "shared/either.ts";
@@ -63,23 +64,73 @@ export class PatientService {
 	}
 
 	/**
-	 * Lista os pacientes não hospitalizados
+	 * Lista os pacientes não hospitalizados, em qualquer estado de alta
 	 * @returns {Promise<Patient[]>}
 	 */
 	async listNonHospitalized(): Promise<Patient[]> {
-		return await this.#patientRepository.findByStatus(PatientStatus.Discharged);
+		return await this.#patientRepository.findNonHospitalized();
 	}
 
 	/**
-	 * Cria uma nova hospitalização
+	 * Pesquisa um paciente já existente pelo ID da clínica
 	 * @param patientId
-	 * @param hospitalizationData
-	 * @returns {Promise<Either<Error, void>>}
+	 * @param username
+	 * @returns {Promise<Either<Error, Patient>>}
+	 */
+	async searchPatient(
+		patientId: string,
+		username: string,
+	): Promise<Either<Error, Patient>> {
+		const userOrErr = await this.#userRepository.getByUsername(
+			Username.fromString(username),
+		);
+		if (userOrErr.isLeft()) {
+			return left(new PermissionDenied("Utilizador inválido."));
+		}
+
+		const user = <User> userOrErr.value;
+		if (!user.hasHospitalizationWritePermission()) {
+			return left(
+				new PermissionDenied(
+					"O nível de Utilizador não lhe permite pesquisar pacientes.",
+				),
+			);
+		}
+
+		return await this.#patientRepository.findByPatientId(ID.fromString(patientId));
+	}
+
+	/**
+	 * Abre uma nova hospitalização para um paciente já existente, reutilizando a
+	 * sua ficha e o seu tutor. Cria apenas uma hospitalização e o respectivo orçamento.
+	 * @param patientId
+	 * @param data
+	 * @param budgetData
+	 * @param username
+	 * @returns {Promise<Either<NewHospitalizationError, void>>}
 	 */
 	async newHospitalization(
 		patientId: string,
 		data: HospitalizationData,
+		budgetData: BudgetData,
+		username: string,
 	): Promise<Either<NewHospitalizationError, void>> {
+		const userOrErr = await this.#userRepository.getByUsername(
+			Username.fromString(username),
+		);
+		if (userOrErr.isLeft()) {
+			return left(new PermissionDenied("Utilizador inválido."));
+		}
+
+		const user = <User> userOrErr.value;
+		if (!user.hasHospitalizationWritePermission()) {
+			return left(
+				new PermissionDenied(
+					"O nível de Utilizador não lhe permite hospitalizar pacientes.",
+				),
+			);
+		}
+
 		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) {
 			return left(patientOrErr.value);
@@ -91,7 +142,12 @@ export class PatientService {
 		}
 
 		const patient = patientOrErr.value;
-		if (patient.isHospitalized()) {
+
+		// Recusa uma segunda hospitalização activa em vez de escolher um episódio ao acaso.
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
+			patient.systemId,
+		);
+		if (openHospitalizations.length > 0 || patient.isHospitalized()) {
 			return left(new PatientAlreadyHospitalized(patient.name));
 		}
 
@@ -107,7 +163,20 @@ export class PatientService {
 		if (hospitalizationOrErr.isLeft()) {
 			return left(hospitalizationOrErr.value);
 		}
+
+		const budgetOrErr = new BudgetBuilder()
+			.withHospitalizationId(hospitalizationOrErr.value.hospitalizationId.value)
+			.withStartOn(budgetData.startOn)
+			.withEndOn(budgetData.endOn)
+			.withStatus(budgetData.status)
+			.build();
+
+		if (budgetOrErr.isLeft()) {
+			return left(budgetOrErr.value);
+		}
+
 		await this.#hospitalizationRepository.save(hospitalizationOrErr.value);
+		await this.#budgetRepository.save(budgetOrErr.value);
 
 		patient.hospitalize();
 		await this.#patientRepository.update(patient);
@@ -145,8 +214,8 @@ export class PatientService {
 			ID.fromString(patientData.patientId),
 		);
 
-		if (patientOrErr.isRight() && patientOrErr.value.status === PatientStatus.Hospitalized) {
-			return left(new PatientAlreadyHospitalized(patientOrErr.value.name));
+		if (patientOrErr.isRight()) {
+			return left(new PatientIdAlreadyExists());
 		}
 
 		if (this.#isInvalidDate(patientData.birthDate)) {
