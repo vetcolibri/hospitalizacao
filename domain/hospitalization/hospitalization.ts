@@ -75,7 +75,8 @@ export class Hospitalization {
 		return this.status === HospitalizationStatus.Open;
 	}
 
-	close() {
+	close(dischargeDate?: Date) {
 		this.status = HospitalizationStatus.Close;
+		this.dischargeDate = dischargeDate ?? new Date();
 	}
 }

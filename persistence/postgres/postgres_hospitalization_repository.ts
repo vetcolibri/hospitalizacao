@@ -54,9 +54,10 @@ export class PostgresHospitalizationRepository implements HospitalizationReposit
 
 	async update(hospitalization: Hospitalization): Promise<void> {
 		await this.client.queryObject(
-			"UPDATE hospitalizations SET status = $STATUS WHERE hospitalization_id = $HOSPITALIZATION_ID",
+			"UPDATE hospitalizations SET status = $STATUS, discharge_date = $DISCHARGE_DATE WHERE hospitalization_id = $HOSPITALIZATION_ID",
 			{
-				status: HospitalizationStatus.Close,
+				status: hospitalization.status,
+				discharge_date: hospitalization.dischargeDate?.toISOString() ?? null,
 				hospitalization_id: hospitalization.hospitalizationId.value,
 			},
 		);
