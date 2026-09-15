@@ -17,7 +17,8 @@ import { Username } from "domain/auth/username.ts";
 import { User } from "domain/auth/user.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
-import { Hospitalization } from "domain/hospitalization/hospitalization.ts";
+import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
+import { MultipleOpenHospitalizations } from "domain/hospitalization/multiple_open_hospitalizations_error.ts";
 
 export class CrmService {
 	#ownerRepository: OwnerRepository;
@@ -39,7 +40,7 @@ export class CrmService {
 	) {
 		this.#ownerRepository = ownerRepository;
 		this.#patientRepository = patientRepository;
-		this.#hospitalizationRepository = hospitalizationRepository
+		this.#hospitalizationRepository = hospitalizationRepository;
 		this.#reportRepository = reportRepository;
 		this.#budgetRepository = budgetRepository;
 		this.#userRepository = userRepository;
@@ -83,14 +84,25 @@ export class CrmService {
 
 		if (!patient.isHospitalized()) return left(new PatientNotHospitalized());
 
-		const hospitalizationOrErr = await this.#hospitalizationRepository.findByPatientId(
+		// Um relatório pertence a EXACTAMENTE uma hospitalização aberta: não se
+		// escolhe um episódio ao acaso (LIMIT 1) nem se colam dados ao episódio errado.
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
 			patient.systemId,
 		);
-		if (hospitalizationOrErr.isLeft()) return left(hospitalizationOrErr.value);
+
+		if (openHospitalizations.length !== 1) {
+			return left(
+				openHospitalizations.length === 0
+					? new HospitalizationNotFound()
+					: new MultipleOpenHospitalizations(),
+			);
+		}
+
+		const hospitalization = openHospitalizations[0];
 
 		const reportOrErr = new ReportBuilder()
 			.withPatientId(patient.systemId)
-			.withHospitalizationId(hospitalizationOrErr.value.hospitalizationId)
+			.withHospitalizationId(hospitalization.hospitalizationId)
 			.withStateOfConsciousness(data.stateOfConsciousness)
 			.withFood(this.#buildFood(data))
 			.withDischarge(this.#buildDischarge(data))
@@ -107,16 +119,28 @@ export class CrmService {
 	}
 
 	async findReports(patientId: string): Promise<Either<ReportError, ReportDTO[]>> {
-
 		const patientOrErr = await this.#patientRepository.findBySystemId(ID.fromString(patientId));
 		if (patientOrErr.isLeft()) return left(patientOrErr.value);
 
 		if (!patientOrErr.value.isHospitalized()) return left(new PatientNotHospitalized());
 
-		const hospOrErr = await this.#hospitalizationRepository.findByPatientId(patientOrErr.value.systemId)
-		const hosp = <Hospitalization>hospOrErr.value
+		const openHospitalizations = await this.#hospitalizationRepository.findOpenByPatientId(
+			patientOrErr.value.systemId,
+		);
 
-		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(hosp.hospitalizationId);
+		if (openHospitalizations.length !== 1) {
+			return left(
+				openHospitalizations.length === 0
+					? new HospitalizationNotFound()
+					: new MultipleOpenHospitalizations(),
+			);
+		}
+
+		const hosp = openHospitalizations[0];
+
+		const budgetOrErr = await this.#budgetRepository.findByHospitalizationId(
+			hosp.hospitalizationId,
+		);
 		if (budgetOrErr.isLeft()) return left(budgetOrErr.value);
 
 		const reports = await this.#reportService.findAll(patientId, hosp.hospitalizationId.value);
