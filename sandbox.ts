@@ -67,7 +67,7 @@ const hospitalizationHistoryService = new HospitalizationHistoryService(
     ownerRepo,
     new InmemHospitalizationLinkDiagnostic(),
 );
-const budgetService = new BudgetService(budgetRepo, userRepo, hospRepo);
+const budgetService = new BudgetService(budgetRepo, userRepo, hospRepo, patientRepo);
 const crmService = new CrmService(
     ownerRepo,
     patientRepo,
