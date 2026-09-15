@@ -1,14 +1,12 @@
 import { RoundService } from "application/round_service.ts";
 import { Context, Router } from "deps";
 import { Parameter } from "domain/hospitalization/parameters/parameter.ts";
-import { PatientAlreadyDischarged } from "domain/patient/patient_already_discharged_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { validate } from "shared/tools.ts";
 import { ContextWithParams } from "infra/http/context_with_params.ts";
 import { sendBadRequest, sendNotFound, sendOk, sendServerError } from "infra/http/responses.ts";
 import { roundSchema } from "infra/http/schemas/round_schema.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
-import { PermissionDenied } from "domain/auth/permission_denied_error.ts"
 
 interface ParameterDTO {
 	name: string;
@@ -34,18 +32,13 @@ export default function (service: RoundService, transation: TransactionControlle
 
 			const voidOrErr = await service.new(patientId, parameters, username);
 
-			if (voidOrErr.value instanceof PermissionDenied) {
-			    sendBadRequest(ctx, voidOrErr.value.message);
-				return
-			}
-
-			if (voidOrErr.value instanceof PatientAlreadyDischarged) {
-				sendBadRequest(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof PatientNotFound) {
-				sendNotFound(ctx, voidOrErr.value.message);
+			if (voidOrErr.isLeft()) {
+				await transation.rollback();
+				if (voidOrErr.value instanceof PatientNotFound) {
+					sendNotFound(ctx, voidOrErr.value.message);
+				} else {
+					sendBadRequest(ctx, voidOrErr.value.message);
+				}
 				return;
 			}
 
@@ -53,6 +46,7 @@ export default function (service: RoundService, transation: TransactionControlle
 
 			sendOk(ctx);
 		} catch (error) {
+			await transation.rollback();
 			sendServerError(ctx, error);
 		}
 	};

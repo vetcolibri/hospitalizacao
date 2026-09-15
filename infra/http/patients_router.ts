@@ -1,6 +1,5 @@
 import { PatientService } from "application/patient_service.ts";
 import { Context, Router } from "deps";
-import { HospitalizationNotFound } from "domain/hospitalization/hospitalization_not_found_error.ts";
 import { Patient } from "domain/patient/patient.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { validate } from "shared/tools.ts";
@@ -20,7 +19,6 @@ import {
 } from "infra/http/schemas/patient_schema.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
-import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 interface PatientDTO {
 	systemId: string;
@@ -105,6 +103,7 @@ export default function (service: PatientService, transaction: TransactionContro
 			const voidOrErr = await service.newPatient({ ...newPatientData, username: username });
 
 			if (voidOrErr.isLeft()) {
+				await transaction.rollback();
 				sendBadRequest(ctx, voidOrErr.value.message);
 				return;
 			}
@@ -126,23 +125,16 @@ export default function (service: PatientService, transaction: TransactionContro
 
 			const voidOrErr = await service.endHospitalization(patientId, username);
 
-			if (voidOrErr.value instanceof HospitalizationNotFound) {
-				sendBadRequest(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof PermissionDenied) {
-				sendBadRequest(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof PatientNotFound) {
-				sendNotFound(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof BudgetNotFound) {
-				sendNotFound(ctx, voidOrErr.value.message);
+			if (voidOrErr.isLeft()) {
+				await transaction.rollback();
+				if (
+					voidOrErr.value instanceof PatientNotFound ||
+					voidOrErr.value instanceof BudgetNotFound
+				) {
+					sendNotFound(ctx, voidOrErr.value.message);
+				} else {
+					sendBadRequest(ctx, voidOrErr.value.message);
+				}
 				return;
 			}
 
@@ -168,18 +160,13 @@ export default function (service: PatientService, transaction: TransactionContro
 				username,
 			);
 
-			if (voidOrErr.value instanceof PermissionDenied) {
-				sendBadRequest(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof BudgetNotFound) {
-				sendBadRequest(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof PatientNotFound) {
-				sendNotFound(ctx, voidOrErr.value.message);
+			if (voidOrErr.isLeft()) {
+				await transaction.rollback();
+				if (voidOrErr.value instanceof PatientNotFound) {
+					sendNotFound(ctx, voidOrErr.value.message);
+				} else {
+					sendBadRequest(ctx, voidOrErr.value.message);
+				}
 				return;
 			}
 

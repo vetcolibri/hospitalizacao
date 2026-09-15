@@ -39,6 +39,7 @@ export default function (
             const voidOrErr = await service.schedule(data);
 
             if (voidOrErr.isLeft()) {
+                await transaction.rollback();
                 sendBadRequest(ctx, voidOrErr.value.message);
                 return;
             }
@@ -60,6 +61,7 @@ export default function (
             const voidOrErr = await service.cancel(alertId, ctx.state.username);
 
             if (voidOrErr.isLeft()) {
+                await transaction.rollback();
                 sendBadRequest(ctx, voidOrErr.value.message);
                 return;
             }

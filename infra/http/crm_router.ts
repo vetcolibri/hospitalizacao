@@ -2,13 +2,11 @@ import { CrmService } from "application/crm_service.ts";
 import { Context, Router } from "deps";
 import { Owner } from "domain/crm/owner/owner.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
-import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
 import { ContextWithParams } from "infra/http/context_with_params.ts";
 import { sendBadRequest, sendNotFound, sendOk, sendServerError } from "infra/http/responses.ts";
 import { reportSchema } from "infra/http/schemas/report_schema.ts";
 import { validate } from "shared/tools.ts";
 import { TransactionController } from "shared/transaction_controller.ts";
-import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
 interface OwnerDTO {
 	ownerId: string;
@@ -53,18 +51,13 @@ export default function (service: CrmService, transaction: TransactionController
 
 			const voidOrErr = await service.registerReport(data, username);
 
-			if (voidOrErr.value instanceof PatientNotFound) {
-				sendNotFound(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof PermissionDenied) {
-				sendBadRequest(ctx, voidOrErr.value.message);
-				return;
-			}
-
-			if (voidOrErr.value instanceof PatientNotHospitalized) {
-				sendBadRequest(ctx, voidOrErr.value.message);
+			if (voidOrErr.isLeft()) {
+				await transaction.rollback();
+				if (voidOrErr.value instanceof PatientNotFound) {
+					sendNotFound(ctx, voidOrErr.value.message);
+				} else {
+					sendBadRequest(ctx, voidOrErr.value.message);
+				}
 				return;
 			}
 
