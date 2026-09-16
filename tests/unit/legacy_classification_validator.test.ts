@@ -218,4 +218,40 @@ Deno.test("validador do mapping legado", async (t) => {
 			true,
 		);
 	});
+
+	await t.step("exige reviewer identificado e data de revisão válida", () => {
+		const noReviewer = validateMapping(
+			mapping({ reviewed_by: "  " }),
+			RECORDS,
+			HOSPITALIZATIONS,
+			{ asOf: AS_OF },
+		);
+		assertEquals(codes(noReviewer).includes("REVIEWED_BY_MISSING"), true);
+
+		const badDate = validateMapping(
+			mapping({ reviewed_at: "15/09/2026" }),
+			RECORDS,
+			HOSPITALIZATIONS,
+			{ asOf: AS_OF },
+		);
+		assertEquals(codes(badDate).includes("REVIEWED_AT_INVALID"), true);
+
+		const futureDate = validateMapping(
+			mapping({ reviewed_at: "2026-12-01T00:00:00.000Z" }),
+			RECORDS,
+			HOSPITALIZATIONS,
+			{ asOf: AS_OF },
+		);
+		assertEquals(codes(futureDate).includes("REVIEWED_AT_FUTURE"), true);
+	});
+
+	await t.step("rascunho não aprovado não exige metadados de revisão", () => {
+		const result = validateMapping(
+			mapping({ approved: false, reviewed_by: "", reviewed_at: "" }),
+			RECORDS,
+			HOSPITALIZATIONS,
+			{ asOf: AS_OF },
+		);
+		assertEquals(codes(result).some((code) => code.startsWith("REVIEWED_")), false);
+	});
 });
