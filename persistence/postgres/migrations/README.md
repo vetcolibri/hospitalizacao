@@ -94,15 +94,28 @@ tests/integration/migrations_chain_restore.test.ts` (cria uma base descartável)
 
 | Migration | Rollback | Segurança |
 |-----------|----------|-----------|
-| 6 (hardening) | Repor a regra anterior da FK de orçamento: `ALTER TABLE budgets DROP CONSTRAINT fk_budgets_hospitalizations; ALTER TABLE budgets ADD CONSTRAINT fk_budgets_hospitalizations FOREIGN KEY (hospitalization_id) REFERENCES hospitalizations(hospitalization_id) ON DELETE CASCADE;` | Seguro tecnicamente, mas **reintroduz perda de dados em cascata**. Emergência apenas. `reports`/`rounds` já eram RESTRICT antes. |
+| 6 (hardening) | Repor a regra anterior da FK de orçamento: `ALTER TABLE budgets DROP CONSTRAINT fk_budgets_hospitalizations; ALTER TABLE budgets ADD CONSTRAINT fk_budgets_hospitalizations FOREIGN KEY (hospitalization_id) REFERENCES hospitalizations(hospitalization_id) ON DELETE CASCADE;` | Seguro tecnicamente, mas **reintroduz perda de dados em cascata**. Emergência apenas. `reports`/`rounds` já eram RESTRICT antes, não mudam. |
 | 5 (contacto) | `ALTER TABLE hospitalizations DROP CONSTRAINT IF EXISTS chk_hospitalizations_contact_complete; ALTER TABLE hospitalizations DROP COLUMN IF EXISTS contact_name, DROP COLUMN IF EXISTS contact_phone_number, DROP COLUMN IF EXISTS contact_whatsapp;` | Seguro; perde só as excepções de contacto opcionais. |
-| 4 / 2 (`SET NOT NULL`) | `ALTER TABLE rounds ALTER COLUMN hospitalization_id DROP NOT NULL;` / `ALTER TABLE reports ALTER COLUMN hospitalization_id DROP NOT NULL;` | Seguro; as colunas e FKs mantêm-se. |
-| 3 / 1 (aditivas) | **Não reverter.** Remover a coluna perderia a associação clínica já construída. Se for indispensável, parar a aplicação e restaurar do backup. | Perigoso. |
+| 4 (`rounds` `SET NOT NULL`) | `ALTER TABLE rounds ALTER COLUMN hospitalization_id DROP NOT NULL;` | Seguro; a coluna e a FK mantêm-se. |
+| 3 (`rounds` link) | **Não reverter.** | Remover a coluna perderia a associação das rondas. Repor do backup se indispensável. |
+| 2 (`reports` `SET NOT NULL`) | `ALTER TABLE reports ALTER COLUMN hospitalization_id DROP NOT NULL;` | Seguro; a coluna e a FK mantêm-se. |
+| 1 (`reports` link) | **Não reverter.** | Remover a coluna perderia a associação dos relatórios. Repor do backup se indispensável. |
 | 0 (backup) | Restaurar: `pg_restore --clean --if-exists --dbname="$DATABASE_URL" /tmp/cvl_before_migrations.dump` | Última linha de defesa. |
 
-### Ordem de rollback recomendada
+### Ordem de rollback (estritamente inversa do rollout)
 
-Se for necessário reverter um rollout completo, pela ordem inversa:
-`6 → 5 → 4 (DROP NOT NULL) → 3/1 (parar; restaurar backup se indispensável) → 2 (DROP NOT NULL)`.
-Na prática, para um incidente de produção o caminho preferido é **restaurar o
-backup** em vez de reverter migrations de associação.
+O rollout é `1 → 2 → 3 → 4 → 5 → 6`; o rollback é exactamente o inverso:
+
+1. **6 — hardening:** repor a FK de orçamento (emergência).
+2. **5 — contacto:** remover as três colunas e o CHECK.
+3. **4 — `rounds` `SET NOT NULL`:** `DROP NOT NULL`.
+4. **3 — `rounds` link:** **não é reversível em segurança**; parar aqui e, se for mesmo
+   necessário voltar atrás, restaurar o backup (não tentar apagar a coluna).
+5. **2 — `reports` `SET NOT NULL`:** `DROP NOT NULL`.
+6. **1 — `reports` link:** **não é reversível em segurança**; restaurar o backup.
+
+Os passos 3 e 1 são os únicos que interrompem a sequência, e interrompem-na
+porque apagar uma coluna de associação destruiria dados clínicos. Fora desse
+caso, cada passo é o inverso do passo correspondente do rollout. Na prática, a
+partir do passo 3 ou 1 o procedimento preferido é **restaurar o backup**, não
+continuar a reverter migrations.
