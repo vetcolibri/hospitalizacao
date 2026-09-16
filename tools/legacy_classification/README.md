@@ -2,7 +2,8 @@
 
 Ferramentas **read-only por defeito** para classificar as rondas e relatórios
 antigos que ficaram com `hospitalization_id IS NULL` (legado por classificar).
-Nada aqui adivinha associações: a decisão é sempre humana e assinada.
+Nada aqui adivinha associações: a decisão é sempre humana, identificada e
+aprovada pelo CVL.
 
 ## Âmbito e limites
 
