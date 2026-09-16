@@ -49,7 +49,7 @@ export default function (
             sendOk(ctx);
         } catch (error) {
             await transaction.rollback();
-            sendBadRequest(ctx, error.message);
+            sendBadRequest(ctx, error instanceof Error ? error.message : String(error));
         }
     };
 
@@ -70,7 +70,7 @@ export default function (
             sendOk(ctx);
         } catch (error) {
             await transaction.rollback();
-            sendServerError(ctx, error);
+            sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
         }
     };
 

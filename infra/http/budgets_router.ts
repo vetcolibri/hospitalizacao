@@ -58,7 +58,7 @@ export default function (service: BudgetService, transaction: TransactionControl
             sendOk(ctx);
         } catch (error) {
             await transaction.rollback();
-            sendServerError(ctx, error);
+            sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
         }
     };
 

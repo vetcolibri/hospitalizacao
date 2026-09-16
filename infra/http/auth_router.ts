@@ -20,7 +20,7 @@ export default function(service: AuthService) {
             sendOk(ctx, userOrErr.value)
 
         } catch(error) {
-            sendServerError(ctx, error);
+            sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
         }
     }
 

@@ -66,7 +66,7 @@ export default function (service: CrmService, transaction: TransactionController
 			await transaction.commit();
 		} catch (error) {
 			await transaction.rollback();
-			sendServerError(ctx, error);
+			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
 		}
 	};
 

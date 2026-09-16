@@ -152,7 +152,7 @@ export default function (service: PatientService, transaction: TransactionContro
 		sendServerError(ctx, patientOrErr.value);
 	};
 
-	const getPatientHandler = async (ctx: Context) => {
+	const getPatientHandler = async (ctx: ContextWithParams) => {
 		const patientId = ctx.params.patientId;
 		const patientOrErr = await service.getPatientById(patientId);
 		if (patientOrErr.isRight()) {
@@ -187,7 +187,7 @@ export default function (service: PatientService, transaction: TransactionContro
 			sendCreated(ctx);
 		} catch (error) {
 			await transaction.rollback();
-			sendServerError(ctx, error);
+			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
 		}
 	};
 
@@ -217,7 +217,7 @@ export default function (service: PatientService, transaction: TransactionContro
 			sendOk(ctx);
 		} catch (error) {
 			await transaction.rollback();
-			sendServerError(ctx, error);
+			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
 		}
 	};
 
@@ -249,7 +249,7 @@ export default function (service: PatientService, transaction: TransactionContro
 			sendOk(ctx);
 		} catch (error) {
 			await transaction.rollback();
-			sendServerError(ctx, error);
+			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
 		}
 	};
 

@@ -47,7 +47,7 @@ export default function (service: RoundService, transation: TransactionControlle
 			sendOk(ctx);
 		} catch (error) {
 			await transation.rollback();
-			sendServerError(ctx, error);
+			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
 		}
 	};
 
