@@ -12,6 +12,9 @@
 
 export const MAPPING_VERSION = 1;
 
+/** ISO-8601 com data, hora e fuso explícito (ex.: 2026-09-15T11:00:00.000Z). */
+const ISO_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+
 export type RecordType = "round" | "report";
 
 export interface LegacyRecordFact {
@@ -132,6 +135,27 @@ export function validateMapping(
 
 	if (options.requireApproved && mapping?.approved !== true) {
 		issues.push(issue("MAPPING_NOT_APPROVED", "O mapping não está aprovado para aplicação."));
+	}
+
+	// Um mapping aprovado tem de identificar quem aprovou e quando. Não é uma
+	// assinatura criptográfica: é a aprovação identificada da equipa (CVL).
+	if (options.requireApproved === true || mapping?.approved === true) {
+		if (!isNonEmpty(mapping?.reviewed_by)) {
+			issues.push(issue("REVIEWED_BY_MISSING", "Falta o reviewer que aprovou o mapping."));
+		}
+
+		const reviewedAt = mapping?.reviewed_at;
+		const isIso = typeof reviewedAt === "string" && ISO_DATETIME.test(reviewedAt);
+		const parsed = isIso ? Date.parse(reviewedAt as string) : Number.NaN;
+
+		if (!isIso || Number.isNaN(parsed)) {
+			issues.push(issue(
+				"REVIEWED_AT_INVALID",
+				"A data de revisão tem de ser ISO-8601 com fuso explícito.",
+			));
+		} else if (parsed > options.asOf.getTime()) {
+			issues.push(issue("REVIEWED_AT_FUTURE", "A data de revisão não pode estar no futuro."));
+		}
 	}
 
 	if (!Array.isArray(mapping?.entries)) {

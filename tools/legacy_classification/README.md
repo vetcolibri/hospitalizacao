@@ -43,17 +43,22 @@ por registo** do export. Para um caso temporalmente impossível (por exemplo,
 medição anterior à entrada por erro de registo), preencha
 `override_reason` com a justificação — idealmente confirmada pelo CVL.
 
-Depois de revisto, assine:
+Depois de revisto, registe a **aprovação identificada pelo CVL** (não é uma
+assinatura criptográfica, é a identificação de quem aprovou e quando):
 
 ```json
 {
   "version": 1,
   "approved": true,
-  "reviewed_by": "<utilizador da equipa>",
-  "reviewed_at": "<ISO-8601>",
+  "reviewed_by": "<utilizador ou equipa do CVL>",
+  "reviewed_at": "<ISO-8601 com fuso, ex.: 2026-09-15T11:00:00.000Z>",
   "entries": [ ... ]
 }
 ```
+
+`reviewed_by` tem de ser não vazio e `reviewed_at` tem de ser ISO-8601 com fuso
+explícito e **não pode estar no futuro**. A aprovação sem estes dois campos é
+recusada.
 
 ## Passo 3 — Dry-run (obrigatório)
 
@@ -65,6 +70,9 @@ O validador rejeita e **não escreve nada** se encontrar:
 
 - `MAPPING_VERSION_MISMATCH` — versão desconhecida;
 - `MAPPING_NOT_APPROVED` — `approved` não é `true`;
+- `REVIEWED_BY_MISSING` — falta o reviewer que aprovou;
+- `REVIEWED_AT_INVALID` — data de revisão em falta ou não ISO-8601 com fuso;
+- `REVIEWED_AT_FUTURE` — data de revisão no futuro;
 - `MISSING_FIELD` / `INVALID_RECORD_TYPE` — entrada incompleta/tipo inválido;
 - `RECORD_NOT_FOUND` — id inexistente ou já classificado;
 - `PATIENT_MISMATCH` — `system_id` do mapping diferente do registo;
@@ -77,6 +85,13 @@ O validador rejeita e **não escreve nada** se encontrar:
 
 O mapping é **revalidado contra os factos actuais da base de dados**: um export
 antigo não serve para aplicar. O plano é apresentado sem qualquer escrita.
+
+### Atomicidade
+
+A leitura dos factos, a validação e **todos** os `UPDATE` correm na **mesma
+transacção `SERIALIZABLE`**, aberta antes de qualquer leitura. Não existe janela
+TOCTOU entre validar e escrever: o dry-run e qualquer recusa terminam com
+`ROLLBACK`; qualquer erro a meio dos `UPDATE` desfaz tudo.
 
 ## Passo 4 — Aplicação transaccional
 
