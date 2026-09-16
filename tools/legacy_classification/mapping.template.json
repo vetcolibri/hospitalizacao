@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "approved": false,
+  "reviewed_by": "",
+  "reviewed_at": "",
+  "entries": [
+    {
+      "record_type": "round",
+      "record_id": "<record_id do export>",
+      "system_id": "<system_id do export>",
+      "hospitalization_id": "<hospitalization_id escolhido pelo revisor>",
+      "override_reason": null
+    },
+    {
+      "record_type": "report",
+      "record_id": "<record_id do export>",
+      "system_id": "<system_id do export>",
+      "hospitalization_id": "<hospitalization_id escolhido pelo revisor>",
+      "override_reason": null
+    }
+  ]
+}

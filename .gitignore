@@ -34,3 +34,7 @@ data/
 .nuxt/
 .deno/
 .zed/
+
+# RF-16: exports/mappings reais do legado (contêm dados do dump) — nunca commitar
+legacy_export*.json
+legacy_mapping*.json
