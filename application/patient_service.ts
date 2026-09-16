@@ -12,6 +12,13 @@ import { HospitalizationBuilder } from "domain/hospitalization/hospitalization_b
 import { HospitalizationRepository } from "domain/hospitalization/hospitalization_repository.ts";
 import { InvalidDate } from "domain/hospitalization/invalid_date_error.ts";
 import { InvalidNumber } from "domain/hospitalization/invalid_number_error.ts";
+import {
+	InvalidSearchTerm,
+	SEARCH_LIMIT,
+	SEARCH_TERM_MAX,
+	SEARCH_TERM_MIN,
+} from "domain/patient/invalid_search_term_error.ts";
+import { PatientSearchResult } from "domain/patient/patient_search_result.ts";
 import { Patient, PatientStatus } from "domain/patient/patient.ts";
 import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospitalized_error.ts";
 import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
@@ -24,6 +31,7 @@ import {
 	EndHospitalizationError,
 	NewHospitalizationError,
 	NewPatientError,
+	SearchPatientsError,
 	UpdateOwnerError,
 } from "shared/errors.ts";
 import { ID } from "shared/id.ts";
@@ -239,6 +247,44 @@ export class PatientService {
 		await this.#patientRepository.update(patient);
 
 		return right(undefined);
+	}
+
+	/**
+	 * Pesquisa unificada de pacientes para a nova hospitalização. Um único termo
+	 * procura ID/nome do paciente e ID/nome do tutor, com relevância
+	 * exacto > prefixo > parcial e limite de 10 resultados. O termo é literal
+	 * (`%`/`_` não são wildcards).
+	 */
+	async searchPatients(
+		term: string,
+		username: string,
+	): Promise<Either<SearchPatientsError, PatientSearchResult[]>> {
+		const userOrErr = await this.#userRepository.getByUsername(
+			Username.fromString(username),
+		);
+		if (userOrErr.isLeft()) {
+			return left(new PermissionDenied("Utilizador inválido."));
+		}
+
+		const user = <User> userOrErr.value;
+		if (!user.hasHospitalizationWritePermission()) {
+			return left(
+				new PermissionDenied(
+					"O nível de Utilizador não lhe permite pesquisar pacientes.",
+				),
+			);
+		}
+
+		const normalized = (term ?? "").trim();
+
+		if (
+			normalized.length < SEARCH_TERM_MIN ||
+			normalized.length > SEARCH_TERM_MAX
+		) {
+			return left(new InvalidSearchTerm());
+		}
+
+		return right(await this.#patientRepository.search(normalized, SEARCH_LIMIT));
 	}
 
 	async getPatientById(patientId: string): Promise<Either<Error, Patient>> {

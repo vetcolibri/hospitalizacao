@@ -11,6 +11,7 @@ import { PatientAlreadyHospitalized } from "domain/patient/patient_already_hospi
 import { PatientIdAlreadyExists } from "domain/patient/patient_id_already_exists_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
 import { PatientNotHospitalized } from "domain/patient/patient_not_hospitalized_error.ts";
+import { InvalidSearchTerm } from "domain/patient/invalid_search_term_error.ts";
 import { BudgetNotFound } from "domain/budget/budget_not_found_error.ts";
 import { PermissionDenied } from "domain/auth/permission_denied_error.ts";
 
@@ -52,6 +53,7 @@ export type EndBudgetError =
 	| BudgetNotFound
 	| PermissionDenied
 	| Error;
+export type SearchPatientsError = PermissionDenied | InvalidSearchTerm | Error;
 export type UpdateOwnerError = PatientNotFound | OwnerNotFound | PermissionDenied | Error;
 export type ReportError =
 	| PatientNotHospitalized
