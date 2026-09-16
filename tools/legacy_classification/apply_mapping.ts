@@ -15,12 +15,13 @@ import {
  *   deno run -A tools/legacy_classification/apply_mapping.ts <mapping.json> --apply  # escreve
  *
  * Regras de segurança:
- *  - revalida o mapping contra os factos ACTUAIS da base de dados (um export
- *    antigo não serve para aplicar);
- *  - exige `approved: true` e rejeita qualquer problema do validador;
- *  - por defeito só mostra o plano (dry-run), sem escrever;
- *  - com `--apply`, corre numa única transacção e só actualiza registos ainda
- *    com `hospitalization_id IS NULL`; qualquer contagem inesperada faz ROLLBACK;
+ *  - a leitura dos factos, a validação e TODOS os UPDATEs correm na MESMA
+ *    transacção `SERIALIZABLE`, aberta ANTES de ler. Não há janela TOCTOU entre
+ *    validar e escrever;
+ *  - o dry-run NÃO escreve: termina sempre com `ROLLBACK`;
+ *  - qualquer problema de validação ou erro termina com `ROLLBACK`;
+ *  - com `--apply`, só actualiza linhas ainda com `hospitalization_id IS NULL`;
+ *    se algum `UPDATE` não afectar exactamente 1 linha, faz `ROLLBACK`;
  *  - nunca adivinha associações.
  */
 
@@ -58,30 +59,64 @@ export function planApplication(
 	};
 }
 
-async function applyUpdates(client: Client, updates: PlannedUpdate[]): Promise<void> {
-	await client.queryArray("BEGIN");
+export type ApplicationResult =
+	| { status: "REFUSED"; issues: ValidationIssue[] }
+	| { status: "DRY_RUN"; updates: PlannedUpdate[] }
+	| { status: "APPLIED"; updates: PlannedUpdate[] };
+
+async function updateLegacyRecord(client: Client, update: PlannedUpdate): Promise<void> {
+	const table = update.record_type === "round" ? "rounds" : "reports";
+	const idColumn = update.record_type === "round" ? "round_id" : "report_id";
+
+	const result = await client.queryObject<{ id: string }>(
+		`UPDATE ${table} SET hospitalization_id = $1
+		 WHERE ${idColumn} = $2 AND hospitalization_id IS NULL
+		 RETURNING ${idColumn} AS id`,
+		[update.hospitalization_id, update.record_id],
+	);
+
+	if (result.rows.length !== 1) {
+		throw new Error(
+			`UPDATE inesperado para ${update.record_type} ${update.record_id}: ` +
+				`esperava 1 linha por classificar, obteve ${result.rows.length}.`,
+		);
+	}
+}
+
+/**
+ * Lê, valida e (se `apply` e tudo ok) escreve na mesma transacção serializável.
+ * Devolve o resultado; nunca deixa uma transacção aberta.
+ */
+export async function applyMapping(
+	client: Client,
+	mapping: LegacyMapping,
+	asOf: Date,
+	apply: boolean,
+): Promise<ApplicationResult> {
+	await client.queryArray("BEGIN ISOLATION LEVEL SERIALIZABLE");
 
 	try {
-		for (const update of updates) {
-			const table = update.record_type === "round" ? "rounds" : "reports";
-			const idColumn = update.record_type === "round" ? "round_id" : "report_id";
+		// Leitura + validação DENTRO da transacção: os factos que validam são
+		// exactamente os que os UPDATEs vão encontrar.
+		const facts = await readLegacyFacts(client);
+		const plan = planApplication(mapping, facts.records, facts.hospitalizations, asOf);
 
-			const result = await client.queryObject<{ id: string }>(
-				`UPDATE ${table} SET hospitalization_id = $1
-				 WHERE ${idColumn} = $2 AND hospitalization_id IS NULL
-				 RETURNING ${idColumn} AS id`,
-				[update.hospitalization_id, update.record_id],
-			);
+		if (plan.issues.length > 0) {
+			await client.queryArray("ROLLBACK");
+			return { status: "REFUSED", issues: plan.issues };
+		}
 
-			if (result.rows.length !== 1) {
-				throw new Error(
-					`UPDATE inesperado para ${update.record_type} ${update.record_id}: ` +
-						`esperava 1 linha por classificar, obteve ${result.rows.length}.`,
-				);
-			}
+		if (!apply) {
+			await client.queryArray("ROLLBACK");
+			return { status: "DRY_RUN", updates: plan.updates };
+		}
+
+		for (const update of plan.updates) {
+			await updateLegacyRecord(client, update);
 		}
 
 		await client.queryArray("COMMIT");
+		return { status: "APPLIED", updates: plan.updates };
 	} catch (error) {
 		await client.queryArray("ROLLBACK");
 		throw error;
@@ -109,40 +144,33 @@ if (import.meta.main) {
 	}
 
 	const client = new Client(url);
+	let exitCode = 0;
 
 	try {
 		const mapping = readMapping(mappingPath);
 
 		await client.connect();
-		const facts = await readLegacyFacts(client);
+		const result = await applyMapping(client, mapping, new Date(), apply);
 
-		const plan = planApplication(mapping, facts.records, facts.hospitalizations, new Date());
-
-		if (plan.issues.length > 0) {
-			console.error(JSON.stringify({ status: "REFUSED", issues: plan.issues }, null, 2));
-			Deno.exit(1);
-		}
-
-		if (!apply) {
+		if (result.status === "REFUSED") {
+			console.error(JSON.stringify({ status: "REFUSED", issues: result.issues }, null, 2));
+			exitCode = 1;
+		} else if (result.status === "DRY_RUN") {
 			console.log(JSON.stringify({
 				status: "DRY_RUN",
-				updates: plan.updates.length,
-				plan: plan.updates,
+				updates: result.updates.length,
+				plan: result.updates,
 				hint: "Sem escrita. Repetir com --apply depois de aprovar.",
 			}, null, 2));
-			Deno.exit(0);
+		} else {
+			console.log(JSON.stringify({ status: "APPLIED", updates: result.updates.length }, null, 2));
 		}
-
-		await applyUpdates(client, plan.updates);
-
-		console.log(JSON.stringify({
-			status: "APPLIED",
-			updates: plan.updates.length,
-		}, null, 2));
 	} catch (error) {
 		console.error(error instanceof Error ? error.message : String(error));
-		Deno.exit(1);
+		exitCode = 1;
 	} finally {
 		await client.end();
 	}
+
+	Deno.exit(exitCode);
 }
