@@ -1,7 +1,9 @@
 import { PatientService } from "application/patient_service.ts";
 import { Context, Router } from "deps";
 import { Patient } from "domain/patient/patient.ts";
+import { InvalidSearchTerm } from "domain/patient/invalid_search_term_error.ts";
 import { PatientNotFound } from "domain/patient/patient_not_found_error.ts";
+import { PatientSearchResult } from "domain/patient/patient_search_result.ts";
 import { validate } from "shared/tools.ts";
 import { ContextWithParams } from "infra/http/context_with_params.ts";
 import {
@@ -33,6 +35,36 @@ interface PatientDTO {
 	birthDate: string;
 	age: string;
 	ownerId: string;
+}
+
+/**
+ * Resultado da pesquisa unificada. Campos mínimos para escolher o paciente e
+ * continuar o formulário; nunca telefone nem WhatsApp.
+ */
+interface PatientSearchDTO {
+	systemId: string;
+	patientId: string;
+	patientName: string;
+	ownerId: string;
+	ownerName: string;
+	specie: string;
+	breed: string;
+	birthDate: string;
+	status: string;
+}
+
+function toPatientSearchDTO(result: PatientSearchResult): PatientSearchDTO {
+	return {
+		systemId: result.patient.systemId.value,
+		patientId: result.patient.patientId.value,
+		patientName: result.patient.name,
+		ownerId: result.patient.ownerId.value,
+		ownerName: result.ownerName,
+		specie: result.patient.specie.toString(),
+		breed: result.patient.breed,
+		birthDate: result.patient.birthDate.toISOString(),
+		status: result.patient.status.toString(),
+	};
 }
 
 function toPatientDTO(patient: Patient): PatientDTO {
@@ -126,6 +158,30 @@ export default function (service: PatientService, transaction: TransactionContro
 			await transaction.rollback();
 			sendServerError(ctx, error instanceof Error ? error : new Error(String(error)));
 		}
+	};
+
+	const searchPatientsHandler = async (ctx: Context) => {
+		const term = ctx.request.url.searchParams.get("term") ?? "";
+		const username = ctx.state.username;
+
+		const resultsOrErr = await service.searchPatients(term, username);
+
+		if (resultsOrErr.isRight()) {
+			sendOk(ctx, resultsOrErr.value.map(toPatientSearchDTO));
+			return;
+		}
+
+		if (resultsOrErr.value instanceof PermissionDenied) {
+			sendForbidden(ctx, resultsOrErr.value.message);
+			return;
+		}
+
+		if (resultsOrErr.value instanceof InvalidSearchTerm) {
+			sendBadRequest(ctx, resultsOrErr.value.message);
+			return;
+		}
+
+		sendServerError(ctx, resultsOrErr.value);
 	};
 
 	const searchPatientHandler = async (ctx: ContextWithParams) => {
@@ -263,6 +319,7 @@ export default function (service: PatientService, transaction: TransactionContro
 		validate(newHospitalizationSchema),
 		hospitalizeHandler,
 	);
+	router.get("/search", searchPatientsHandler);
 	router.get("/search/:patientId", searchPatientHandler);
 	router.post(
 		"/end-hospitalization",
